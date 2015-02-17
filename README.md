@@ -4,10 +4,10 @@
 	/todo trim
 	/todo
 	/todo show
-	/todo tick|check {id} [--force]
-	/todo untick|uncheck {id} [--force]
-	/todo remove {id} [--force]
+	/todo tick|check {reference} [--force]
+	/todo untick|uncheck {reference} [--force]
+	/todo remove {reference} [--force]
 	/todo clear [--force]
-	/todo claim {id} [--force]
-	/todo free {id} [--force]
+	/todo claim {reference} [--force]
+	/todo free {reference} [--force]
 

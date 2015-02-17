@@ -43,27 +43,12 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="CommandHandlers\TodoListCommandHandler.cs" />
-    <Compile Include="Commands\UntickTodoItem.cs" />
-    <Compile Include="Commands\TickTodoItem.cs" />
-    <Compile Include="Commands\AddTodoItem.cs" />
-    <Compile Include="Domain\Events\ItemFreed.cs" />
-    <Compile Include="Domain\Events\ItemClaimed.cs" />
-    <Compile Include="Domain\Events\ItemAdded.cs" />
-    <Compile Include="Domain\Events\ItemUnticked.cs" />
-    <Compile Include="Domain\Events\ItemTicked.cs" />
-    <Compile Include="Domain\TodoItemClaimedBySomeoneElseException.cs" />
-    <Compile Include="Domain\TodoItemNotFoundException.cs" />
-    <Compile Include="ITodoListCommandHandler.cs" />
-    <Compile Include="ITodoListCommand.cs" />
-    <Compile Include="Domain\ITodoListEvent.cs" />
-    <Compile Include="ITodoListEventStore.cs" />
-    <Compile Include="ITodoListRepository.cs" />
-    <Compile Include="IUserContext.cs" />
+    <Compile Include="Domain\Events.cs" />
+    <Compile Include="Domain\Exceptions.cs" />
+    <Compile Include="Domain\ITodoEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Domain\TodoItem.cs" />
-    <Compile Include="Domain\TodoList.cs" />
-    <Compile Include="TodoListRepository.cs" />
+    <Compile Include="Domain\Todo.cs" />
+    <Compile Include="Domain\TodoContext.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core", "SlashTodo.Core\SlashTodo.Core.csproj", "{53F70269-9818-4B4D-8EF6-568DB8276BBB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core", "Z:\Work\SlashTodo\src\SlashTodo.Core\SlashTodo.Core.csproj", "{53F70269-9818-4B4D-8EF6-568DB8276BBB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A31932B8-DDCD-460B-BCF3-9352C49DF704}"
 	ProjectSection(SolutionItems) = preProject
-		..\readme.md = ..\readme.md
-		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		Z:\Work\SlashTodo\readme.md = Z:\Work\SlashTodo\readme.md
+		Z:\Work\SlashTodo\src\SharedAssemblyInfo.cs = Z:\Work\SlashTodo\src\SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Api", "SlashTodo.Api\SlashTodo.Api.csproj", "{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Api", "Z:\Work\SlashTodo\src\SlashTodo.Api\SlashTodo.Api.csproj", "{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core.Tests", "SlashTodo.Core.Tests\SlashTodo.Core.Tests.csproj", "{82C1A30B-378C-4381-A3E1-DCB24DD67D83}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core.Tests", "Z:\Work\SlashTodo\src\SlashTodo.Core.Tests\SlashTodo.Core.Tests.csproj", "{82C1A30B-378C-4381-A3E1-DCB24DD67D83}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
