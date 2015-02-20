@@ -46,14 +46,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddTodoTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Todo\FreeTests.cs" />
-    <Compile Include="Todo\UntickTests.cs" />
-    <Compile Include="Todo\TickTests.cs" />
-    <Compile Include="Todo\Common.cs" />
-    <Compile Include="Todo\RemoveTests.cs" />
-    <Compile Include="Todo\ClaimTests.cs" />
-    <Compile Include="Todo\AddTests.cs" />
+    <Compile Include="TestHelpers.cs" />
+    <Compile Include="TodoRepositoryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

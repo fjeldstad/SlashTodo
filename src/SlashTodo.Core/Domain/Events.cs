@@ -9,7 +9,6 @@ namespace SlashTodo.Core.Domain
     public abstract class TodoEvent : ITodoEvent
     {
         public Guid Id { get; set; }
-        public int OriginalVersion { get; set; }
         public string UserId { get; set; }
         public DateTime Timestamp { get; set; }
     }

@@ -3,203 +3,155 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SlashTodo.Core.Domain;
+using Stateless;
 
-namespace SlashTodo.Core
+namespace SlashTodo.Core.Domain
 {
     public class Todo
     {
-        private readonly List<ITodoEvent> _uncommittedChanges = new List<ITodoEvent>(); 
-
-        // Internal state
+        private readonly Guid _id;
+        private readonly TodoData _data;
         private readonly TodoContext _context;
-        //private string _text;
-        //private DateTime _createdAt;
-        private string _claimedBy;
-        private DateTime? _tickedAt;
-        private DateTime? _removedAt;
+        private readonly List<ITodoEvent> _pendingEvents = new List<ITodoEvent>(); 
+        private StateMachine<TodoState, TodoTrigger> _stateMachine;
+        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<string> _addTrigger;
+        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<string> _claimTrigger;
 
-        public Guid Id { get; protected set; }
-        public int Version { get; protected set; }
+        public Guid Id { get { return _id; } }
 
-        public Todo(TodoContext context, IEnumerable<ITodoEvent> historicEvents)
+        public static Todo Add(Guid id, TodoContext context, string text)
         {
-            _context = context;
-            LoadFromHistory(historicEvents);
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentNullException("text");
+            }
+            var todo = new Todo(id, context, new TodoData
+            {
+                State = TodoState.Initial.ToString().ToLowerInvariant()
+            });
+            todo._stateMachine.Fire(todo._addTrigger, text.Trim());
+            return todo;
         }
 
-        public Todo(TodoContext context, Guid id, string text)
+        public Todo(Guid id, TodoContext context, TodoData data)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException("context");
+            }
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
+
+            _id = id;
+            _data = data;
             _context = context;
-            Id = id; // Ugly perhaps, but allows the CreateEvent method to drop a parameter.
-            var @event = CreateEvent<TodoAdded>();
-            @event.Text = text;
-            RaiseEvent(@event);
+            ConfigureStateMachine();
         }
 
         public void Claim(bool force = false)
         {
-            if (_context.UserId.Equals(_claimedBy, StringComparison.OrdinalIgnoreCase))
-            {
-                return;
-            }
-            if (_removedAt.HasValue)
-            {
-                return;
-            }
-            if (!force)
-            {
-                ThrowIfClaimedBySomeoneElse();
-            }
-            RaiseEvent(CreateEvent<TodoClaimed>());
+            throw new NotImplementedException();
         }
 
         public void Free(bool force = false)
         {
-            if (string.IsNullOrEmpty(_claimedBy))
-            {
-                return;
-            }
-            if (!force)
-            {
-                ThrowIfClaimedBySomeoneElse();
-            }
-            RaiseEvent(CreateEvent<TodoFreed>());
+            throw new NotImplementedException();
         }
 
         public void Tick(bool force = false)
         {
-            if (_tickedAt.HasValue)
-            {
-                return;
-            }
-            if (_removedAt.HasValue)
-            {
-                return;
-            }
-            if (!force)
-            {
-                ThrowIfClaimedBySomeoneElse();
-            }
-            RaiseEvent(CreateEvent<TodoTicked>());
+            throw new NotImplementedException();
         }
 
         public void Untick()
         {
-            if (_removedAt.HasValue)
-            {
-                return;
-            }
-            if (!_tickedAt.HasValue)
-            {
-                return;
-            }
-            RaiseEvent(CreateEvent<TodoUnticked>());
+            throw new NotImplementedException();
         }
 
         public void Remove(bool force = false)
         {
-            if (_removedAt.HasValue)
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<ITodoEvent> GetPendingEvents()
+        {
+            return _pendingEvents.AsEnumerable();
+        }
+
+        public void ClearPendingEvents()
+        {
+            _pendingEvents.Clear();
+        }
+
+        internal TodoData GetData()
+        {
+            return _data;
+        }
+
+        private void ConfigureStateMachine()
+        {
+            if (_data == null)
             {
-                return;
+                throw new InvalidOperationException("Data missing, cannot configure state machine.");
             }
-            if (!force)
-            {
-                ThrowIfClaimedBySomeoneElse();
-            }
-            RaiseEvent(CreateEvent<TodoRemoved>());
+
+            _stateMachine = new StateMachine<TodoState, TodoTrigger>(
+                () => (TodoState)Enum.Parse(typeof(TodoState), _data.State, ignoreCase: true),
+                state => _data.State = state.ToString().ToLowerInvariant()
+            );
+            _addTrigger = _stateMachine.SetTriggerParameters<string>(TodoTrigger.Add);
+            _claimTrigger = _stateMachine.SetTriggerParameters<string>(TodoTrigger.Claim);
+
+            _stateMachine.Configure(TodoState.Initial)
+                .Permit(TodoTrigger.Add, TodoState.Free);
+            _stateMachine.Configure(TodoState.Pending)
+                .Permit(TodoTrigger.Tick, TodoState.Done)
+                .Permit(TodoTrigger.Remove, TodoState.Removed);
+            _stateMachine.Configure(TodoState.Free)
+                .SubstateOf(TodoState.Pending)
+                .OnEntryFrom(_addTrigger, text =>
+                {
+                    _data.Text = text;
+                    _pendingEvents.Add(new TodoAdded
+                    {
+                        Id = _id,
+                        UserId = _context.UserId,
+                        Timestamp = DateTime.UtcNow,
+                        Text = _data.Text
+                    });
+                })
+                .Permit(TodoTrigger.Claim, TodoState.Claimed);
+            _stateMachine.Configure(TodoState.Claimed)
+                .SubstateOf(TodoState.Pending)
+                .OnEntryFrom(_claimTrigger, userId => _data.ClaimedBy = userId)
+                .PermitReentry(TodoTrigger.Claim)
+                .Permit(TodoTrigger.Free, TodoState.Free)
+                .OnExit(() => _data.ClaimedBy = null);
+            _stateMachine.Configure(TodoState.Done)
+                .Permit(TodoTrigger.Untick, TodoState.Free)
+                .Permit(TodoTrigger.Remove, TodoState.Removed);
         }
 
-        public IEnumerable<ITodoEvent> GetUncommittedEvents()
+        private enum TodoState
         {
-            return _uncommittedChanges.AsEnumerable();
+            Initial,
+            Pending,
+            Free,
+            Claimed,
+            Done,
+            Removed
         }
 
-        public void ClearUncommittedEvents()
+        private enum TodoTrigger
         {
-            _uncommittedChanges.Clear();
-        }
-
-        public void LoadFromHistory(IEnumerable<ITodoEvent> historicEvents)
-        {
-            foreach (var @event in historicEvents)
-            {
-                ApplyEvent(@event);
-            }
-        }
-
-        private void ThrowIfClaimedBySomeoneElse()
-        {
-            if (!string.IsNullOrEmpty(_claimedBy) &&
-                !_claimedBy.Equals(_context.UserId, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new TodoClaimedBySomeoneElseException(_claimedBy);
-            }
-        }
-
-        private void Apply(TodoAdded @event)
-        {
-            Id = @event.Id;
-            //_createdAt = @event.Timestamp;
-            //_text = @event.Text;
-        }
-
-        private void Apply(TodoRemoved @event)
-        {
-            _removedAt = @event.Timestamp;
-        }
-
-        private void Apply(TodoClaimed @event)
-        {
-            _claimedBy = @event.UserId;
-        }
-
-        private void Apply(TodoFreed @event)
-        {
-            _claimedBy = null;
-        }
-
-        private void Apply(TodoTicked @event)
-        {
-            _tickedAt = @event.Timestamp;
-            _claimedBy = null;
-        }
-
-        private void Apply(TodoUnticked @event)
-        {
-            _tickedAt = null;
-        }
-
-        private void RaiseEvent(ITodoEvent @event)
-        {
-            @event.OriginalVersion = Version;
-            ApplyEvent(@event);
-            _uncommittedChanges.Add(@event);
-        }
-
-        private void ApplyEvent(ITodoEvent @event)
-        {
-            if (@event.OriginalVersion != Version)
-            {
-                throw new TodoEventVersionMismatchException();
-            }
-            Version++;
-            Apply((dynamic)@event);
-        }
-
-        private TEvent CreateEvent<TEvent>() 
-            where TEvent : ITodoEvent, new()
-        {
-            if (_context == null)
-            {
-                throw new InvalidOperationException("Context missing.");
-            }
-            return new TEvent
-            {
-                Id = Id,
-                Timestamp = DateTime.UtcNow,
-                UserId = _context.UserId
-            };
+            Add,
+            Claim,
+            Free,
+            Tick,
+            Untick,
+            Remove
         }
     }
 }
