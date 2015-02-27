@@ -83,6 +83,20 @@ namespace SlashTodo.Core.Tests
                     uncommittedEvents.All(e => events.Contains(e)))), Times.Once);
         }
 
+        [Test]
+        public void SaveDoesNothingWhenThereAreNoUncommittedEvents()
+        {
+            // Arrange
+            var aggregate = new DummyAggregate();
+            Assert.That(aggregate.GetUncommittedEvents(), Is.Empty);
+
+            // Act
+            _repository.Save(aggregate);
+
+            // Assert
+            _eventStore.Verify(x => x.Save(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<IEnumerable<IDomainEvent>>()), Times.Never);
+        }
+
         public class DummyAggregate : Aggregate
         {
             private readonly List<IDomainEvent> _appliedEvents = new List<IDomainEvent>();
