@@ -49,6 +49,7 @@
     <Compile Include="AddTodoTests.cs" />
     <Compile Include="ClaimTodoTests.cs" />
     <Compile Include="RemoveTodoTests.cs" />
+    <Compile Include="RepositoryTests.cs" />
     <Compile Include="UntickTodoTests.cs" />
     <Compile Include="TickTodoTests.cs" />
     <Compile Include="FreeTodoTests.cs" />
