@@ -27,7 +27,8 @@ namespace SlashTodo.Core.Tests
             // Arrange
             var id = Guid.NewGuid();
             var context = TestHelpers.GetContext();
-            var text = " text ";
+            const string text = " text ";
+            var before = DateTime.UtcNow;
 
             // Act
             var todo = Todo.Add(id, context, text);
@@ -35,29 +36,9 @@ namespace SlashTodo.Core.Tests
             // Assert
             Assert.That(todo, Is.Not.Null);
             Assert.That(todo.Id, Is.EqualTo(id));
-            var data = todo.GetData();
-            Assert.That(data.ClaimedBy, Is.Null);
-            Assert.That(data.Text, Is.EqualTo(text.Trim()));
-        }
-
-        [Test]
-        public void AddTodoProducesPendingTodoAddedEvent()
-        {
-            // Arrange
-            var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
-            var text = " text ";
-            var before = DateTime.UtcNow;
-
-            // Act
-            var todo = Todo.Add(id, context, text);
-
-            // Assert
-            var @event = todo.GetPendingEvents().Single() as TodoAdded;
-            Assert.That(@event, Is.Not.Null);
-            Assert.That(@event.Id, Is.EqualTo(id));
-            Assert.That(@event.UserId, Is.EqualTo(context.UserId));
-            Assert.That(@event.Timestamp, Is.InRange(before, DateTime.UtcNow));
+            Assert.That(todo.Version, Is.EqualTo(1));
+            var @event = todo.GetUncommittedEvents().Single() as TodoAdded;
+            @event.AssertThatBasicDataIsCorrect(id, context, before, expectedOriginalVersion: 0);
             Assert.That(@event.Text, Is.EqualTo(text.Trim()));
         }
     }

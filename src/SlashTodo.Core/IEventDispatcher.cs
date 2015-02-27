@@ -7,9 +7,8 @@ using SlashTodo.Core.Domain;
 
 namespace SlashTodo.Core
 {
-    public interface ITodoRepository
+    public interface IEventDispatcher
     {
-        Todo GetById(Guid id);
-        void Save(Todo todo);
+        void Publish(IDomainEvent @event);
     }
 }

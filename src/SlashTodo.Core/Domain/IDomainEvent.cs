@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace SlashTodo.Core.Domain
 {
-    public interface ITodoEvent
+    public interface IDomainEvent
     {
         Guid Id { get; set; }
-        string UserId { get; set; }
         DateTime Timestamp { get; set; }
+        int OriginalVersion { get; set; }
     }
 }

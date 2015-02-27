@@ -7,17 +7,21 @@ using Stateless;
 
 namespace SlashTodo.Core.Domain
 {
-    public class Todo
+    public class Todo : Aggregate
     {
-        private readonly Guid _id;
-        private readonly TodoData _data;
-        private readonly TodoContext _context;
-        private readonly List<ITodoEvent> _pendingEvents = new List<ITodoEvent>(); 
+        private TodoState _state = TodoState.Initial;
         private StateMachine<TodoState, TodoTrigger> _stateMachine;
-        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<string> _addTrigger;
+        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid, string> _addTrigger;
         private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<string> _claimTrigger;
+        private string _text;
+        private string _claimedBy;
 
-        public Guid Id { get { return _id; } }
+        public TodoContext Context { get; set; }
+
+        public Todo()
+        {
+            ConfigureStateMachine();
+        }
 
         public static Todo Add(Guid id, TodoContext context, string text)
         {
@@ -25,29 +29,21 @@ namespace SlashTodo.Core.Domain
             {
                 throw new ArgumentNullException("text");
             }
-            var todo = new Todo(id, context, new TodoData
-            {
-                State = TodoState.Initial.ToString().ToLowerInvariant()
-            });
-            todo._stateMachine.Fire(todo._addTrigger, text.Trim());
-            return todo;
-        }
-
-        public Todo(Guid id, TodoContext context, TodoData data)
-        {
             if (context == null)
             {
                 throw new ArgumentNullException("context");
             }
-            if (data == null)
+            var todo = new Todo
             {
-                throw new ArgumentNullException("data");
+                Context = context
+            };
+            if (!todo._stateMachine.CanFire(TodoTrigger.Add))
+            {
+                throw new InvalidOperationException();
             }
-
-            _id = id;
-            _data = data;
-            _context = context;
-            ConfigureStateMachine();
+            todo.Id = id;
+            todo.RaiseEvent(new TodoAdded { Text = text.Trim() });
+            return todo;
         }
 
         public void Claim(bool force = false)
@@ -75,33 +71,33 @@ namespace SlashTodo.Core.Domain
             throw new NotImplementedException();
         }
 
-        public IEnumerable<ITodoEvent> GetPendingEvents()
+        protected override void RaiseEvent(IDomainEvent @event)
         {
-            return _pendingEvents.AsEnumerable();
+            if (Context == null)
+            {
+                throw new InvalidOperationException("Context is null.");
+            }
+            ((TodoEvent)@event).UserId = Context.UserId;
+            base.RaiseEvent(@event);
         }
 
-        public void ClearPendingEvents()
+        protected override void ApplyEventCore(IDomainEvent @event)
         {
-            _pendingEvents.Clear();
+            Apply((dynamic)@event);
         }
 
-        internal TodoData GetData()
+        private void Apply(TodoAdded @event)
         {
-            return _data;
+            _stateMachine.Fire(_addTrigger, @event.Id, @event.Text);
         }
 
         private void ConfigureStateMachine()
         {
-            if (_data == null)
-            {
-                throw new InvalidOperationException("Data missing, cannot configure state machine.");
-            }
-
             _stateMachine = new StateMachine<TodoState, TodoTrigger>(
-                () => (TodoState)Enum.Parse(typeof(TodoState), _data.State, ignoreCase: true),
-                state => _data.State = state.ToString().ToLowerInvariant()
+                () => _state,
+                state => _state = state
             );
-            _addTrigger = _stateMachine.SetTriggerParameters<string>(TodoTrigger.Add);
+            _addTrigger = _stateMachine.SetTriggerParameters<Guid, string>(TodoTrigger.Add);
             _claimTrigger = _stateMachine.SetTriggerParameters<string>(TodoTrigger.Claim);
 
             _stateMachine.Configure(TodoState.Initial)
@@ -111,24 +107,18 @@ namespace SlashTodo.Core.Domain
                 .Permit(TodoTrigger.Remove, TodoState.Removed);
             _stateMachine.Configure(TodoState.Free)
                 .SubstateOf(TodoState.Pending)
-                .OnEntryFrom(_addTrigger, text =>
+                .OnEntryFrom(_addTrigger, (id, text) =>
                 {
-                    _data.Text = text;
-                    _pendingEvents.Add(new TodoAdded
-                    {
-                        Id = _id,
-                        UserId = _context.UserId,
-                        Timestamp = DateTime.UtcNow,
-                        Text = _data.Text
-                    });
+                    Id = id;
+                    _text = text;
                 })
                 .Permit(TodoTrigger.Claim, TodoState.Claimed);
             _stateMachine.Configure(TodoState.Claimed)
                 .SubstateOf(TodoState.Pending)
-                .OnEntryFrom(_claimTrigger, userId => _data.ClaimedBy = userId)
+                .OnEntryFrom(_claimTrigger, userId => _claimedBy = userId)
                 .PermitReentry(TodoTrigger.Claim)
                 .Permit(TodoTrigger.Free, TodoState.Free)
-                .OnExit(() => _data.ClaimedBy = null);
+                .OnExit(() => _claimedBy = null);
             _stateMachine.Configure(TodoState.Done)
                 .Permit(TodoTrigger.Untick, TodoState.Free)
                 .Permit(TodoTrigger.Remove, TodoState.Removed);

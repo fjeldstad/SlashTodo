@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using SlashTodo.Core.Domain;
 
 namespace SlashTodo.Core.Tests
 {
     public static class TestHelpers
     {
-        public static Todo GetTodo(Guid? id = null, TodoContext context = null, TodoData data = null)
+        public static Todo GetTodo(TodoContext context = null)
         {
-            id = id ?? Guid.NewGuid();
-            context = context ?? GetContext();
-            data = data ?? GetData();
-            return new Todo(id.Value, context, data);
+            return new Todo()
+            {
+                Context = context ?? GetContext()
+            };
         }
 
         public static TodoContext GetContext(string teamId = "teamId", string conversationId = "conversationId", string userId = "userId")
@@ -27,14 +28,21 @@ namespace SlashTodo.Core.Tests
             };
         }
 
-        public static TodoData GetData(string state = "initial", string claimedBy = null, string text = "text")
+        public static void AssertThatBasicDataIsCorrect(
+            this TodoEvent @event, 
+            Guid id,
+            TodoContext context, 
+            DateTime earliestExpectedTimestamp,
+            int? expectedOriginalVersion = null)
         {
-            return new TodoData
+            Assert.That(@event, Is.Not.Null);
+            Assert.That(@event.Id, Is.EqualTo(id));
+            Assert.That(@event.Timestamp, Is.InRange(earliestExpectedTimestamp, DateTime.UtcNow));
+            Assert.That(@event.UserId, Is.EqualTo(context.UserId));
+            if (expectedOriginalVersion.HasValue)
             {
-                State = state,
-                ClaimedBy = claimedBy,
-                Text = text
-            };
+                Assert.That(@event.OriginalVersion, Is.EqualTo(expectedOriginalVersion.Value));
+            }
         }
     }
 }

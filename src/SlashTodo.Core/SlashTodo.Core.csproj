@@ -46,17 +46,17 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Domain\Events.cs" />
+    <Compile Include="Domain\Aggregate.cs" />
+    <Compile Include="Domain\TodoEvents.cs" />
     <Compile Include="Domain\Exceptions.cs" />
     <Compile Include="Domain\TodoData.cs" />
-    <Compile Include="Domain\ITodoEvent.cs" />
+    <Compile Include="Domain\IDomainEvent.cs" />
     <Compile Include="Domain\Todo.cs" />
-    <Compile Include="ITodoEventDispatcher.cs" />
-    <Compile Include="ITodoRepository.cs" />
-    <Compile Include="ITodoStore.cs" />
+    <Compile Include="IEventDispatcher.cs" />
+    <Compile Include="Repository.cs" />
+    <Compile Include="IEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Domain\TodoContext.cs" />
-    <Compile Include="TodoRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

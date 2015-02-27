@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace SlashTodo.Core.Domain
 {
-    public abstract class TodoEvent : ITodoEvent
+    public abstract class TodoEvent : IDomainEvent
     {
         public Guid Id { get; set; }
-        public string UserId { get; set; }
         public DateTime Timestamp { get; set; }
+        public int OriginalVersion { get; set; }
+        public string UserId { get; set; }
     }
 
     public class TodoAdded : TodoEvent
