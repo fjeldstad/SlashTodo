@@ -44,5 +44,21 @@ namespace SlashTodo.Core.Tests
                 Assert.That(@event.OriginalVersion, Is.EqualTo(expectedOriginalVersion.Value));
             }
         }
+
+        public static void AssertThrows<TException>(Action action, Predicate<TException> predicate) where TException : Exception
+        {
+            try
+            {
+                action();
+                Assert.Fail("Expected an exception of type {0} to be thrown.", typeof(TException).Name);
+            }
+            catch (TException ex)
+            {
+                if (!predicate(ex))
+                {
+                    Assert.Fail("The exception does not fulfil the expected criteria.");
+                }
+            }
+        }
     }
 }

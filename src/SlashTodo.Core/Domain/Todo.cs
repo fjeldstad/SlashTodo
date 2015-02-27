@@ -48,27 +48,81 @@ namespace SlashTodo.Core.Domain
 
         public void Claim(bool force = false)
         {
-            throw new NotImplementedException();
+            if (!_stateMachine.CanFire(TodoTrigger.Claim))
+            {
+                return;
+            }
+            if (_stateMachine.IsInState(TodoState.Claimed))
+            {
+                if (_claimedBy.Equals(Context.UserId))
+                {
+                    return;
+                }
+                if (!force)
+                {
+                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                }
+            }
+            RaiseEvent(new TodoClaimed());
         }
 
         public void Free(bool force = false)
         {
-            throw new NotImplementedException();
+            if (!_stateMachine.CanFire(TodoTrigger.Free))
+            {
+                return;
+            }
+            if (_stateMachine.IsInState(TodoState.Claimed))
+            {
+                if (!_claimedBy.Equals(Context.UserId) && 
+                    !force)
+                {
+                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                }
+            }
+            RaiseEvent(new TodoFreed());
         }
 
         public void Tick(bool force = false)
         {
-            throw new NotImplementedException();
+            if (!_stateMachine.CanFire(TodoTrigger.Tick))
+            {
+                return;
+            }
+            if (_stateMachine.IsInState(TodoState.Claimed))
+            {
+                if (!_claimedBy.Equals(Context.UserId) &&
+                    !force)
+                {
+                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                }
+            }
+            RaiseEvent(new TodoTicked());
         }
 
         public void Untick()
         {
-            throw new NotImplementedException();
+            if (_stateMachine.CanFire(TodoTrigger.Untick))
+            {
+                RaiseEvent(new TodoUnticked());
+            }
         }
 
         public void Remove(bool force = false)
         {
-            throw new NotImplementedException();
+            if (!_stateMachine.CanFire(TodoTrigger.Remove))
+            {
+                return;
+            }
+            if (_stateMachine.IsInState(TodoState.Claimed))
+            {
+                if (!_claimedBy.Equals(Context.UserId) &&
+                    !force)
+                {
+                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                }
+            }
+            RaiseEvent(new TodoRemoved());
         }
 
         protected override void RaiseEvent(IDomainEvent @event)
@@ -89,6 +143,31 @@ namespace SlashTodo.Core.Domain
         private void Apply(TodoAdded @event)
         {
             _stateMachine.Fire(_addTrigger, @event.Id, @event.Text);
+        }
+
+        private void Apply(TodoClaimed @event)
+        {
+            _stateMachine.Fire(_claimTrigger, @event.UserId);
+        }
+
+        private void Apply(TodoFreed @event)
+        {
+            _stateMachine.Fire(TodoTrigger.Free);
+        }
+
+        private void Apply(TodoTicked @event)
+        {
+            _stateMachine.Fire(TodoTrigger.Tick);
+        }
+
+        private void Apply(TodoUnticked @event)
+        {
+            _stateMachine.Fire(TodoTrigger.Untick);
+        }
+
+        private void Apply(TodoRemoved @event)
+        {
+            _stateMachine.Fire(TodoTrigger.Remove);
         }
 
         private void ConfigureStateMachine()
