@@ -45,6 +45,26 @@ namespace SlashTodo.Core.Tests
         }
 
         [Test]
+        public void AggregateBuiltFromHistoricEventsHasNoUncommittedEvents()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var events = new[]
+            {
+                new Mock<IDomainEvent>().Object,
+                new Mock<IDomainEvent>().Object,
+                new Mock<IDomainEvent>().Object
+            };
+            _eventStore.Setup(x => x.GetByAggregateId(id)).Returns(events);
+
+            // Act
+            var aggregate = _repository.GetById(id);
+
+            // Assert
+            Assert.That(aggregate.GetUncommittedEvents(), Is.Empty);
+        }
+
+        [Test]
         public void RepositoryReturnsNullWhenNoEventsExistForAggregateId()
         {
             // Arrange
