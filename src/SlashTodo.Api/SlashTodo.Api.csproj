@@ -126,9 +126,7 @@
     <Compile Include="Configuration\IAzureSettings.cs" />
     <Compile Include="Infrastructure\AzureSettings.cs" />
     <Compile Include="Infrastructure\AzureTableEventStore.cs" />
-    <Compile Include="Infrastructure\CurrentRequest.cs" />
     <Compile Include="Infrastructure\CustomJsonSerializer.cs" />
-    <Compile Include="Infrastructure\ICurrentRequest.cs" />
     <Compile Include="Infrastructure\SettingsBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SlashCommandModule.cs" />

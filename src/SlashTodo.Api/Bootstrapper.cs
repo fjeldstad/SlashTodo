@@ -18,16 +18,5 @@ namespace SlashTodo.Api
             base.ConfigureApplicationContainer(container);
             container.Register<JsonSerializer, CustomJsonSerializer>();
         }
-
-        protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
-        {
-            base.ApplicationStartup(container, pipelines);
-        }
-
-        protected override void ConfigureRequestContainer(TinyIoCContainer container, NancyContext context)
-        {
-            base.ConfigureRequestContainer(container, context);
-            container.Register<ICurrentRequest, CurrentRequest>();
-        }
     }
 }
