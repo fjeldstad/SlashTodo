@@ -23,7 +23,7 @@ namespace SlashTodo.Core.Tests
         }
 
         [Test]
-        public void CanBuildAggregateFromEvents()
+        public async Task CanBuildAggregateFromEvents()
         {
             // Arrange
             var id = Guid.NewGuid();
@@ -33,10 +33,10 @@ namespace SlashTodo.Core.Tests
                 new Mock<IDomainEvent>().Object,
                 new Mock<IDomainEvent>().Object
             };
-            _eventStore.Setup(x => x.GetByAggregateId(id)).Returns(events);
+            _eventStore.Setup(x => x.GetById(id)).Returns(Task.FromResult<IEnumerable<IDomainEvent>>(events));
 
             // Act
-            var aggregate = _repository.GetById(id);
+            var aggregate = await _repository.GetById(id);
 
             // Assert
             var appliedEvents = aggregate.GetAppliedEvents().ToArray();
@@ -45,7 +45,7 @@ namespace SlashTodo.Core.Tests
         }
 
         [Test]
-        public void AggregateBuiltFromHistoricEventsHasNoUncommittedEvents()
+        public async Task AggregateBuiltFromHistoricEventsHasNoUncommittedEvents()
         {
             // Arrange
             var id = Guid.NewGuid();
@@ -55,31 +55,31 @@ namespace SlashTodo.Core.Tests
                 new Mock<IDomainEvent>().Object,
                 new Mock<IDomainEvent>().Object
             };
-            _eventStore.Setup(x => x.GetByAggregateId(id)).Returns(events);
+            _eventStore.Setup(x => x.GetById(id)).Returns(Task.FromResult<IEnumerable<IDomainEvent>>(events));
 
             // Act
-            var aggregate = _repository.GetById(id);
+            var aggregate = await _repository.GetById(id);
 
             // Assert
             Assert.That(aggregate.GetUncommittedEvents(), Is.Empty);
         }
 
         [Test]
-        public void RepositoryReturnsNullWhenNoEventsExistForAggregateId()
+        public async Task RepositoryReturnsNullWhenNoEventsExistForAggregateId()
         {
             // Arrange
             var id = Guid.NewGuid();
-            _eventStore.Setup(x => x.GetByAggregateId(id)).Returns(new IDomainEvent[0]);
+            _eventStore.Setup(x => x.GetById(id)).Returns(Task.FromResult<IEnumerable<IDomainEvent>>(new IDomainEvent[0]));
 
             // Act
-            var aggregate = _repository.GetById(id);
+            var aggregate = await _repository.GetById(id);
 
             // Assert
             Assert.That(aggregate, Is.Null);
         }
 
         [Test]
-        public void SaveCallsEventStoreSaveWithCorrectArguments()
+        public async Task SaveCallsEventStoreSaveWithCorrectArguments()
         {
             // Arrange
             var id = Guid.NewGuid();
@@ -92,7 +92,7 @@ namespace SlashTodo.Core.Tests
             Assert.That(uncommittedEvents, Is.Not.Empty);
 
             // Act
-            _repository.Save(aggregate);
+            await _repository.Save(aggregate);
 
             // Assert
             _eventStore.Verify(x => x.Save(
@@ -104,14 +104,14 @@ namespace SlashTodo.Core.Tests
         }
 
         [Test]
-        public void SaveDoesNothingWhenThereAreNoUncommittedEvents()
+        public async Task SaveDoesNothingWhenThereAreNoUncommittedEvents()
         {
             // Arrange
             var aggregate = new DummyAggregate();
             Assert.That(aggregate.GetUncommittedEvents(), Is.Empty);
 
             // Act
-            _repository.Save(aggregate);
+            await _repository.Save(aggregate);
 
             // Assert
             _eventStore.Verify(x => x.Save(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<IEnumerable<IDomainEvent>>()), Times.Never);

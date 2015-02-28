@@ -16,9 +16,9 @@ namespace SlashTodo.Core
             _eventStore = eventStore;
         } 
 
-        public T GetById(Guid id)
+        public async Task<T> GetById(Guid id)
         {
-            var events = _eventStore.GetByAggregateId(id).ToArray();
+            var events = (await _eventStore.GetById(id)).ToArray();
             if (!events.Any())
             {
                 return null;
@@ -28,7 +28,7 @@ namespace SlashTodo.Core
             return aggregate;
         }
 
-        public void Save(T aggregate)
+        public async Task Save(T aggregate)
         {
             if (aggregate == null)
             {
@@ -37,7 +37,7 @@ namespace SlashTodo.Core
             var uncommittedEvents = aggregate.GetUncommittedEvents().ToArray();
             if (uncommittedEvents.Any())
             {
-                _eventStore.Save(aggregate.Id, uncommittedEvents.First().OriginalVersion, uncommittedEvents);
+                await _eventStore.Save(aggregate.Id, uncommittedEvents.First().OriginalVersion, uncommittedEvents);
             }
         }
     }
