@@ -46,6 +46,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="AddTodoTests.cs" />
     <Compile Include="ClaimTodoTests.cs" />
     <Compile Include="RemoveTodoTests.cs" />
@@ -60,12 +63,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SlashTodo.Core\SlashTodo.Core.csproj">
+    <ProjectReference Include="..\..\SlashTodo.Core\SlashTodo.Core.csproj">
       <Project>{53f70269-9818-4b4d-8ef6-568db8276bbb}</Project>
       <Name>SlashTodo.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

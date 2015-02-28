@@ -8,5 +8,3 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("c535708a-e104-41aa-a9a2-66c67be7786a")]
-
-[assembly:InternalsVisibleTo("SlashTodo.Core.Tests")]

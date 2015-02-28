@@ -3,21 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core", "Z:\Work\SlashTodo\src\SlashTodo.Core\SlashTodo.Core.csproj", "{53F70269-9818-4B4D-8EF6-568DB8276BBB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A31932B8-DDCD-460B-BCF3-9352C49DF704}"
 	ProjectSection(SolutionItems) = preProject
 		..\readme.md = ..\readme.md
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Api", "Z:\Work\SlashTodo\src\SlashTodo.Api\SlashTodo.Api.csproj", "{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core.Tests", "Z:\Work\SlashTodo\src\SlashTodo.Core.Tests\SlashTodo.Core.Tests.csproj", "{82C1A30B-378C-4381-A3E1-DCB24DD67D83}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Api.Tests", "SlashTodo.Api.Tests\SlashTodo.Api.Tests.csproj", "{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{8317C0CB-5273-44E7-96C1-1484EA989871}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Api.Tests", "Tests\SlashTodo.Api.Tests\SlashTodo.Api.Tests.csproj", "{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core.Tests", "Tests\SlashTodo.Core.Tests\SlashTodo.Core.Tests.csproj", "{82C1A30B-378C-4381-A3E1-DCB24DD67D83}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core", "SlashTodo.Core\SlashTodo.Core.csproj", "{53F70269-9818-4B4D-8EF6-568DB8276BBB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Api", "SlashTodo.Api\SlashTodo.Api.csproj", "{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,6 +25,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Release|Any CPU.Build.0 = Release|Any CPU
 		{53F70269-9818-4B4D-8EF6-568DB8276BBB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{53F70269-9818-4B4D-8EF6-568DB8276BBB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53F70269-9818-4B4D-8EF6-568DB8276BBB}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,16 +41,12 @@ Global
 		{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}.Release|Any CPU.Build.0 = Release|Any CPU
-		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{82C1A30B-378C-4381-A3E1-DCB24DD67D83}.Release|Any CPU.Build.0 = Release|Any CPU
-		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{250EB7D0-421A-4334-BD7A-483DF0DBF3DA} = {8317C0CB-5273-44E7-96C1-1484EA989871}
+		{82C1A30B-378C-4381-A3E1-DCB24DD67D83} = {8317C0CB-5273-44E7-96C1-1484EA989871}
 	EndGlobalSection
 EndGlobal

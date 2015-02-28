@@ -2,9 +2,9 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("SlashTodo.Api")]
+[assembly: AssemblyTitle("SlashTodo.Api.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: Guid("96490e91-7983-4519-a64d-df980a12d8c7")]
+[assembly: Guid("a39617ec-5bfa-4de6-a788-8a19f2344da9")]

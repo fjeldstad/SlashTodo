@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
+using Moq;
 using NUnit.Framework;
 using SlashTodo.Api.Configuration;
 using SlashTodo.Api.Infrastructure;
@@ -15,7 +16,7 @@ namespace SlashTodo.Api.Tests
     [TestFixture]
     public class AzureTableEventStoreTests
     {
-        private readonly IAzureSettings _azureSettings = new AzureSettings(new AppSettings());
+        private readonly AzureSettings _azureSettings = new AzureSettings(new AppSettings());
         private AzureTableEventStore _eventStore;
 
         [SetUp]
@@ -23,7 +24,7 @@ namespace SlashTodo.Api.Tests
         {
             // Reference a different table for each test to ensure isolation.
             _eventStore = new AzureTableEventStore(
-                _azureSettings,
+                _azureSettings, 
                 string.Format("test{0}", Guid.NewGuid().ToString("N")));
             var table = GetTableForEventStore();
             table.CreateIfNotExists();
