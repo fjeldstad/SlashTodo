@@ -23,5 +23,11 @@ namespace SlashTodo.Api
         {
             base.ApplicationStartup(container, pipelines);
         }
+
+        protected override void ConfigureRequestContainer(TinyIoCContainer container, NancyContext context)
+        {
+            base.ConfigureRequestContainer(container, context);
+            container.Register<ICurrentRequest, CurrentRequest>();
+        }
     }
 }
