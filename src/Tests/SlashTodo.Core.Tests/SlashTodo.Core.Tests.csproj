@@ -67,6 +67,7 @@
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AccountTests\AccountActivationTests.cs" />
     <Compile Include="AccountTests\UpdateSlashCommandTokenTests.cs" />
     <Compile Include="AccountTests\UpdateIncomingWebhookUrlTests.cs" />
     <Compile Include="AccountTests\CreateAccountTests.cs" />

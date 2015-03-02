@@ -73,22 +73,5 @@ namespace SlashTodo.Core.Tests.AccountTests
                 @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
             }
         }
-
-        [Test]
-        public void SettingIncomingWebhookUrlActivatesAccountIfSlashCommandTokenHasBeenConfigured()
-        {
-            // Arrange
-            var incomingWebhookUrl = new Uri("https://test.slashtodo.com");
-            var id = Guid.NewGuid();
-            var account = Account.Create(id, "teamId");
-            account.UpdateSlashCommandToken("slashCommandToken");
-            account.ClearUncommittedEvents();
-
-            // Act
-            account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
-
-            // Assert
-            Assert.That(account.GetUncommittedEvents().Any(x => x is AccountActivated));
-        }
     }
 }
