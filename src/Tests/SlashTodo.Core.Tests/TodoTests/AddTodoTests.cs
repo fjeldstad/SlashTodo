@@ -26,7 +26,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
+            var context = TodoTestHelpers.GetContext();
             const string text = " text ";
             var before = DateTime.UtcNow;
 

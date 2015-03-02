@@ -67,10 +67,15 @@
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AccountTests\UpdateSlashCommandTokenTests.cs" />
+    <Compile Include="AccountTests\UpdateIncomingWebhookUrlTests.cs" />
+    <Compile Include="AccountTests\CreateAccountTests.cs" />
+    <Compile Include="AccountTests\AccountTestHelpers.cs" />
     <Compile Include="TodoTests\AddTodoTests.cs" />
     <Compile Include="TodoTests\ClaimTodoTests.cs" />
     <Compile Include="TodoTests\RemoveTodoTests.cs" />
     <Compile Include="RepositoryTests.cs" />
+    <Compile Include="TodoTests\TodoTestHelpers.cs" />
     <Compile Include="TodoTests\UntickTodoTests.cs" />
     <Compile Include="TodoTests\TickTodoTests.cs" />
     <Compile Include="TodoTests\FreeTodoTests.cs" />
@@ -86,9 +91,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="AccountTests\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

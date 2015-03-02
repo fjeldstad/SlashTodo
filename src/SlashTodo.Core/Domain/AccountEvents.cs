@@ -17,4 +17,18 @@ namespace SlashTodo.Core.Domain
     {
         public string TeamId { get; set; }
     }
+
+    public class AccountSlashCommandTokenUpdated : AccountEvent
+    {
+        public string SlashCommandToken { get; set; }
+    }
+
+    public class AccountIncomingWebhookUpdated : AccountEvent
+    {
+        public Uri IncomingWebhookUrl { get; set; }
+    }
+
+    public class AccountActivated : AccountEvent
+    {
+    }
 }

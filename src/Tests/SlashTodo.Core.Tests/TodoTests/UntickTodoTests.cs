@@ -16,7 +16,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
+            var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
             todo.Tick();
             todo.ClearUncommittedEvents();
@@ -36,7 +36,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
+            var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
             todo.Tick();
             todo.ClearUncommittedEvents();
@@ -55,7 +55,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
+            var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
             todo.Remove();
             todo.ClearUncommittedEvents();

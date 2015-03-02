@@ -16,7 +16,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
+            var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
             todo.ClearUncommittedEvents();
             var before = DateTime.UtcNow;
@@ -35,7 +35,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
+            var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
             todo.ClearUncommittedEvents();
 
@@ -53,13 +53,13 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var otherUserContext = TestHelpers.GetContext(userId: "otherUserId");
+            var otherUserContext = TodoTestHelpers.GetContext(userId: "otherUserId");
             var todo = Todo.Add(id, otherUserContext, "text");
             todo.Claim();
             todo.ClearUncommittedEvents();
 
             // Act & assert
-            todo.Context = TestHelpers.GetContext();
+            todo.Context = TodoTestHelpers.GetContext();
             TestHelpers.AssertThrows<TodoClaimedBySomeoneElseException>(
                 () => todo.Remove(),
                 ex => ex.ClaimedBy == otherUserContext.UserId);
@@ -70,7 +70,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var otherUserContext = TestHelpers.GetContext(userId: "otherUserId");
+            var otherUserContext = TodoTestHelpers.GetContext(userId: "otherUserId");
             var todo = Todo.Add(id, otherUserContext, "text");
             todo.Claim();
             todo.ClearUncommittedEvents();
@@ -78,7 +78,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             var before = DateTime.UtcNow;
 
             // Act
-            var context = todo.Context = TestHelpers.GetContext();
+            var context = todo.Context = TodoTestHelpers.GetContext();
             todo.Remove(force: true);
 
             // Assert
@@ -91,7 +91,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
+            var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
             todo.Claim();
             todo.ClearUncommittedEvents();
