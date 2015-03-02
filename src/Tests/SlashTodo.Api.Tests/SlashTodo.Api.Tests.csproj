@@ -106,7 +106,9 @@
     <None Include="Secret.template.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Secret.config" />
+    <None Include="Secret.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SlashTodo.Api\SlashTodo.Api.csproj">
