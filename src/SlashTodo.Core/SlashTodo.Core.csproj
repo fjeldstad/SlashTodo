@@ -64,6 +64,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Domain\Account.cs" />
+    <Compile Include="Domain\AccountEvents.cs" />
     <Compile Include="Domain\Aggregate.cs" />
     <Compile Include="Domain\TodoEvents.cs" />
     <Compile Include="Domain\Exceptions.cs" />

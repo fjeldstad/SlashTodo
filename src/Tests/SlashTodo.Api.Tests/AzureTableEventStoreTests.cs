@@ -37,7 +37,7 @@ namespace SlashTodo.Api.Tests
             // Note that according to MSDN, deleting a table can take minutes,
             // so we won't hang around waiting for the result.
             var table = GetTableForEventStore();
-            table.DeleteIfExistsAsync();
+            table.DeleteIfExists();
         }
 
         [Test]

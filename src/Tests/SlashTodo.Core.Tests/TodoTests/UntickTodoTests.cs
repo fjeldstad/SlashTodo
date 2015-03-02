@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
 
-namespace SlashTodo.Core.Tests
+namespace SlashTodo.Core.Tests.TodoTests
 {
     [TestFixture]
     public class UntickTodoTests

@@ -131,6 +131,8 @@ namespace SlashTodo.Core.Domain
             {
                 throw new InvalidOperationException("Context is null.");
             }
+            ((TodoEvent)@event).TeamId = Context.TeamId;
+            ((TodoEvent)@event).ConversationId = Context.ConversationId;
             ((TodoEvent)@event).UserId = Context.UserId;
             base.RaiseEvent(@event);
         }

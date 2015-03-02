@@ -6,67 +6,52 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
 
-namespace SlashTodo.Core.Tests
+namespace SlashTodo.Core.Tests.TodoTests
 {
     [TestFixture]
-    public class TickTodoTests
+    public class FreeTodoTests
     {
         [Test]
-        public void CanTickTodo()
+        public void CanFreeTodo()
         {
             // Arrange
             var id = Guid.NewGuid();
             var context = TestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
+            todo.Claim();
             todo.ClearUncommittedEvents();
             var before = DateTime.UtcNow;
             var originalVersion = todo.Version;
 
             // Act
-            todo.Tick();
+            todo.Free();
 
             // Assert
-            var @event = todo.GetUncommittedEvents().Single() as TodoTicked;
+            var @event = todo.GetUncommittedEvents().Single() as TodoFreed;
             @event.AssertThatBasicDataIsCorrect(id, context, before, expectedOriginalVersion: originalVersion);
         }
 
         [Test]
-        public void TickTodoIsIdempotentOperation()
+        public void FreeTodoIsIdempotentOperation()
         {
             // Arrange
             var id = Guid.NewGuid();
             var context = TestHelpers.GetContext();
             var todo = Todo.Add(id, context, "text");
+            todo.Claim();
             todo.ClearUncommittedEvents();
 
             // Act
-            todo.Tick();
-            todo.Tick();
-            todo.Tick();
+            todo.Free();
+            todo.Free();
+            todo.Free();
 
             // Assert
             Assert.That(todo.GetUncommittedEvents().Count(), Is.EqualTo(1));
         }
 
         [Test]
-        public void TickingRemovedTodoDoesNothing()
-        {
-            // Arrange
-            var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
-            var todo = Todo.Add(id, context, "text");
-            todo.Remove();
-            todo.ClearUncommittedEvents();
-
-            // Act
-            todo.Tick();
-
-            // Assert
-            Assert.That(todo.GetUncommittedEvents(), Is.Empty);
-        }
-
-        [Test]
-        public void CannotTickTodoThatIsClaimedBySomeoneElseWithoutUsingForce()
+        public void CannotFreeTodoThatIsClaimedBySomeoneElseWithoutUsingForce()
         {
             // Arrange
             var id = Guid.NewGuid();
@@ -78,12 +63,12 @@ namespace SlashTodo.Core.Tests
             // Act & assert
             todo.Context = TestHelpers.GetContext();
             TestHelpers.AssertThrows<TodoClaimedBySomeoneElseException>(
-                () => todo.Tick(),
+                () => todo.Free(),
                 ex => ex.ClaimedBy == otherUserContext.UserId);
         }
 
         [Test]
-        public void CanTickTodoThatIsClaimedBySomeoneElseWhenUsingForce()
+        public void CanFreeTodoThatIsClaimedBySomeoneElseWhenUsingForce()
         {
             // Arrange
             var id = Guid.NewGuid();
@@ -96,30 +81,10 @@ namespace SlashTodo.Core.Tests
 
             // Act
             var context = todo.Context = TestHelpers.GetContext();
-            todo.Tick(force: true);
+            todo.Free(force: true);
 
             // Assert
-            var @event = todo.GetUncommittedEvents().Single() as TodoTicked;
-            @event.AssertThatBasicDataIsCorrect(id, context, before, expectedOriginalVersion: originalVersion);
-        }
-
-        [Test]
-        public void CanTickTodoThatIsClaimedBySameUserWithoutUsingForce()
-        {
-            // Arrange
-            var id = Guid.NewGuid();
-            var context = TestHelpers.GetContext();
-            var todo = Todo.Add(id, context, "text");
-            todo.Claim();
-            todo.ClearUncommittedEvents();
-            var originalVersion = todo.Version;
-            var before = DateTime.UtcNow;
-
-            // Act
-            todo.Tick();
-
-            // Assert
-            var @event = todo.GetUncommittedEvents().Single() as TodoTicked;
+            var @event = todo.GetUncommittedEvents().Single() as TodoFreed;
             @event.AssertThatBasicDataIsCorrect(id, context, before, expectedOriginalVersion: originalVersion);
         }
     }
