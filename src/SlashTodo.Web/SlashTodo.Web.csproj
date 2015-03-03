@@ -113,6 +113,9 @@
     <Content Include="Secret.template.config">
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="Views\_Layout.cshtml" />
+    <Content Include="Authentication\Views\AuthenticationFailed.cshtml" />
+    <Content Include="Views\Start.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -129,10 +132,17 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Authentication\AuthenticationModule.cs" />
+    <Compile Include="Bootstrapper.cs" />
+    <Compile Include="SessionBasedOAuthState.cs" />
+    <Compile Include="ViewModels\EmptyViewModel.cs" />
     <Compile Include="HomeModule.cs" />
+    <Compile Include="ViewModels\IViewModelFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="TinyMessenger.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="ViewModels\ViewModelFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SlashTodo.Core\SlashTodo.Core.csproj">

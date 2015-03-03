@@ -76,8 +76,11 @@
     <Compile Include="Configuration\AzureSettings.cs" />
     <Compile Include="Configuration\IAppSettings.cs" />
     <Compile Include="Configuration\IAzureSettings.cs" />
+    <Compile Include="Configuration\ISlackSettings.cs" />
     <Compile Include="Configuration\SettingsBase.cs" />
+    <Compile Include="Configuration\SlackSettings.cs" />
     <Compile Include="CustomJsonSerializer.cs" />
+    <Compile Include="IOAuthState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
