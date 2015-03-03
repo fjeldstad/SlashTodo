@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Core", "SlashTodo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Api", "SlashTodo.Api\SlashTodo.Api.csproj", "{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Web", "SlashTodo.Web\SlashTodo.Web.csproj", "{7D80BCBA-44FE-4E32-9026-707E659DD12D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,14 @@ Global
 		{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}.Production|Any CPU.Build.0 = Production|Any CPU
 		{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD2F7DEE-5726-44B4-8DD0-CB22A22BBE75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Development|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Development|Any CPU.Build.0 = Debug|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Production|Any CPU.ActiveCfg = Release|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Production|Any CPU.Build.0 = Release|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D80BCBA-44FE-4E32-9026-707E659DD12D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
