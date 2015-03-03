@@ -113,12 +113,6 @@
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
-    <None Include="Web.Development.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
-    <None Include="Web.Production.config">
-      <DependentUpon>Web.config</DependentUpon>
-    </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -131,13 +125,6 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Bootstrapper.cs" />
-    <Compile Include="Configuration\AppSettings.cs" />
-    <Compile Include="Configuration\IAppSettings.cs" />
-    <Compile Include="Configuration\IAzureSettings.cs" />
-    <Compile Include="Infrastructure\AzureSettings.cs" />
-    <Compile Include="Infrastructure\AzureTableEventStore.cs" />
-    <Compile Include="Infrastructure\CustomJsonSerializer.cs" />
-    <Compile Include="Infrastructure\SettingsBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SlashCommandModule.cs" />
     <Compile Include="Startup.cs" />
@@ -147,6 +134,10 @@
     <ProjectReference Include="..\SlashTodo.Core\SlashTodo.Core.csproj">
       <Project>{53f70269-9818-4b4d-8ef6-568db8276bbb}</Project>
       <Name>SlashTodo.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SlashTodo.Infrastructure\SlashTodo.Infrastructure.csproj">
+      <Project>{57a0ecad-268a-4dd4-a2e9-90bb5c620017}</Project>
+      <Name>SlashTodo.Infrastructure</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

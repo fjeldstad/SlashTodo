@@ -14,6 +14,11 @@ namespace SlashTodo.Web
             {
                 return "Welcome!";
             };
+
+            //Get["/signup"] = _ =>
+            //{
+
+            //};
         }
     }
 }

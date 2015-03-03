@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using SlashTodo.Api.Configuration;
 
-namespace SlashTodo.Api.Infrastructure
+namespace SlashTodo.Infrastructure.Configuration
 {
     public abstract class SettingsBase
     {

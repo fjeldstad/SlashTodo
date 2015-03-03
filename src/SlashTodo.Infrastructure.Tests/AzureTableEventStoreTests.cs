@@ -7,11 +7,10 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Moq;
 using NUnit.Framework;
-using SlashTodo.Api.Configuration;
-using SlashTodo.Api.Infrastructure;
 using SlashTodo.Core.Domain;
+using SlashTodo.Infrastructure.Configuration;
 
-namespace SlashTodo.Api.Tests
+namespace SlashTodo.Infrastructure.Tests
 {
     [TestFixture]
     public class AzureTableEventStoreTests

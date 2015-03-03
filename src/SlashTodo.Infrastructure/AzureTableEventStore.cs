@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.UI.WebControls;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using Newtonsoft.Json;
-using SlashTodo.Api.Configuration;
+using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Core;
 using SlashTodo.Core.Domain;
 
-namespace SlashTodo.Api.Infrastructure
+namespace SlashTodo.Infrastructure
 {
     public class AzureTableEventStore : IEventStore
     {

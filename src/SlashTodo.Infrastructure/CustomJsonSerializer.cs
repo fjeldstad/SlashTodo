@@ -5,7 +5,7 @@ using System.Web;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace SlashTodo.Api.Infrastructure
+namespace SlashTodo.Infrastructure
 {
     public class CustomJsonSerializer : JsonSerializer
     {

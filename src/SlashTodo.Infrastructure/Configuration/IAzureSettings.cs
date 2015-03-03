@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SlashTodo.Api.Configuration
+namespace SlashTodo.Infrastructure.Configuration
 {
     public interface IAzureSettings
     {

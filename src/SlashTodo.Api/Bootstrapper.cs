@@ -6,7 +6,7 @@ using Nancy;
 using Nancy.Bootstrapper;
 using Nancy.TinyIoc;
 using Newtonsoft.Json;
-using SlashTodo.Api.Infrastructure;
+using SlashTodo.Infrastructure;
 using SlashTodo.Core;
 
 namespace SlashTodo.Api
