@@ -23,7 +23,7 @@ namespace SlashTodo.Infrastructure.Tests
         {
             // Reference a different table for each test to ensure isolation.
             _eventStore = new AzureTableEventStore(
-                _azureSettings, 
+                CloudStorageAccount.Parse(_azureSettings.StorageConnectionString), 
                 string.Format("test{0}", Guid.NewGuid().ToString("N")));
             var table = GetTableForEventStore();
             table.CreateIfNotExists();

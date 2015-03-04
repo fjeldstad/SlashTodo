@@ -13,6 +13,7 @@ namespace SlashTodo.Infrastructure.Configuration
         public Uri OAuthAuthorizationUrl { get { return new Uri(AppSettings.Get("slack:OAuthAuthorizationUrl")); } }
         public Uri OAuthRedirectUrl { get { return new Uri(AppSettings.Get("slack:OAuthRedirectUrl")); } }
         public string OAuthScope { get { return AppSettings.Get("slack:OAuthScope"); } }
+        public string ApiBaseUrl { get { return AppSettings.Get("slack:ApiBaseUrl").TrimEnd('/'); } }
 
         public SlackSettings(IAppSettings appSettings)
             : base(appSettings)

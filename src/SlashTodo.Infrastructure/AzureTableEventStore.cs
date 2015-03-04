@@ -14,26 +14,22 @@ namespace SlashTodo.Infrastructure
 {
     public class AzureTableEventStore : IEventStore
     {
-        private readonly string _storageConnectionString;
+        private readonly CloudStorageAccount _storageAccount;
         private readonly string _tableName;
 
         public string TableName { get { return _tableName; } }
 
-        public AzureTableEventStore(IAzureSettings settings, string tableName)
+        public AzureTableEventStore(CloudStorageAccount storageAccount, string tableName)
         {
-            if (settings == null)
+            if (storageAccount == null)
             {
-                throw new ArgumentNullException("settings");
-            }
-            if (string.IsNullOrWhiteSpace(settings.StorageConnectionString))
-            {
-                throw new ArgumentException("Azure table storage connection string missing from configuration.");
+                throw new ArgumentNullException("storageAccount");
             }
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 throw new ArgumentNullException("tableName");
             }
-            _storageConnectionString = settings.StorageConnectionString;
+            _storageAccount = storageAccount;
             _tableName = tableName;
         }
 
@@ -89,8 +85,7 @@ namespace SlashTodo.Infrastructure
 
         private async Task<CloudTable> GetTable()
         {
-            var storageAccount = CloudStorageAccount.Parse(_storageConnectionString);
-            var tableClient = storageAccount.CreateCloudTableClient();
+            var tableClient = _storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference(_tableName);
             await table.CreateIfNotExistsAsync();
             return table;
