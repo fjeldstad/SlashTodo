@@ -86,8 +86,10 @@
     <Compile Include="AzureTableEventStore.cs" />
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\AzureSettings.cs" />
+    <Compile Include="Configuration\HostSettings.cs" />
     <Compile Include="Configuration\IAppSettings.cs" />
     <Compile Include="Configuration\IAzureSettings.cs" />
+    <Compile Include="Configuration\IHostSettings.cs" />
     <Compile Include="Configuration\ISlackSettings.cs" />
     <Compile Include="Configuration\SettingsBase.cs" />
     <Compile Include="Configuration\SlackSettings.cs" />

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using Nancy;
 using Nancy.Authentication.Forms;
+using Nancy.Security;
 using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
@@ -21,8 +22,11 @@ namespace SlashTodo.Web.Authentication
             IOAuthState oAuthState,
             ISlackApi slackApi,
             AccountKit accountKit,
-            UserKit userKit)
+            UserKit userKit,
+            IHostSettings hostSettings)
         {
+            this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
+
             Get["/login"] = _ =>
             {
                 var authorizationUrl = new UriBuilder(slackSettings.OAuthAuthorizationUrl);
@@ -105,7 +109,7 @@ namespace SlashTodo.Web.Authentication
                 // Get the account associated with the user's team, create if it
                 // does not already exist.
                 var account = accountKit.Query.BySlackTeamId(authTest.TeamId) ??
-                              Account.Create(Guid.NewGuid(), authTest.TeamId);
+                              Core.Domain.Account.Create(Guid.NewGuid(), authTest.TeamId);
 
                 account.UpdateSlackTeamName(authTest.TeamName);
                 accountKit.Repository.Save(account).Wait(); // TODO Await instead

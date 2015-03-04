@@ -13,6 +13,6 @@ namespace SlashTodo.Web
     {
         public IAccountLookup Lookup { get; set; }
         public IAccountQuery Query { get; set; }
-        public IRepository<Account> Repository { get; set; } 
+        public IRepository<Core.Domain.Account> Repository { get; set; } 
     }
 }

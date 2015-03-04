@@ -9,6 +9,6 @@ namespace SlashTodo.Web.Queries
 {
     public interface IAccountQuery
     {
-        Account BySlackTeamId(string slackTeamId);
+        Core.Domain.Account BySlackTeamId(string slackTeamId);
     }
 }

@@ -27,6 +27,7 @@ namespace SlashTodo.Web.Tests
     [TestFixture]
     public class AuthenticationTests
     {
+        private Mock<IHostSettings> _hostSettingsMock;
         private Mock<ISlackSettings> _slackSettingsMock;
         private Mock<IOAuthState> _oAuthStateMock;
         private Mock<ISlackApi> _slackApiMock;
@@ -41,12 +42,13 @@ namespace SlashTodo.Web.Tests
         [SetUp]
         public void BeforeEachTest()
         {
+            _hostSettingsMock = new Mock<IHostSettings>();
             _slackSettingsMock = new Mock<ISlackSettings>();
             _oAuthStateMock = new Mock<IOAuthState>();
             _slackApiMock = new Mock<ISlackApi>();
             _userMapperMock = new Mock<IUserMapper>();
             _accountQueryMock = new Mock<IAccountQuery>();
-            _accountRepositoryMock = new Mock<IRepository<Account>>();
+            _accountRepositoryMock = new Mock<IRepository<Core.Domain.Account>>();
             _userQueryMock = new Mock<IUserQuery>();
             _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
             _accountKit = new AccountKit
@@ -76,6 +78,7 @@ namespace SlashTodo.Web.Tests
                 with.Dependency<ISlackApi>(_slackApiMock.Object);
                 with.Dependency<AccountKit>(_accountKit);
                 with.Dependency<UserKit>(_userKit);
+                with.Dependency<IHostSettings>(_hostSettingsMock.Object);
                 with.RequestStartup((requestContainer, requestPipelines, nancyContext) =>
                 {
                     FormsAuthentication.Enable(requestPipelines, 
@@ -101,6 +104,7 @@ namespace SlashTodo.Web.Tests
             Core.Domain.Account account,
             Core.Domain.User user)
         {
+            _hostSettingsMock.SetupGet(x => x.HttpsPort).Returns(443);
             _slackSettingsMock.SetupGet(x => x.OAuthAuthorizationUrl).Returns(new Uri("https://slack.com/oauth/authorize"));
             _slackSettingsMock.SetupGet(x => x.OAuthRedirectUrl).Returns(new Uri("https://slashtodo.com/authenticate"));
             _oAuthStateMock.Setup(x => x.Validate(It.IsAny<string>())).Returns(stateIsValid);
@@ -127,7 +131,7 @@ namespace SlashTodo.Web.Tests
             // Arrange
             var result = browser.Get("/login", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
             });
 
             // Assert
@@ -165,7 +169,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/logout", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
             });
 
             // Assert
@@ -185,7 +189,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("error", "access_denied");
             });
 
@@ -204,7 +208,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "whatever");
                 with.Query("state", "invalidState");
             });
@@ -253,7 +257,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", code);
                 with.Query("state", "state");
             });
@@ -282,7 +286,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -325,7 +329,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -356,7 +360,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -399,7 +403,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -439,7 +443,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -482,7 +486,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -525,7 +529,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -564,7 +568,7 @@ namespace SlashTodo.Web.Tests
                     IsAdmin = true
                 }
             };
-            var account = Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
+            var account = Core.Domain.Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
             account.ClearUncommittedEvents();
             ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, account, null);
             var bootstrapper = GetBootstrapper();
@@ -573,7 +577,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -617,7 +621,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -664,7 +668,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -715,7 +719,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -759,7 +763,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -805,7 +809,7 @@ namespace SlashTodo.Web.Tests
             // Act
             browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });
@@ -851,7 +855,7 @@ namespace SlashTodo.Web.Tests
             // Act
             var result = browser.Get("/authenticate", with =>
             {
-                with.HttpRequest();
+                with.HttpsRequest();
                 with.Query("code", "validCode");
                 with.Query("state", "validState");
             });

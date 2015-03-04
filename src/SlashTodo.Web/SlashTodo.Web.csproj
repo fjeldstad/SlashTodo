@@ -134,6 +134,7 @@
     <Content Include="Views\_Layout.cshtml" />
     <Content Include="Authentication\Views\AuthenticationFailed.cshtml" />
     <Content Include="Views\Start.cshtml" />
+    <Content Include="Account\Views\Dashboard.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -151,6 +152,8 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AccountKit.cs" />
+    <Compile Include="Account\AccountModule.cs" />
+    <Compile Include="Account\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
     <Compile Include="Lookups\IAccountLookup.cs" />
     <Compile Include="Lookups\IUserLookup.cs" />
