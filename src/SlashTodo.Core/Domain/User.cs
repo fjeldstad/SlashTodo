@@ -17,6 +17,11 @@ namespace SlashTodo.Core.Domain
         private string _slackUserName;
         private string _slackApiAccessToken;
 
+        public Guid AccountId { get { return _accountId; } }
+        public string SlackUserId { get { return _slackUserId; } }
+        public string SlackUserName { get { return _slackUserName; } }
+        public string SlackApiAccessToken { get { return _slackApiAccessToken; } }
+
         public User()
         {
             ConfigureStateMachine();

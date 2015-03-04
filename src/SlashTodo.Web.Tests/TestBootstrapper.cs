@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Nancy.Bootstrapper;
+using Nancy.Security;
 using Nancy.Session;
 using Nancy.Testing;
 using Nancy.TinyIoc;

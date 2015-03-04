@@ -25,7 +25,7 @@ using User = SlashTodo.Infrastructure.Slack.User;
 namespace SlashTodo.Web.Tests
 {
     [TestFixture]
-    public class AuthenticationTests
+    public class AuthenticationModuleTests
     {
         private Mock<IHostSettings> _hostSettingsMock;
         private Mock<ISlackSettings> _slackSettingsMock;
@@ -65,7 +65,7 @@ namespace SlashTodo.Web.Tests
             };
         }
 
-        private ConfigurableBootstrapper GetBootstrapper(Action<ConfigurableBootstrapper.ConfigurableBootstrapperConfigurator> withConfig = null)
+        private TestBootstrapper GetBootstrapper(Action<ConfigurableBootstrapper.ConfigurableBootstrapperConfigurator> withConfig = null)
         {
             return new TestBootstrapper(with =>
             {
@@ -79,15 +79,14 @@ namespace SlashTodo.Web.Tests
                 with.Dependency<AccountKit>(_accountKit);
                 with.Dependency<UserKit>(_userKit);
                 with.Dependency<IHostSettings>(_hostSettingsMock.Object);
-                with.RequestStartup((requestContainer, requestPipelines, nancyContext) =>
+                with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
                 {
-                    FormsAuthentication.Enable(requestPipelines, 
-                        new FormsAuthenticationConfiguration
-                        {
-                            CryptographyConfiguration = CryptographyConfiguration.NoEncryption,
-                            UserMapper = _userMapperMock.Object,
-                            RedirectUrl = "/login"
-                        });
+                    FormsAuthentication.Enable(requestPipelines, new FormsAuthenticationConfiguration
+                    {
+                        CryptographyConfiguration = CryptographyConfiguration.NoEncryption,
+                        UserMapper = _userMapperMock.Object,
+                        RedirectUrl = "/login"
+                    });
                 });
                 if (withConfig != null)
                 {
@@ -111,8 +110,8 @@ namespace SlashTodo.Web.Tests
             _slackApiMock.Setup(x => x.OAuthAccess(It.IsAny<OAuthAccessRequest>())).Returns(Task.FromResult(oAuthAccessResponse));
             _slackApiMock.Setup(x => x.AuthTest(It.IsAny<AuthTestRequest>())).Returns(Task.FromResult(authTestResponse));
             _slackApiMock.Setup(x => x.UsersInfo(It.IsAny<UsersInfoRequest>())).Returns(Task.FromResult(usersInfoResponse));
-            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(account);
-            _userQueryMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(user);
+            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult(account));
+            _userQueryMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult(user));
         }
 
         [Test]

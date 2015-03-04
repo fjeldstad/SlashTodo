@@ -8,6 +8,6 @@ namespace SlashTodo.Web.Lookups
 {
     public interface IUserLookup
     {
-        Guid? BySlackUserId(string slackUserId);
+        Task<Guid?> BySlackUserId(string slackUserId);
     }
 }

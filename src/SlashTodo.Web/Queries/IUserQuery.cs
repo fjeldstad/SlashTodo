@@ -9,6 +9,6 @@ namespace SlashTodo.Web.Queries
 {
     public interface IUserQuery
     {
-        User BySlackUserId(string slackUserId);
+        Task<User> BySlackUserId(string slackUserId);
     }
 }

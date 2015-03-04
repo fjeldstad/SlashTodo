@@ -17,6 +17,11 @@ namespace SlashTodo.Core.Domain
         private Uri _incomingWebhookUrl;
         private string _slackTeamName;
 
+        public string SlackTeamId { get { return _slackTeamId; } }
+        public string SlackTeamName { get { return _slackTeamName; } }
+        public string SlashCommandToken { get { return _slashCommandToken; } }
+        public Uri IncomingWebhookUrl { get { return _incomingWebhookUrl; } }
+
         protected bool HasValidConfiguration
         {
             get

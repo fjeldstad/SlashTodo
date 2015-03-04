@@ -8,5 +8,8 @@ namespace SlashTodo.Web.Account.ViewModels
 {
     public class DashboardViewModel : ViewModelBase
     {
+        public string SlackTeamName { get; set; }
+        public string IncomingWebhookUrl { get; set; }
+        public string SlashCommandToken { get; set; }
     }
 }

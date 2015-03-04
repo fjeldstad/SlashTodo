@@ -18,6 +18,9 @@ namespace SlashTodo.Core.Domain
         private Guid? _claimedByUserId;
 
         public TodoContext Context { get; set; }
+        public string Text { get { return _text; } }
+        public string SlackConversationId { get { return _slackConversationId; } }
+        public Guid? ClaimedByUserId { get { return _claimedByUserId; } }
 
         public Todo()
         {

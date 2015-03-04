@@ -8,6 +8,6 @@ namespace SlashTodo.Web.Lookups
 {
     public interface IAccountLookup
     {
-        Guid? BySlackTeamId(string slackTeamId);
+        Task<Guid?> BySlackTeamId(string slackTeamId);
     }
 }
