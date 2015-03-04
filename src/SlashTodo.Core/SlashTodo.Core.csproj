@@ -65,6 +65,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Domain\Account.cs" />
+    <Compile Include="Domain\UserEvents.cs" />
     <Compile Include="Domain\AccountEvents.cs" />
     <Compile Include="Domain\Aggregate.cs" />
     <Compile Include="Domain\TodoEvents.cs" />
@@ -72,6 +73,7 @@
     <Compile Include="Domain\TodoData.cs" />
     <Compile Include="Domain\IDomainEvent.cs" />
     <Compile Include="Domain\Todo.cs" />
+    <Compile Include="Domain\User.cs" />
     <Compile Include="IEventDispatcher.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="IEventStore.cs" />

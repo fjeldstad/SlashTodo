@@ -10,25 +10,25 @@ using SlashTodo.Core.Domain;
 namespace SlashTodo.Core.Tests.AccountTests
 {
     [TestFixture]
-    public class UpdateSlashCommandTokenTests
+    public class UpdateSlackTeamNameTests
     {
         [Test]
-        public void CanNotConfigureAccountWithEmptySlashCommandToken()
+        public void CanNotConfigureAccountWithEmptySlackTeamName()
         {
             // Arrange
             var account = Account.Create(Guid.NewGuid(), "teamId");
 
             // Act
-            Assert.Throws<ArgumentNullException>(() => account.UpdateSlashCommandToken(null));
-            Assert.Throws<ArgumentNullException>(() => account.UpdateSlashCommandToken(string.Empty));
-            Assert.Throws<ArgumentNullException>(() => account.UpdateSlashCommandToken(" "));
+            Assert.Throws<ArgumentNullException>(() => account.UpdateSlackTeamName(null));
+            Assert.Throws<ArgumentNullException>(() => account.UpdateSlackTeamName(string.Empty));
+            Assert.Throws<ArgumentNullException>(() => account.UpdateSlackTeamName(" "));
         }
 
         [Test]
-        public void CanUpdateSlashCommandToken()
+        public void CanUpdateSlackTeamName()
         {
             // Arrange
-            var slashCommandToken = "slashCommandToken";
+            var slackTeamName = " slackTeamName ";
             var id = Guid.NewGuid();
             var account = Account.Create(id, "teamId");
             account.ClearUncommittedEvents();
@@ -36,41 +36,41 @@ namespace SlashTodo.Core.Tests.AccountTests
             var before = DateTime.UtcNow;
 
             // Act
-            account.UpdateSlashCommandToken(slashCommandToken);
+            account.UpdateSlackTeamName(slackTeamName);
 
             // Assert
-            var @event = account.GetUncommittedEvents().Single() as AccountSlashCommandTokenUpdated;
+            var @event = account.GetUncommittedEvents().Single() as AccountSlackTeamNameUpdated;
             @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
-            Assert.That(@event.SlashCommandToken, Is.EqualTo(slashCommandToken));
+            Assert.That(@event.SlackTeamName, Is.EqualTo(slackTeamName.Trim()));
         }
 
         [Test]
-        public void UpdateSlashCommandTokenIsIdempotentOperation()
+        public void UpdateSlackTeamNameIsIdempotentOperation()
         {
             // Arrange
-            var slashCommandToken = "slashCommandToken";
+            var slackTeamName = "slackTeamName";
             var id = Guid.NewGuid();
             var account = Account.Create(id, "teamId");
             account.ClearUncommittedEvents();
 
             // Act
-            account.UpdateSlashCommandToken(slashCommandToken);
-            account.UpdateSlashCommandToken(slashCommandToken);
-            account.UpdateSlashCommandToken(slashCommandToken);
+            account.UpdateSlackTeamName(slackTeamName);
+            account.UpdateSlackTeamName(slackTeamName);
+            account.UpdateSlackTeamName(slackTeamName);
 
             // Assert
             Assert.That(account.GetUncommittedEvents().ToArray(), Has.Length.EqualTo(1));
         }
 
         [Test]
-        public void CanUpdateSlashCommandTokenMultipleTimes()
+        public void CanUpdateSlackTeamNameMultipleTimes()
         {
             // Arrange
-            var slashCommandTokens = new string[]
+            var slackTeamNames = new string[]
             {
-                "slashCommandToken1",
-                "slashCommandToken2",
-                "slashCommandToken3"
+                "slackTeamName1",
+                "slackTeamName2",
+                "slackTeamName3"
             };
             var id = Guid.NewGuid();
             var account = Account.Create(id, "teamId");
@@ -79,14 +79,14 @@ namespace SlashTodo.Core.Tests.AccountTests
             var before = DateTime.UtcNow;
 
             // Act
-            foreach (var slashCommandToken in slashCommandTokens)
+            foreach (var slackTeamName in slackTeamNames)
             {
-                account.UpdateSlashCommandToken(slashCommandToken);
+                account.UpdateSlackTeamName(slackTeamName);
             }
 
             // Assert
-            var events = account.GetUncommittedEvents().Cast<AccountSlashCommandTokenUpdated>().ToArray();
-            Assert.That(events.Select(x => x.SlashCommandToken).SequenceEqual(slashCommandTokens));
+            var events = account.GetUncommittedEvents().Cast<AccountSlackTeamNameUpdated>().ToArray();
+            Assert.That(events.Select(x => x.SlackTeamName).SequenceEqual(slackTeamNames));
             foreach (var @event in events)
             {
                 @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);

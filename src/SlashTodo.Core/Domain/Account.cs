@@ -12,9 +12,10 @@ namespace SlashTodo.Core.Domain
         private AccountState _state = AccountState.Initial;
         private StateMachine<AccountState, AccountTrigger> _stateMachine;
         private StateMachine<AccountState, AccountTrigger>.TriggerWithParameters<Guid, string> _createTrigger;
-        private string _teamId;
+        private string _slackTeamId;
         private string _slashCommandToken;
         private Uri _incomingWebhookUrl;
+        private string _slackTeamName;
 
         protected bool HasValidConfiguration
         {
@@ -30,11 +31,11 @@ namespace SlashTodo.Core.Domain
             ConfigureStateMachine();
         }
 
-        public static Account Create(Guid id, string teamId)
+        public static Account Create(Guid id, string slackTeamId)
         {
-            if (string.IsNullOrWhiteSpace(teamId))
+            if (string.IsNullOrWhiteSpace(slackTeamId))
             {
-                throw new ArgumentNullException("teamId");
+                throw new ArgumentNullException("slackTeamId");
             }
             var account = new Account();
             if (!account._stateMachine.CanFire(AccountTrigger.Create))
@@ -42,7 +43,7 @@ namespace SlashTodo.Core.Domain
                 throw new InvalidOperationException();
             }
             account.Id = id;
-            account.RaiseEvent(new AccountCreated { TeamId = teamId });
+            account.RaiseEvent(new AccountCreated { SlackTeamId = slackTeamId });
             return account;
         }
 
@@ -52,10 +53,14 @@ namespace SlashTodo.Core.Domain
             {
                 throw new ArgumentNullException("slashCommandToken");
             }
-            RaiseEvent(new AccountSlashCommandTokenUpdated { SlashCommandToken = slashCommandToken });
-            if (_stateMachine.CanFire(AccountTrigger.Activate))
+            if (_slashCommandToken == null ||
+                !slashCommandToken.Equals(_slashCommandToken, StringComparison.Ordinal))
             {
-                RaiseEvent(new AccountActivated());
+                RaiseEvent(new AccountSlashCommandTokenUpdated { SlashCommandToken = slashCommandToken });
+                if (_stateMachine.CanFire(AccountTrigger.Activate))
+                {
+                    RaiseEvent(new AccountActivated());
+                }
             }
         }
 
@@ -75,10 +80,28 @@ namespace SlashTodo.Core.Domain
             {
                 throw new ArgumentException("The incoming webhook url is not valid.");
             }
-            RaiseEvent(new AccountIncomingWebhookUpdated { IncomingWebhookUrl = incomingWebhookUrl });
-            if (_stateMachine.CanFire(AccountTrigger.Activate))
+            if (_incomingWebhookUrl == null ||
+                !incomingWebhookUrl.AbsoluteUri.Equals(_incomingWebhookUrl.AbsoluteUri, StringComparison.Ordinal))
             {
-                RaiseEvent(new AccountActivated());
+                RaiseEvent(new AccountIncomingWebhookUpdated { IncomingWebhookUrl = incomingWebhookUrl });
+                if (_stateMachine.CanFire(AccountTrigger.Activate))
+                {
+                    RaiseEvent(new AccountActivated());
+                }
+            }
+        }
+
+        public void UpdateSlackTeamName(string slackTeamName)
+        {
+            if (string.IsNullOrWhiteSpace(slackTeamName))
+            {
+                throw new ArgumentNullException("slackTeamName");
+            }
+            slackTeamName = slackTeamName.Trim();
+            if (string.IsNullOrWhiteSpace(_slackTeamName) ||
+                !slackTeamName.Equals(_slackTeamName, StringComparison.Ordinal))
+            {
+                RaiseEvent(new AccountSlackTeamNameUpdated { SlackTeamName = slackTeamName });
             }
         }
 
@@ -89,7 +112,7 @@ namespace SlashTodo.Core.Domain
 
         private void Apply(AccountCreated @event)
         {
-            _stateMachine.Fire(_createTrigger, @event.Id, @event.TeamId);
+            _stateMachine.Fire(_createTrigger, @event.Id, @event.SlackTeamId);
         }
 
         private void Apply(AccountSlashCommandTokenUpdated @event)
@@ -107,6 +130,11 @@ namespace SlashTodo.Core.Domain
             _stateMachine.Fire(AccountTrigger.Activate);
         }
 
+        private void Apply(AccountSlackTeamNameUpdated @event)
+        {
+            _slackTeamName = @event.SlackTeamName;
+        }
+
         private void ConfigureStateMachine()
         {
             _stateMachine = new StateMachine<AccountState, AccountTrigger>(
@@ -118,10 +146,10 @@ namespace SlashTodo.Core.Domain
             _stateMachine.Configure(AccountState.Initial)
                 .Permit(AccountTrigger.Create, AccountState.Created);
             _stateMachine.Configure(AccountState.Created)
-                .OnEntryFrom(_createTrigger, (id, teamId) =>
+                .OnEntryFrom(_createTrigger, (id, slackTeamId) =>
                 {
                     Id = id;
-                    _teamId = teamId;
+                    _slackTeamId = slackTeamId;
                 })
                 .PermitIf(AccountTrigger.Activate, AccountState.Active, () => HasValidConfiguration);
         }

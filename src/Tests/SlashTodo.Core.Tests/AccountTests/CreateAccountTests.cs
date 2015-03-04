@@ -37,7 +37,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             Assert.That(account.Version, Is.EqualTo(1));
             var @event = account.GetUncommittedEvents().Single() as AccountCreated;
             @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: 0);
-            Assert.That(@event.TeamId, Is.EqualTo(teamId));
+            Assert.That(@event.SlackTeamId, Is.EqualTo(teamId));
         }
     }
 }

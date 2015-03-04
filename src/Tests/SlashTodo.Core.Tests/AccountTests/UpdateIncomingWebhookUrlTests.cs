@@ -44,6 +44,24 @@ namespace SlashTodo.Core.Tests.AccountTests
         }
 
         [Test]
+        public void UpdateIncomingWebhookUrlIsIdempotentOperation()
+        {
+            // Arrange
+            var incomingWebhookUrl = new Uri("https://test.slashtodo.com");
+            var id = Guid.NewGuid();
+            var account = Account.Create(id, "teamId");
+            account.ClearUncommittedEvents();
+
+            // Act
+            account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
+            account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
+            account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
+
+            // Assert
+            Assert.That(account.GetUncommittedEvents().ToArray(), Has.Length.EqualTo(1));
+        }
+
+        [Test]
         public void CanUpdateIncomingWebhookUrlMultipleTimes()
         {
             // Arrange

@@ -68,6 +68,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AccountTests\AccountActivationTests.cs" />
+    <Compile Include="AccountTests\UpdateSlackTeamNameTests.cs" />
     <Compile Include="AccountTests\UpdateSlashCommandTokenTests.cs" />
     <Compile Include="AccountTests\UpdateIncomingWebhookUrlTests.cs" />
     <Compile Include="AccountTests\CreateAccountTests.cs" />
@@ -82,6 +83,10 @@
     <Compile Include="TodoTests\FreeTodoTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestHelpers.cs" />
+    <Compile Include="UserTests\UpdateSlackApiAccessTokenTests.cs" />
+    <Compile Include="UserTests\UpdateSlackUserNameTests.cs" />
+    <Compile Include="UserTests\UserTestHelpers.cs" />
+    <Compile Include="UserTests\CreateUserTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SlashTodo.Core\SlashTodo.Core.csproj">

@@ -15,7 +15,7 @@ namespace SlashTodo.Core.Domain
 
     public class AccountCreated : AccountEvent
     {
-        public string TeamId { get; set; }
+        public string SlackTeamId { get; set; }
     }
 
     public class AccountSlashCommandTokenUpdated : AccountEvent
@@ -26,6 +26,11 @@ namespace SlashTodo.Core.Domain
     public class AccountIncomingWebhookUpdated : AccountEvent
     {
         public Uri IncomingWebhookUrl { get; set; }
+    }
+
+    public class AccountSlackTeamNameUpdated : AccountEvent
+    {
+        public string SlackTeamName { get; set; }
     }
 
     public class AccountActivated : AccountEvent
