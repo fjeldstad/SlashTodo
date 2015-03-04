@@ -10,6 +10,5 @@ namespace SlashTodo.Core
     {
         public Guid AccountId { get; set; }
         public Guid UserId { get; set; }
-        public string SlackConversationId { get; set; }
     }
 }

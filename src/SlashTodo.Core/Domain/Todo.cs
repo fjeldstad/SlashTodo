@@ -14,6 +14,7 @@ namespace SlashTodo.Core.Domain
         private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid, string> _addTrigger;
         private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid> _claimTrigger;
         private string _text;
+        private string _slackConversationId;
         private Guid? _claimedByUserId;
 
         public TodoContext Context { get; set; }
@@ -23,7 +24,7 @@ namespace SlashTodo.Core.Domain
             ConfigureStateMachine();
         }
 
-        public static Todo Add(Guid id, TodoContext context, string text)
+        public static Todo Add(Guid id, string text, string slackConversationId, TodoContext context)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
@@ -42,6 +43,7 @@ namespace SlashTodo.Core.Domain
                 throw new InvalidOperationException();
             }
             todo.Id = id;
+            todo._slackConversationId = slackConversationId;
             todo.RaiseEvent(new TodoAdded { Text = text.Trim() });
             return todo;
         }
@@ -132,7 +134,7 @@ namespace SlashTodo.Core.Domain
                 throw new InvalidOperationException("Context is null.");
             }
             ((TodoEvent)@event).AccountId = Context.AccountId;
-            ((TodoEvent)@event).SlackConversationId = Context.SlackConversationId;
+            ((TodoEvent)@event).SlackConversationId = _slackConversationId;
             ((TodoEvent)@event).UserId = Context.UserId;
             base.RaiseEvent(@event);
         }

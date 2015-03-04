@@ -18,12 +18,11 @@ namespace SlashTodo.Core.Tests.TodoTests
             };
         }
 
-        public static TodoContext GetContext(Guid? accountId = null, string slackConversationId = "conversationId", Guid? userId = null)
+        public static TodoContext GetContext(Guid? accountId = null, Guid? userId = null)
         {
             return new TodoContext
             {
                 AccountId = accountId ?? Guid.NewGuid(),
-                SlackConversationId = slackConversationId,
                 UserId = userId ?? Guid.NewGuid()
             };
         }
@@ -31,6 +30,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public static void AssertThatBasicDataIsCorrect(
             this TodoEvent @event, 
             Guid id,
+            string slackConversationId,
             TodoContext context, 
             DateTime earliestExpectedTimestamp,
             int? expectedOriginalVersion = null)
@@ -39,7 +39,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             Assert.That(@event.Id, Is.EqualTo(id));
             Assert.That(@event.Timestamp, Is.InRange(earliestExpectedTimestamp, DateTime.UtcNow));
             Assert.That(@event.AccountId, Is.EqualTo(context.AccountId));
-            Assert.That(@event.SlackConversationId, Is.EqualTo(context.SlackConversationId));
+            Assert.That(@event.SlackConversationId, Is.EqualTo(slackConversationId));
             Assert.That(@event.UserId, Is.EqualTo(context.UserId));
             if (expectedOriginalVersion.HasValue)
             {

@@ -17,7 +17,8 @@ namespace SlashTodo.Core.Tests.TodoTests
             // Arrange
             var id = Guid.NewGuid();
             var context = TodoTestHelpers.GetContext();
-            var todo = Todo.Add(id, context, "text");
+            var slackConversationId = "slackConversationId";
+            var todo = Todo.Add(id, "text", slackConversationId, context);
             todo.ClearUncommittedEvents();
             var before = DateTime.UtcNow;
             var originalVersion = todo.Version;
@@ -27,7 +28,7 @@ namespace SlashTodo.Core.Tests.TodoTests
 
             // Assert
             var @event = todo.GetUncommittedEvents().Single() as TodoClaimed;
-            @event.AssertThatBasicDataIsCorrect(id, context, before, expectedOriginalVersion: originalVersion);
+            @event.AssertThatBasicDataIsCorrect(id, slackConversationId, context, before, expectedOriginalVersion: originalVersion);
         }
 
         [Test]
@@ -36,7 +37,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             // Arrange
             var id = Guid.NewGuid();
             var context = TodoTestHelpers.GetContext();
-            var todo = Todo.Add(id, context, "text");
+            var todo = Todo.Add(id, "text", "slackConversationId", context);
             todo.ClearUncommittedEvents();
 
             // Act
@@ -55,7 +56,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             var id = Guid.NewGuid();
             var otherUserId = Guid.NewGuid();
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
-            var todo = Todo.Add(id, otherUserContext, "text");
+            var todo = Todo.Add(id, "text", "slackConversationId", otherUserContext);
             todo.Claim();
             todo.ClearUncommittedEvents();
             var userId = Guid.NewGuid();
@@ -77,7 +78,8 @@ namespace SlashTodo.Core.Tests.TodoTests
             var userId = Guid.NewGuid();
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
-            var todo = Todo.Add(id, otherUserContext, "text");
+            var slackConversationId = "slackConversationId";
+            var todo = Todo.Add(id, "text", slackConversationId, otherUserContext);
             todo.Claim();
             todo.ClearUncommittedEvents();
             var originalVersion = todo.Version;
@@ -90,7 +92,7 @@ namespace SlashTodo.Core.Tests.TodoTests
 
             // Assert
             var @event = todo.GetUncommittedEvents().Single() as TodoClaimed;
-            @event.AssertThatBasicDataIsCorrect(id, context, before, expectedOriginalVersion: originalVersion);
+            @event.AssertThatBasicDataIsCorrect(id, slackConversationId, context, before, expectedOriginalVersion: originalVersion);
         }
 
         [Test]
@@ -99,7 +101,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             // Arrange
             var id = Guid.NewGuid();
             var context = TodoTestHelpers.GetContext();
-            var todo = Todo.Add(id, context, "text");
+            var todo = Todo.Add(id, "text", "slackConversationId", context);
             todo.Remove();
             todo.ClearUncommittedEvents();
 
@@ -116,7 +118,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             // Arrange
             var id = Guid.NewGuid();
             var context = TodoTestHelpers.GetContext();
-            var todo = Todo.Add(id, context, "text");
+            var todo = Todo.Add(id, "text", "slackConversationId", context);
             todo.Tick();
             todo.ClearUncommittedEvents();
 
