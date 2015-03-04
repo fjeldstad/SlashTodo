@@ -150,11 +150,17 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AccountKit.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
+    <Compile Include="Lookups\IAccountLookup.cs" />
+    <Compile Include="Lookups\IUserLookup.cs" />
+    <Compile Include="Queries\IAccountQuery.cs" />
+    <Compile Include="Queries\IUserQuery.cs" />
     <Compile Include="SlackUserIdentity.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="RefitStubs.cs" />
     <Compile Include="SessionBasedOAuthState.cs" />
+    <Compile Include="UserKit.cs" />
     <Compile Include="ViewModels\EmptyViewModel.cs" />
     <Compile Include="HomeModule.cs" />
     <Compile Include="ViewModels\IViewModelFactory.cs" />

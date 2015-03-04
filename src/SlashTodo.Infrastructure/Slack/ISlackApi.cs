@@ -15,6 +15,9 @@ namespace SlashTodo.Infrastructure.Slack
 
         [Post("/auth.test")]
         Task<AuthTestResponse> AuthTest([Body(BodySerializationMethod.UrlEncoded)] AuthTestRequest request);
+
+        [Post("/users.info")]
+        Task<UsersInfoResponse> UsersInfo([Body(BodySerializationMethod.UrlEncoded)] UsersInfoRequest request);
     }
 
     public abstract class AuthenticatedRequestBase
@@ -62,9 +65,6 @@ namespace SlashTodo.Infrastructure.Slack
 
     public class AuthTestResponse : ResponseBase
     {
-        [JsonProperty(PropertyName = "url")]
-        public string TeamUrl { get; set; }
-
         [JsonProperty(PropertyName = "team")]
         public string TeamName { get; set; }
 
@@ -76,5 +76,29 @@ namespace SlashTodo.Infrastructure.Slack
 
         [JsonProperty(PropertyName = "user_id")]
         public string UserId { get; set; }
+    }
+
+    public class UsersInfoRequest : AuthenticatedRequestBase
+    {
+        [AliasAs("user")]
+        public string UserId { get; set; }
+    }
+
+    public class UsersInfoResponse : ResponseBase
+    {
+        [JsonProperty(PropertyName = "user")]
+        public User User { get; set; }
+    }
+
+    public class User
+    {
+        [JsonProperty(PropertyName = "id")]
+        public string Id { get; set; }
+
+        [JsonProperty(PropertyName = "name")]
+        public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "is_admin")]
+        public bool IsAdmin { get; set; }
     }
 }

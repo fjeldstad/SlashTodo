@@ -75,6 +75,7 @@
     <Compile Include="Domain\Todo.cs" />
     <Compile Include="Domain\User.cs" />
     <Compile Include="IEventDispatcher.cs" />
+    <Compile Include="IRepository.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="IEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

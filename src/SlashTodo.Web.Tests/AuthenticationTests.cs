@@ -11,11 +11,16 @@ using Nancy.Helpers;
 using Nancy.Routing.Constraints;
 using Nancy.Testing;
 using NUnit.Framework;
+using SlashTodo.Core;
+using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Slack;
 using SlashTodo.Web.Authentication;
+using SlashTodo.Web.Lookups;
+using SlashTodo.Web.Queries;
 using SlashTodo.Web.ViewModels;
+using User = SlashTodo.Infrastructure.Slack.User;
 
 namespace SlashTodo.Web.Tests
 {
@@ -26,6 +31,12 @@ namespace SlashTodo.Web.Tests
         private Mock<IOAuthState> _oAuthStateMock;
         private Mock<ISlackApi> _slackApiMock;
         private Mock<IUserMapper> _userMapperMock;
+        private Mock<IAccountQuery> _accountQueryMock;
+        private Mock<IRepository<Core.Domain.Account>> _accountRepositoryMock;
+        private Mock<IUserQuery> _userQueryMock;
+        private Mock<IRepository<Core.Domain.User>> _userRepositoryMock;
+        private AccountKit _accountKit;
+        private UserKit _userKit;
 
         [SetUp]
         public void BeforeEachTest()
@@ -34,6 +45,22 @@ namespace SlashTodo.Web.Tests
             _oAuthStateMock = new Mock<IOAuthState>();
             _slackApiMock = new Mock<ISlackApi>();
             _userMapperMock = new Mock<IUserMapper>();
+            _accountQueryMock = new Mock<IAccountQuery>();
+            _accountRepositoryMock = new Mock<IRepository<Account>>();
+            _userQueryMock = new Mock<IUserQuery>();
+            _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
+            _accountKit = new AccountKit
+            {
+                Lookup = null,
+                Query = _accountQueryMock.Object,
+                Repository = _accountRepositoryMock.Object
+            };
+            _userKit = new UserKit
+            {
+                Lookup = null,
+                Query = _userQueryMock.Object,
+                Repository = _userRepositoryMock.Object
+            };
         }
 
         private ConfigurableBootstrapper GetBootstrapper(Action<ConfigurableBootstrapper.ConfigurableBootstrapperConfigurator> withConfig = null)
@@ -47,6 +74,8 @@ namespace SlashTodo.Web.Tests
                 with.Dependency<ISlackSettings>(_slackSettingsMock.Object);
                 with.Dependency<IOAuthState>(_oAuthStateMock.Object);
                 with.Dependency<ISlackApi>(_slackApiMock.Object);
+                with.Dependency<AccountKit>(_accountKit);
+                with.Dependency<UserKit>(_userKit);
                 with.RequestStartup((requestContainer, requestPipelines, nancyContext) =>
                 {
                     FormsAuthentication.Enable(requestPipelines, 
@@ -62,6 +91,24 @@ namespace SlashTodo.Web.Tests
                     withConfig(with);
                 }
             });
+        }
+
+        private void ArrangeAuthenticationFlow(
+            bool stateIsValid,
+            OAuthAccessResponse oAuthAccessResponse,
+            AuthTestResponse authTestResponse,
+            UsersInfoResponse usersInfoResponse,
+            Core.Domain.Account account,
+            Core.Domain.User user)
+        {
+            _slackSettingsMock.SetupGet(x => x.OAuthAuthorizationUrl).Returns(new Uri("https://slack.com/oauth/authorize"));
+            _slackSettingsMock.SetupGet(x => x.OAuthRedirectUrl).Returns(new Uri("https://slashtodo.com/authenticate"));
+            _oAuthStateMock.Setup(x => x.Validate(It.IsAny<string>())).Returns(stateIsValid);
+            _slackApiMock.Setup(x => x.OAuthAccess(It.IsAny<OAuthAccessRequest>())).Returns(Task.FromResult(oAuthAccessResponse));
+            _slackApiMock.Setup(x => x.AuthTest(It.IsAny<AuthTestRequest>())).Returns(Task.FromResult(authTestResponse));
+            _slackApiMock.Setup(x => x.UsersInfo(It.IsAny<UsersInfoRequest>())).Returns(Task.FromResult(usersInfoResponse));
+            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(account);
+            _userQueryMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(user);
         }
 
         [Test]
@@ -129,7 +176,7 @@ namespace SlashTodo.Web.Tests
         }
 
         [Test]
-        public void ProperlyHandlesFailedAuthorizationFromSlack()
+        public void HandlesFailedAuthorizationFromSlack()
         {
             // Arrange
             var bootstrapper = GetBootstrapper();
@@ -147,7 +194,7 @@ namespace SlashTodo.Web.Tests
         }
 
         [Test]
-        public void ProperlyHandlesIncorrectStateParameter()
+        public void HandlesIncorrectStateParameter()
         {
             // Arrange
             _oAuthStateMock.Setup(x => x.Validate(It.IsAny<string>())).Returns(false);
@@ -167,21 +214,39 @@ namespace SlashTodo.Web.Tests
         }
 
         [Test]
-        public void CallsSlackApiToGetAccessToken()
+        public void RequestsAccessTokenFromSlack()
         {
             // Arrange
             var code = "code";
             _slackSettingsMock.SetupGet(x => x.ClientId).Returns("clientId");
+            _slackSettingsMock.SetupGet(x => x.ClientSecret).Returns("clientSecret");
             _slackSettingsMock.SetupGet(x => x.OAuthAuthorizationUrl).Returns(new Uri("https://slack.com/oauth/authorize"));
             _slackSettingsMock.SetupGet(x => x.OAuthRedirectUrl).Returns(new Uri("https://slashtodo.com/authenticate"));
             _slackSettingsMock.SetupGet(x => x.OAuthScope).Returns("scope1,scope2,scope3");
-            _oAuthStateMock.Setup(x => x.Validate(It.IsAny<string>())).Returns(true);
             var accessResponse = new OAuthAccessResponse
             {
                 Ok = true,
                 AccessToken = "accessToken"
             };
-            _slackApiMock.Setup(x => x.OAuthAccess(It.IsAny<OAuthAccessRequest>())).Returns(Task.FromResult(accessResponse));
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
 
@@ -190,6 +255,7 @@ namespace SlashTodo.Web.Tests
             {
                 with.HttpRequest();
                 with.Query("code", code);
+                with.Query("state", "state");
             });
 
             // Assert
@@ -201,18 +267,15 @@ namespace SlashTodo.Web.Tests
         }
 
         [Test]
-        public void ProperlyHandlesUnsuccessfulAccessTokenRequest()
+        public void HandlesUnsuccessfulAccessTokenRequest()
         {
             // Arrange
-            _slackSettingsMock.SetupGet(x => x.OAuthAuthorizationUrl).Returns(new Uri("https://slack.com/oauth/authorize"));
-            _slackSettingsMock.SetupGet(x => x.OAuthRedirectUrl).Returns(new Uri("https://slashtodo.com/authenticate"));
-            _oAuthStateMock.Setup(x => x.Validate(It.IsAny<string>())).Returns(true);
             var accessResponse = new OAuthAccessResponse
             {
                 Ok = false,
                 Error = "someError"
             };
-            _slackApiMock.Setup(x => x.OAuthAccess(It.IsAny<OAuthAccessRequest>())).Returns(Task.FromResult(accessResponse));
+            ArrangeAuthenticationFlow(true, accessResponse, null, null, null, null);
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
 
@@ -229,23 +292,33 @@ namespace SlashTodo.Web.Tests
         }
 
         [Test]
-        public void FetchesTeamAndUserInformationFromSlackAfterSuccessfulAuthentication()
+        public void RequestsAuthTestFromSlack()
         {
             // Arrange
-            _slackSettingsMock.SetupGet(x => x.OAuthAuthorizationUrl).Returns(new Uri("https://slack.com/oauth/authorize"));
-            _slackSettingsMock.SetupGet(x => x.OAuthRedirectUrl).Returns(new Uri("https://slashtodo.com/authenticate"));
-            _oAuthStateMock.Setup(x => x.Validate(It.IsAny<string>())).Returns(true);
             var accessResponse = new OAuthAccessResponse
             {
                 Ok = true,
                 AccessToken = "accessToken"
             };
-            _slackApiMock.Setup(x => x.OAuthAccess(It.IsAny<OAuthAccessRequest>())).Returns(Task.FromResult(accessResponse));
             var authTestResponse = new AuthTestResponse
             {
-                Ok = true
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
             };
-            _slackApiMock.Setup(x => x.AuthTest(It.IsAny<AuthTestRequest>())).Returns(Task.FromResult(authTestResponse));
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
 
@@ -263,22 +336,20 @@ namespace SlashTodo.Web.Tests
         }
 
         [Test]
-        public void CreatesAuthenticationCookieAndRedirectsToAccountPageWhenAuthenticationIsSuccessful()
+        public void HandlesUnsuccessfulAuthTestRequest()
         {
             // Arrange
-            var code = "code";
-            _slackSettingsMock.SetupGet(x => x.ClientId).Returns("clientId");
-            _slackSettingsMock.SetupGet(x => x.OAuthAuthorizationUrl).Returns(new Uri("https://slack.com/oauth/authorize"));
-            _slackSettingsMock.SetupGet(x => x.OAuthRedirectUrl).Returns(new Uri("https://slashtodo.com/authenticate"));
-            _slackSettingsMock.SetupGet(x => x.OAuthScope).Returns("scope1,scope2,scope3");
-            var oAuthAccessResponse = new OAuthAccessResponse
+            var accessResponse = new OAuthAccessResponse
             {
                 Ok = true,
-                AccessToken = "accessToken",
-                Scope = _slackSettingsMock.Object.OAuthScope
+                AccessToken = "accessToken"
             };
-            _slackApiMock.Setup(x => x.OAuthAccess(It.IsAny<OAuthAccessRequest>())).Returns(Task.FromResult(oAuthAccessResponse));
-            _oAuthStateMock.Setup(x => x.Validate(It.IsAny<string>())).Returns(true);
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = false,
+                Error = "someError"
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, null, null, null);
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
 
@@ -286,7 +357,503 @@ namespace SlashTodo.Web.Tests
             var result = browser.Get("/authenticate", with =>
             {
                 with.HttpRequest();
-                with.Query("code", code);
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            Assert.That(result.GetViewName(), Is.EqualTo("AuthenticationFailed.cshtml"));
+        }
+
+        [Test]
+        public void RequestsUserInfoFromSlack()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _slackApiMock.Verify(x => x.UsersInfo(It.Is<UsersInfoRequest>(r =>
+                r.AccessToken == accessResponse.AccessToken &&
+                r.UserId == authTestResponse.UserId)), Times.Once);
+        }
+
+        [Test]
+        public void HandlesUnsuccessfulUserInfoRequest()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = false,
+                Error = "someError"
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            Assert.That(result.GetViewName(), Is.EqualTo("AuthenticationFailed.cshtml"));
+        }
+
+        [Test]
+        public void DeniesAccessIfTheUserIsNotAdmin()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = false
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            Assert.That(result.GetViewName(), Is.EqualTo("AuthenticationFailed.cshtml"));
+        }
+
+        [Test]
+        public void CreatesAccountIfNotExists()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a => 
+                a.GetUncommittedEvents().First() is AccountCreated &&
+                (a.GetUncommittedEvents().First() as AccountCreated).SlackTeamId == authTestResponse.TeamId
+                )), Times.Once);
+        }
+
+        [Test]
+        public void DoesNotCreateAccountIfExists()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            var account = Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
+            account.ClearUncommittedEvents();
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, account, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a =>
+                a.GetUncommittedEvents().Any(e => e is AccountCreated))), Times.Never);
+        }
+
+        [Test]
+        public void UpdatesAccountSlackTeamName()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a =>
+                a.GetUncommittedEvents().Any(e => e is AccountSlackTeamNameUpdated)
+                )), Times.Once);
+        }
+
+        [Test]
+        public void CreatesUserIfNotExists()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            var account = Core.Domain.Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
+            account.ClearUncommittedEvents();
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, account, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _userRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.User>(u =>
+                u.GetUncommittedEvents().First() is UserCreated &&
+                (u.GetUncommittedEvents().First() as UserCreated).SlackUserId == authTestResponse.UserId &&
+                (u.GetUncommittedEvents().First() as UserCreated).AccountId == account.Id
+                )), Times.Once);
+        }
+
+        [Test]
+        public void DoesNotCreateUserIfExists()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            var account = Core.Domain.Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
+            account.ClearUncommittedEvents();
+            var user = Core.Domain.User.Create(Guid.NewGuid(), account.Id, authTestResponse.UserId);
+            user.ClearUncommittedEvents();
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, account, user);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _userRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.User>(a =>
+                a.GetUncommittedEvents().Any(e => e is UserCreated))), Times.Never);
+        }
+
+        [Test]
+        public void UpdatesUserSlackApiAccessToken()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _userRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.User>(u =>
+                u.GetUncommittedEvents().Any(e => e is UserSlackApiAccessTokenUpdated) &&
+                ((UserSlackApiAccessTokenUpdated)u.GetUncommittedEvents().Single(e => e is UserSlackApiAccessTokenUpdated)).SlackApiAccessToken == accessResponse.AccessToken
+                )), Times.Once);
+        }
+
+        [Test]
+        public void UpdatesUserSlackUserName()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
+            });
+
+            // Assert
+            _userRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.User>(u =>
+                u.GetUncommittedEvents().Any(e => e is UserSlackUserNameUpdated) &&
+                ((UserSlackUserNameUpdated)u.GetUncommittedEvents().Single(e => e is UserSlackUserNameUpdated)).SlackUserName == authTestResponse.UserName
+                )), Times.Once);
+        }
+
+        [Test]
+        public void CreatesAuthenticationCookieAndRedirectsToAccountPageWhenAuthenticationIsSuccessful()
+        {
+            // Arrange
+            var accessResponse = new OAuthAccessResponse
+            {
+                Ok = true,
+                AccessToken = "accessToken"
+            };
+            var authTestResponse = new AuthTestResponse
+            {
+                Ok = true,
+                TeamId = "teamId",
+                TeamName = "teamName",
+                UserId = "userId",
+                UserName = "userName"
+            };
+            var usersInfoResponse = new UsersInfoResponse
+            {
+                Ok = true,
+                User = new User
+                {
+                    Id = authTestResponse.UserId,
+                    Name = authTestResponse.UserName,
+                    IsAdmin = true
+                }
+            };
+            ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, null, null);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Get("/authenticate", with =>
+            {
+                with.HttpRequest();
+                with.Query("code", "validCode");
+                with.Query("state", "validState");
             });
 
             // Assert

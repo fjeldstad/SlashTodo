@@ -57,6 +57,12 @@ namespace SlashTodo.Infrastructure.Slack
             return (Task<AuthTestResponse>) methodImpls["AuthTest"](Client, arguments);
         }
 
+        public virtual Task<UsersInfoResponse> UsersInfo(UsersInfoRequest request)
+        {
+            var arguments = new object[] { request };
+            return (Task<UsersInfoResponse>) methodImpls["UsersInfo"](Client, arguments);
+        }
+
     }
 }
 
