@@ -53,16 +53,19 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var otherUserContext = TodoTestHelpers.GetContext(userId: "otherUserId");
+            var otherUserId = Guid.NewGuid();
+            var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var todo = Todo.Add(id, otherUserContext, "text");
             todo.Claim();
             todo.ClearUncommittedEvents();
+            var userId = Guid.NewGuid();
+            Assert.That(userId, Is.Not.EqualTo(otherUserId));
 
             // Act & assert
-            todo.Context = TodoTestHelpers.GetContext();
+            todo.Context = TodoTestHelpers.GetContext(userId: userId);
             TestHelpers.AssertThrows<TodoClaimedBySomeoneElseException>(
                 () => todo.Claim(), 
-                ex => ex.ClaimedBy == otherUserContext.UserId);
+                ex => ex.ClaimedByUserId == otherUserContext.UserId);
         }
 
         [Test]
@@ -70,15 +73,19 @@ namespace SlashTodo.Core.Tests.TodoTests
         {
             // Arrange
             var id = Guid.NewGuid();
-            var otherUserContext = TodoTestHelpers.GetContext(userId: "otherUserId");
+            var otherUserId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            Assert.That(userId, Is.Not.EqualTo(otherUserId));
+            var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var todo = Todo.Add(id, otherUserContext, "text");
             todo.Claim();
             todo.ClearUncommittedEvents();
             var originalVersion = todo.Version;
             var before = DateTime.UtcNow;
+            
 
             // Act
-            var context = todo.Context = TodoTestHelpers.GetContext();
+            var context = todo.Context = TodoTestHelpers.GetContext(userId: userId);
             todo.Claim(force: true);
 
             // Assert

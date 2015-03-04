@@ -18,13 +18,13 @@ namespace SlashTodo.Core.Tests.TodoTests
             };
         }
 
-        public static TodoContext GetContext(string teamId = "teamId", string conversationId = "conversationId", string userId = "userId")
+        public static TodoContext GetContext(Guid? accountId = null, string slackConversationId = "conversationId", Guid? userId = null)
         {
             return new TodoContext
             {
-                TeamId = teamId,
-                ConversationId = conversationId,
-                UserId = userId
+                AccountId = accountId ?? Guid.NewGuid(),
+                SlackConversationId = slackConversationId,
+                UserId = userId ?? Guid.NewGuid()
             };
         }
 
@@ -38,8 +38,8 @@ namespace SlashTodo.Core.Tests.TodoTests
             Assert.That(@event, Is.Not.Null);
             Assert.That(@event.Id, Is.EqualTo(id));
             Assert.That(@event.Timestamp, Is.InRange(earliestExpectedTimestamp, DateTime.UtcNow));
-            Assert.That(@event.TeamId, Is.EqualTo(context.TeamId));
-            Assert.That(@event.ConversationId, Is.EqualTo(context.ConversationId));
+            Assert.That(@event.AccountId, Is.EqualTo(context.AccountId));
+            Assert.That(@event.SlackConversationId, Is.EqualTo(context.SlackConversationId));
             Assert.That(@event.UserId, Is.EqualTo(context.UserId));
             if (expectedOriginalVersion.HasValue)
             {

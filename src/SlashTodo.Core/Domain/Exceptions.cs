@@ -12,11 +12,11 @@ namespace SlashTodo.Core.Domain
 
     public class TodoClaimedBySomeoneElseException : Exception
     {
-        public string ClaimedBy { get; private set; }
+        public Guid ClaimedByUserId { get; private set; }
 
-        public TodoClaimedBySomeoneElseException(string claimedBy)
+        public TodoClaimedBySomeoneElseException(Guid claimedByUserId)
         {
-            ClaimedBy = claimedBy;
+            ClaimedByUserId = claimedByUserId;
         }
     }
 }

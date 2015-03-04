@@ -12,9 +12,9 @@ namespace SlashTodo.Core.Domain
         private TodoState _state = TodoState.Initial;
         private StateMachine<TodoState, TodoTrigger> _stateMachine;
         private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid, string> _addTrigger;
-        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<string> _claimTrigger;
+        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid> _claimTrigger;
         private string _text;
-        private string _claimedBy;
+        private Guid? _claimedByUserId;
 
         public TodoContext Context { get; set; }
 
@@ -54,13 +54,13 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (_claimedBy.Equals(Context.UserId))
+                if (_claimedByUserId.Equals(Context.UserId))
                 {
                     return;
                 }
                 if (!force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
                 }
             }
             RaiseEvent(new TodoClaimed());
@@ -74,10 +74,10 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (!_claimedBy.Equals(Context.UserId) && 
+                if (!_claimedByUserId.Equals(Context.UserId) && 
                     !force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
                 }
             }
             RaiseEvent(new TodoFreed());
@@ -91,10 +91,10 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (!_claimedBy.Equals(Context.UserId) &&
+                if (!_claimedByUserId.Equals(Context.UserId) &&
                     !force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
                 }
             }
             RaiseEvent(new TodoTicked());
@@ -116,10 +116,10 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (!_claimedBy.Equals(Context.UserId) &&
+                if (!_claimedByUserId.Equals(Context.UserId) &&
                     !force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedBy);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
                 }
             }
             RaiseEvent(new TodoRemoved());
@@ -131,8 +131,8 @@ namespace SlashTodo.Core.Domain
             {
                 throw new InvalidOperationException("Context is null.");
             }
-            ((TodoEvent)@event).TeamId = Context.TeamId;
-            ((TodoEvent)@event).ConversationId = Context.ConversationId;
+            ((TodoEvent)@event).AccountId = Context.AccountId;
+            ((TodoEvent)@event).SlackConversationId = Context.SlackConversationId;
             ((TodoEvent)@event).UserId = Context.UserId;
             base.RaiseEvent(@event);
         }
@@ -179,7 +179,7 @@ namespace SlashTodo.Core.Domain
                 state => _state = state
             );
             _addTrigger = _stateMachine.SetTriggerParameters<Guid, string>(TodoTrigger.Add);
-            _claimTrigger = _stateMachine.SetTriggerParameters<string>(TodoTrigger.Claim);
+            _claimTrigger = _stateMachine.SetTriggerParameters<Guid>(TodoTrigger.Claim);
 
             _stateMachine.Configure(TodoState.Initial)
                 .Permit(TodoTrigger.Add, TodoState.Free);
@@ -196,10 +196,10 @@ namespace SlashTodo.Core.Domain
                 .Permit(TodoTrigger.Claim, TodoState.Claimed);
             _stateMachine.Configure(TodoState.Claimed)
                 .SubstateOf(TodoState.Pending)
-                .OnEntryFrom(_claimTrigger, userId => _claimedBy = userId)
+                .OnEntryFrom(_claimTrigger, userId => _claimedByUserId = userId)
                 .PermitReentry(TodoTrigger.Claim)
                 .Permit(TodoTrigger.Free, TodoState.Free)
-                .OnExit(() => _claimedBy = null);
+                .OnExit(() => _claimedByUserId = null);
             _stateMachine.Configure(TodoState.Done)
                 .Permit(TodoTrigger.Untick, TodoState.Free)
                 .Permit(TodoTrigger.Remove, TodoState.Removed);

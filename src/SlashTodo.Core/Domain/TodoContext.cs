@@ -8,8 +8,8 @@ namespace SlashTodo.Core
 {
     public class TodoContext
     {
-        public string TeamId { get; set; }
-        public string ConversationId { get; set; }
-        public string UserId { get; set; }
+        public Guid AccountId { get; set; }
+        public Guid UserId { get; set; }
+        public string SlackConversationId { get; set; }
     }
 }
