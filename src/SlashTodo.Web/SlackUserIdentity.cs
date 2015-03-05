@@ -12,8 +12,8 @@ namespace SlashTodo.Web
         public Guid AccountId { get; set; }
         public string UserName { get { return SlackUserName; } }
         public string SlackUserName { get; set; }
-        public string SlackTeamName { get; set; }
         public string SlackUserId { get; set; }
+        public string SlackTeamName { get; set; }
         public string SlackTeamId { get; set; }
         public string SlackApiAccessToken { get; set; }
 

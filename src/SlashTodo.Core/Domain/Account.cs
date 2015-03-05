@@ -21,6 +21,7 @@ namespace SlashTodo.Core.Domain
         public string SlackTeamName { get { return _slackTeamName; } }
         public string SlashCommandToken { get { return _slashCommandToken; } }
         public Uri IncomingWebhookUrl { get { return _incomingWebhookUrl; } }
+        public bool IsActive { get { return _stateMachine.IsInState(AccountState.Active); } }
 
         protected bool HasValidConfiguration
         {

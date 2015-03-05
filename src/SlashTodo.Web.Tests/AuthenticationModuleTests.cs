@@ -17,6 +17,7 @@ using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Slack;
 using SlashTodo.Web.Authentication;
+using SlashTodo.Web.Dtos;
 using SlashTodo.Web.Lookups;
 using SlashTodo.Web.Queries;
 using SlashTodo.Web.ViewModels;
@@ -32,8 +33,10 @@ namespace SlashTodo.Web.Tests
         private Mock<IOAuthState> _oAuthStateMock;
         private Mock<ISlackApi> _slackApiMock;
         private Mock<IUserMapper> _userMapperMock;
+        private Mock<IAccountLookup> _accountLookupMock;
         private Mock<IAccountQuery> _accountQueryMock;
         private Mock<IRepository<Core.Domain.Account>> _accountRepositoryMock;
+        private Mock<IUserLookup> _userLookupMock;
         private Mock<IUserQuery> _userQueryMock;
         private Mock<IRepository<Core.Domain.User>> _userRepositoryMock;
         private AccountKit _accountKit;
@@ -47,19 +50,21 @@ namespace SlashTodo.Web.Tests
             _oAuthStateMock = new Mock<IOAuthState>();
             _slackApiMock = new Mock<ISlackApi>();
             _userMapperMock = new Mock<IUserMapper>();
+            _accountLookupMock = new Mock<IAccountLookup>();
             _accountQueryMock = new Mock<IAccountQuery>();
             _accountRepositoryMock = new Mock<IRepository<Core.Domain.Account>>();
+            _userLookupMock = new Mock<IUserLookup>();
             _userQueryMock = new Mock<IUserQuery>();
             _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
             _accountKit = new AccountKit
             {
-                Lookup = null,
+                Lookup = _accountLookupMock.Object,
                 Query = _accountQueryMock.Object,
                 Repository = _accountRepositoryMock.Object
             };
             _userKit = new UserKit
             {
-                Lookup = null,
+                Lookup = _userLookupMock.Object,
                 Query = _userQueryMock.Object,
                 Repository = _userRepositoryMock.Object
             };
@@ -110,8 +115,12 @@ namespace SlashTodo.Web.Tests
             _slackApiMock.Setup(x => x.OAuthAccess(It.IsAny<OAuthAccessRequest>())).Returns(Task.FromResult(oAuthAccessResponse));
             _slackApiMock.Setup(x => x.AuthTest(It.IsAny<AuthTestRequest>())).Returns(Task.FromResult(authTestResponse));
             _slackApiMock.Setup(x => x.UsersInfo(It.IsAny<UsersInfoRequest>())).Returns(Task.FromResult(usersInfoResponse));
-            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult(account));
-            _userQueryMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult(user));
+            _accountLookupMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult(account != null ? account.Id : (Guid?)null));
+            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult(account.ToDto()));
+            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult(account));
+            _userLookupMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult(user != null ? user.Id : (Guid?)null));
+            _userQueryMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult(user.ToDto()));
+            _userRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult(user));
         }
 
         [Test]

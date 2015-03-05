@@ -108,15 +108,30 @@ namespace SlashTodo.Web.Authentication
 
                 // Get the account associated with the user's team, create if it
                 // does not already exist.
-                var account = accountKit.Query.BySlackTeamId(authTest.TeamId).Result ?? // TODO Await instead
-                              Core.Domain.Account.Create(Guid.NewGuid(), authTest.TeamId);
-
+                var accountId = accountKit.Lookup.BySlackTeamId(authTest.TeamId).Result; // TODO Await instead
+                Core.Domain.Account account = null;
+                if (accountId.HasValue)
+                {
+                    account = accountKit.Repository.GetById(accountId.Value).Result; // TODO Await instead
+                }
+                if (account == null)
+                {
+                    account = Core.Domain.Account.Create(Guid.NewGuid(), authTest.TeamId);
+                }
                 account.UpdateSlackTeamName(authTest.TeamName);
                 accountKit.Repository.Save(account).Wait(); // TODO Await instead
-
+                              
                 // Get the user, create if it does not already exist.
-                var user = userKit.Query.BySlackUserId(authTest.UserId).Result ?? // TODO Await instead
-                           Core.Domain.User.Create(Guid.NewGuid(), account.Id, authTest.UserId);
+                var userId = userKit.Lookup.BySlackUserId(authTest.UserId).Result; // TODO Await instead
+                Core.Domain.User user = null;
+                if (userId.HasValue)
+                {
+                    user = userKit.Repository.GetById(userId.Value).Result; // TODO Await instead
+                }
+                if (user == null)
+                {
+                    user = Core.Domain.User.Create(Guid.NewGuid(), account.Id, authTest.UserId);
+                }
 
                 // Store the access token with the user.
                 user.UpdateSlackApiAccessToken(oAuthAccess.AccessToken);

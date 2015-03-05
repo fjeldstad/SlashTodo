@@ -14,6 +14,8 @@ using SlashTodo.Core;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Web.Account;
 using SlashTodo.Web.Account.ViewModels;
+using SlashTodo.Web.Dtos;
+using SlashTodo.Web.Lookups;
 using SlashTodo.Web.Queries;
 using SlashTodo.Web.ViewModels;
 
@@ -24,6 +26,7 @@ namespace SlashTodo.Web.Tests
     {
         private Mock<IHostSettings> _hostSettingsMock;
         private Mock<IUserMapper> _userMapperMock;
+        private Mock<IAccountLookup> _accountLookupMock;
         private Mock<IAccountQuery> _accountQueryMock;
         private Mock<IRepository<Core.Domain.Account>> _accountRepositoryMock;
         private AccountKit _accountKit;
@@ -34,11 +37,12 @@ namespace SlashTodo.Web.Tests
         {
             _hostSettingsMock = new Mock<IHostSettings>();
             _userMapperMock = new Mock<IUserMapper>();
+            _accountLookupMock = new Mock<IAccountLookup>();
             _accountQueryMock = new Mock<IAccountQuery>();
             _accountRepositoryMock = new Mock<IRepository<Core.Domain.Account>>();
             _accountKit = new AccountKit
             {
-                Lookup = null,
+                Lookup = _accountLookupMock.Object,
                 Query = _accountQueryMock.Object,
                 Repository = _accountRepositoryMock.Object
             };
@@ -47,10 +51,10 @@ namespace SlashTodo.Web.Tests
                 Id = Guid.NewGuid(),
                 AccountId = Guid.NewGuid(),
                 SlackUserId = "slackUserId",
-                SlackTeamId = "slackTeamId",
                 SlackUserName = "slackUserName",
-                SlackTeamName = "slackTeamName",
-                SlackApiAccessToken = "slackApiAccessToken"
+                SlackApiAccessToken = "slackApiAccessToken",
+                SlackTeamId = "slackTeamId",
+                SlackTeamName = "slackTeamName"
             };
         }
 
@@ -110,8 +114,10 @@ namespace SlashTodo.Web.Tests
             account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
             account.UpdateSlashCommandToken(slashCommandToken);
             account.ClearUncommittedEvents();
+            var accountDto = 
             _accountRepositoryMock.Setup(x => x.GetById(_userIdentity.AccountId)).Returns(Task.FromResult(account));
-            _accountQueryMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult(account));
+            _accountQueryMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult(account.ToDto()));
+            _accountLookupMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult((Guid?)account.Id));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
