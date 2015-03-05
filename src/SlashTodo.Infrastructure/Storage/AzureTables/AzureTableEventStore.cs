@@ -10,34 +10,20 @@ using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Core;
 using SlashTodo.Core.Domain;
 
-namespace SlashTodo.Infrastructure
+namespace SlashTodo.Infrastructure.Storage.AzureTables
 {
-    public class AzureTableEventStore : IEventStore
+    public class AzureTableEventStore : TableStorageBase<AzureTableEventStore.DomainEventTableEntity>, IEventStore
     {
-        private readonly CloudStorageAccount _storageAccount;
-        private readonly string _tableName;
-
-        public string TableName { get { return _tableName; } }
-
         public AzureTableEventStore(CloudStorageAccount storageAccount, string tableName)
+            : base(storageAccount, tableName)
         {
-            if (storageAccount == null)
-            {
-                throw new ArgumentNullException("storageAccount");
-            }
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new ArgumentNullException("tableName");
-            }
-            _storageAccount = storageAccount;
-            _tableName = tableName;
         }
 
         public async Task<IEnumerable<IDomainEvent>> GetById(Guid aggregateId)
         {
             var table = await GetTable();
             var events = GetDomainEventEntities(table, aggregateId)
-                .Select(x => x.GetDomainEvent())
+                .Select(x => x.GetData())
                 .OrderBy(x => x.OriginalVersion);
             return events;
         }
@@ -59,7 +45,7 @@ namespace SlashTodo.Infrastructure
                 var batch = new TableBatchOperation();
                 foreach (var @event in orderedEvents.Skip(insertedRows).Take(100))
                 {
-                    batch.Insert(new DomainEventEntity(@event));
+                    batch.Insert(new DomainEventTableEntity(@event));
                 }
                 var result = await table.ExecuteBatchAsync(batch);
                 insertedRows += result.Count;
@@ -83,17 +69,9 @@ namespace SlashTodo.Infrastructure
             }
         }
 
-        private async Task<CloudTable> GetTable()
+        private IEnumerable<DomainEventTableEntity> GetDomainEventEntities(CloudTable table, Guid aggregateId)
         {
-            var tableClient = _storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(_tableName);
-            await table.CreateIfNotExistsAsync();
-            return table;
-        }
-
-        private IEnumerable<DomainEventEntity> GetDomainEventEntities(CloudTable table, Guid aggregateId)
-        {
-            var query = new TableQuery<DomainEventEntity>()
+            var query = new TableQuery<DomainEventTableEntity>()
                 .Where(TableQuery.GenerateFilterCondition(
                     "PartitionKey",
                     QueryComparisons.Equal,
@@ -101,26 +79,13 @@ namespace SlashTodo.Infrastructure
             return table.ExecuteQuery(query);
         }
 
-        public class DomainEventEntity : TableEntity
+        public class DomainEventTableEntity : ComplexTableEntity<IDomainEvent>
         {
-            public Guid Id { get { return Guid.Parse(PartitionKey); } }
-            public int Version { get { return int.Parse(RowKey); } }
-            public string DomainEventAssemblyQualifiedName { get; set; }
-            public string SerializedDomainEvent { get; set; }
+            public DomainEventTableEntity() { }
 
-            public DomainEventEntity() { } 
-
-            public DomainEventEntity(IDomainEvent @event)
+            public DomainEventTableEntity(IDomainEvent @event)
+                : base(@event, e => e.Id.ToString(), e => e.OriginalVersion.ToString())
             {
-                PartitionKey = @event.Id.ToString();
-                RowKey = @event.OriginalVersion.ToString();
-                SerializedDomainEvent = JsonConvert.SerializeObject(@event);
-                DomainEventAssemblyQualifiedName = @event.GetType().AssemblyQualifiedName;
-            }
-
-            public IDomainEvent GetDomainEvent()
-            {
-                return (IDomainEvent)JsonConvert.DeserializeObject(SerializedDomainEvent, Type.GetType(DomainEventAssemblyQualifiedName));
             }
         }
     }

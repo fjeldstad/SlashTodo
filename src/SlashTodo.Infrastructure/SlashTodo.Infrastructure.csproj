@@ -83,7 +83,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AzureTableEventStore.cs" />
+    <Compile Include="Storage\AzureTables\AzureTableEventStore.cs" />
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\AzureSettings.cs" />
     <Compile Include="Configuration\HostSettings.cs" />
@@ -99,6 +99,8 @@
     <Compile Include="RefitStubs.cs" />
     <Compile Include="Slack\IOAuthAccessToken.cs" />
     <Compile Include="Slack\ISlackApi.cs" />
+    <Compile Include="Storage\AzureTables\ComplexTableEntity.cs" />
+    <Compile Include="Storage\AzureTables\TableStorageBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SlashTodo.Core\SlashTodo.Core.csproj">

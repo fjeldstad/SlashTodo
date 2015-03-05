@@ -9,6 +9,7 @@ using Moq;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure.Configuration;
+using SlashTodo.Infrastructure.Storage.AzureTables;
 
 namespace SlashTodo.Infrastructure.Tests
 {
@@ -58,7 +59,7 @@ namespace SlashTodo.Infrastructure.Tests
             // Arrange
             var aggregateId = Guid.NewGuid();
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
-            var dummyEntity = new AzureTableEventStore.DomainEventEntity(dummyEvent);
+            var dummyEntity = new AzureTableEventStore.DomainEventTableEntity(dummyEvent);
             var table = GetTableForEventStore();
             var insertOp = TableOperation.Insert(dummyEntity);
             table.Execute(insertOp);
@@ -79,16 +80,16 @@ namespace SlashTodo.Infrastructure.Tests
             // Arrange
             var aggregateId = Guid.NewGuid();
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
-            var dummyEntity = new AzureTableEventStore.DomainEventEntity(dummyEvent);
+            var dummyEntity = new AzureTableEventStore.DomainEventTableEntity(dummyEvent);
 
             // Act
             await _eventStore.Save(aggregateId, 0, new[] { dummyEvent });
 
             // Assert
             var table = GetTableForEventStore();
-            var retrieveOp = TableOperation.Retrieve<AzureTableEventStore.DomainEventEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
+            var retrieveOp = TableOperation.Retrieve<AzureTableEventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
             var retrieveResult = await table.ExecuteAsync(retrieveOp);
-            var actualEntity = retrieveResult.Result as AzureTableEventStore.DomainEventEntity;
+            var actualEntity = retrieveResult.Result as AzureTableEventStore.DomainEventTableEntity;
             Assert.That(actualEntity.PartitionKey, Is.EqualTo(dummyEntity.PartitionKey));
             Assert.That(actualEntity.RowKey, Is.EqualTo(dummyEntity.RowKey));
         }
@@ -99,7 +100,7 @@ namespace SlashTodo.Infrastructure.Tests
             // Arrange
             var aggregateId = Guid.NewGuid();
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
-            var dummyEntity = new AzureTableEventStore.DomainEventEntity(dummyEvent);
+            var dummyEntity = new AzureTableEventStore.DomainEventTableEntity(dummyEvent);
             var table = GetTableForEventStore();
             var insertOp = TableOperation.Insert(dummyEntity);
             table.Execute(insertOp);
@@ -109,7 +110,7 @@ namespace SlashTodo.Infrastructure.Tests
 
             // Assert
             table = GetTableForEventStore();
-            var retrieveOp = TableOperation.Retrieve<AzureTableEventStore.DomainEventEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
+            var retrieveOp = TableOperation.Retrieve<AzureTableEventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
             var retrieveResult = await table.ExecuteAsync(retrieveOp);
             Assert.That(retrieveResult.Result, Is.Null);
         }
