@@ -11,7 +11,7 @@ namespace SlashTodo.Core
     {
         private readonly IEventStore _eventStore;
 
-        public Repository(IEventStore eventStore)
+        protected Repository(IEventStore eventStore)
         {
             _eventStore = eventStore;
         } 

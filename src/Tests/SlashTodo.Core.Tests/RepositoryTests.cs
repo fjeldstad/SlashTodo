@@ -19,7 +19,7 @@ namespace SlashTodo.Core.Tests
         public void BeforeEachTest()
         {
             _eventStore = new Mock<IEventStore>();
-            _repository = new Repository<DummyAggregate>(_eventStore.Object);
+            _repository = new DummyRepository(_eventStore.Object);
         }
 
         [Test]
@@ -115,6 +115,13 @@ namespace SlashTodo.Core.Tests
 
             // Assert
             _eventStore.Verify(x => x.Save(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<IEnumerable<IDomainEvent>>()), Times.Never);
+        }
+
+        public class DummyRepository : Repository<DummyAggregate>
+        {
+            public DummyRepository(IEventStore eventStore) : base(eventStore)
+            {
+            }
         }
 
         public class DummyAggregate : Aggregate

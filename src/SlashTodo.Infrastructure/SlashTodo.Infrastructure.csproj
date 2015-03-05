@@ -98,12 +98,14 @@
     <Compile Include="IOAuthState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RefitStubs.cs" />
-    <Compile Include="Slack\IOAuthAccessToken.cs" />
     <Compile Include="Slack\ISlackApi.cs" />
     <Compile Include="Storage\AzureTables\ComplexTableEntity.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableUserLookup.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableAccountLookup.cs" />
     <Compile Include="Storage\AzureTables\Lookups\LookupAggregateIdByStringTableEntity.cs" />
+    <Compile Include="Storage\AzureTables\Repositories\TodoRepository.cs" />
+    <Compile Include="Storage\AzureTables\Repositories\UserRepository.cs" />
+    <Compile Include="Storage\AzureTables\Repositories\AccountRepository.cs" />
     <Compile Include="Storage\AzureTables\TableStorageBase.cs" />
   </ItemGroup>
   <ItemGroup>

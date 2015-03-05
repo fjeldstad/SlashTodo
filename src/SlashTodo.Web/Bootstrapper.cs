@@ -13,9 +13,12 @@ using Nancy.Cryptography;
 using Nancy.Session;
 using Nancy.TinyIoc;
 using Refit;
+using SlashTodo.Core;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Slack;
+using SlashTodo.Infrastructure.Storage.AzureTables;
+using SlashTodo.Infrastructure.Storage.AzureTables.Repositories;
 
 namespace SlashTodo.Web
 {
@@ -49,7 +52,9 @@ namespace SlashTodo.Web
             container.Register<CryptographyConfiguration>(_cryptographyConfiguration);
             container.Register<IHmacProvider>(_cryptographyConfiguration.HmacProvider);
             container.Register<IEncryptionProvider>(_cryptographyConfiguration.EncryptionProvider);
-
+            container.Register<IRepository<Core.Domain.Account>, AccountRepository>();
+            container.Register<IRepository<Core.Domain.User>, UserRepository>();
+            container.Register<IRepository<Core.Domain.Todo>, TodoRepository>();
             var slackSettings = container.Resolve<ISlackSettings>();
             container.Register<ISlackApi>(RestService.For<ISlackApi>(slackSettings.ApiBaseUrl));
 
@@ -96,7 +101,7 @@ namespace SlashTodo.Web
                     CryptographyConfiguration = CryptographyConfiguration,
                     RequiresSSL = true,
                     RedirectUrl = "/login",
-                    // TODO UserMapper = ...
+                    UserMapper = container.Resolve<IUserMapper>()
                 });
             }
         }
