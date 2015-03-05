@@ -74,8 +74,14 @@
     <Compile Include="Domain\IDomainEvent.cs" />
     <Compile Include="Domain\Todo.cs" />
     <Compile Include="Domain\User.cs" />
+    <Compile Include="Dtos\AccountDto.cs" />
+    <Compile Include="Dtos\UserDto.cs" />
     <Compile Include="IEventDispatcher.cs" />
     <Compile Include="IRepository.cs" />
+    <Compile Include="Lookups\IAccountLookup.cs" />
+    <Compile Include="Lookups\IUserLookup.cs" />
+    <Compile Include="Queries\IAccountQuery.cs" />
+    <Compile Include="Queries\IUserQuery.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="IEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

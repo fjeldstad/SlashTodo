@@ -83,6 +83,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="ISubscriber.cs" />
     <Compile Include="Storage\AzureTables\AzureTableEventStore.cs" />
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\AzureSettings.cs" />
@@ -100,6 +101,9 @@
     <Compile Include="Slack\IOAuthAccessToken.cs" />
     <Compile Include="Slack\ISlackApi.cs" />
     <Compile Include="Storage\AzureTables\ComplexTableEntity.cs" />
+    <Compile Include="Storage\AzureTables\Lookups\AzureTableUserLookup.cs" />
+    <Compile Include="Storage\AzureTables\Lookups\AzureTableAccountLookup.cs" />
+    <Compile Include="Storage\AzureTables\Lookups\LookupAggregateIdByStringTableEntity.cs" />
     <Compile Include="Storage\AzureTables\TableStorageBase.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -113,8 +117,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Lookups\" />
-    <Folder Include="Queries\" />
+    <Folder Include="Storage\AzureTables\Queries\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\refit.2.2.1\build\refit.targets" Condition="Exists('..\packages\refit.2.2.1\build\refit.targets')" />

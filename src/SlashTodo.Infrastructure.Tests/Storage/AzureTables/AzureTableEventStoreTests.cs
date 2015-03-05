@@ -11,7 +11,7 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Storage.AzureTables;
 
-namespace SlashTodo.Infrastructure.Tests
+namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
 {
     [TestFixture]
     public class AzureTableEventStoreTests

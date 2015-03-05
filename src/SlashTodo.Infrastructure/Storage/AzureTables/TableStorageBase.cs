@@ -8,34 +8,130 @@ using Microsoft.WindowsAzure.Storage.Table;
 
 namespace SlashTodo.Infrastructure.Storage.AzureTables
 {
-    public abstract class TableStorageBase<TEntity> where TEntity : TableEntity
+    public abstract class TableStorageBase<TEntity> where TEntity : TableEntity, new()
     {
         private readonly CloudStorageAccount _storageAccount;
-        private readonly string _tableName;
 
         protected CloudStorageAccount StorageAccount { get { return _storageAccount; } }
-        public string TableName { get { return _tableName; } }
 
-        protected TableStorageBase(CloudStorageAccount storageAccount, string tableName)
+        protected TableStorageBase(CloudStorageAccount storageAccount)
         {
             if (storageAccount == null)
             {
                 throw new ArgumentNullException("storageAccount");
             }
+            _storageAccount = storageAccount;
+        }
+
+        protected async Task<CloudTable> GetTable(string tableName)
+        {
+            var tableClient = _storageAccount.CreateCloudTableClient();
+            var table = tableClient.GetTableReference(tableName);
+            await table.CreateIfNotExistsAsync();
+            return table;
+        }
+
+        protected async Task Insert(TEntity entity, string tableName)
+        {
+            if (entity == null)
+            {
+                throw new ArgumentNullException("entity");
+            }
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 throw new ArgumentNullException("tableName");
             }
-            _storageAccount = storageAccount;
-            _tableName = tableName;
+            var insertOperation = TableOperation.Insert(entity);
+            var table = await GetTable(tableName);
+            await table.ExecuteAsync(insertOperation);
         }
 
-        protected async Task<CloudTable> GetTable()
+        protected async Task InsertBatch(IEnumerable<TEntity> entities, string tableName)
         {
-            var tableClient = _storageAccount.CreateCloudTableClient();
-            var table = tableClient.GetTableReference(_tableName);
-            await table.CreateIfNotExistsAsync();
-            return table;
+            if (entities == null)
+            {
+                throw new ArgumentNullException("entities");
+            }
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new ArgumentNullException("tableName");
+            }
+            var table = await GetTable(tableName);
+            var entityArray = entities.ToArray();
+            var insertedRows = 0;
+            while (insertedRows < entityArray.Length)
+            {
+                var batch = new TableBatchOperation();
+                foreach (var entity in entityArray.Skip(insertedRows).Take(100))
+                {
+                    batch.Insert(entity);
+                }
+                var result = await table.ExecuteBatchAsync(batch);
+                insertedRows += result.Count;
+            }
+        }
+
+        protected async Task<TEntity> Retrieve(string tableName, string partitionKey, string rowKey)
+        {
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new ArgumentNullException("tableName");
+            }
+            if (string.IsNullOrWhiteSpace(partitionKey))
+            {
+                throw new ArgumentNullException("partitionKey");
+            }
+            if (string.IsNullOrWhiteSpace(rowKey))
+            {
+                throw new ArgumentNullException("rowKey");
+            }
+            var table = await GetTable(tableName);
+            var retrieveOperation = TableOperation.Retrieve<TEntity>(partitionKey, rowKey);
+            return (await table.ExecuteAsync(retrieveOperation)).Result as TEntity;
+        }
+
+        protected async Task<IEnumerable<TEntity>> RetrievePartition(string tableName, string partitionKey)
+        {
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new ArgumentNullException("tableName");
+            }
+            if (string.IsNullOrWhiteSpace(partitionKey))
+            {
+                throw new ArgumentNullException("partitionKey");
+            }
+            var table = await GetTable(tableName);
+            var query = new TableQuery<TEntity>()
+                .Where(TableQuery.GenerateFilterCondition(
+                    "PartitionKey",
+                    QueryComparisons.Equal,
+                    partitionKey));
+            return table.ExecuteQuery(query);
+        }
+
+        protected async Task DeletePartition(string tableName, string partitionKey)
+        {
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new ArgumentNullException("tableName");
+            }
+            if (string.IsNullOrWhiteSpace(partitionKey))
+            {
+                throw new ArgumentNullException("partitionKey");
+            }
+            var table = await GetTable(tableName);
+            var entities = (await RetrievePartition(tableName, partitionKey)).ToArray();
+            var deletedRows = 0;
+            while (deletedRows < entities.Length)
+            {
+                var batch = new TableBatchOperation();
+                foreach (var entity in entities.Skip(deletedRows).Take(100))
+                {
+                    batch.Delete(entity);
+                }
+                var result = await table.ExecuteBatchAsync(batch);
+                deletedRows += result.Count;
+            }
         }
     }
 }
