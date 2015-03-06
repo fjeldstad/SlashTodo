@@ -5,29 +5,29 @@ using System.Text;
 using System.Threading.Tasks;
 using Nancy.Authentication.Forms;
 using SlashTodo.Core;
+using SlashTodo.Core.Queries;
 
 namespace SlashTodo.Web
 {
     public class UserMapper : IUserMapper
     {
-        // TODO Use a read model (view) instead, for performance.
-        private readonly IRepository<Core.Domain.User> _userRepository;
-        private readonly IRepository<Core.Domain.Account> _accountRepository;
+        private readonly IUserQuery _userQuery;
+        private readonly IAccountQuery _accountQuery;
 
-        public UserMapper(IRepository<Core.Domain.User> userRepository, IRepository<Core.Domain.Account> accountRepository)
+        public UserMapper(IUserQuery userQuery, IAccountQuery accountQuery)
         {
-            _userRepository = userRepository;
-            _accountRepository = accountRepository;
+            _userQuery = userQuery;
+            _accountQuery = accountQuery;
         }
 
         public Nancy.Security.IUserIdentity GetUserFromIdentifier(Guid identifier, Nancy.NancyContext context)
         {
-            var user = _userRepository.GetById(identifier).Result; // TODO Await?
+            var user = _userQuery.ById(identifier).Result;
             if (user == null)
             {
                 return null;
             }
-            var account = _accountRepository.GetById(user.AccountId).Result; // TODO Await?
+            var account = _accountQuery.ById(user.AccountId).Result;
             if (account == null)
             {
                 return null; // Ideally this should never happen.
@@ -40,7 +40,8 @@ namespace SlashTodo.Web
                 SlackUserName = user.SlackUserName,
                 SlackApiAccessToken = user.SlackApiAccessToken,
                 SlackTeamId = account.SlackTeamId,
-                SlackTeamName = account.SlackTeamName
+                SlackTeamName = account.SlackTeamName,
+                SlackTeamUrl = account.SlackTeamUrl
             };
             return userIdentity;
         }

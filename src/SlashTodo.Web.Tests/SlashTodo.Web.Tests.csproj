@@ -83,6 +83,7 @@
     <Compile Include="SessionBasedOAuthStateTests.cs" />
     <Compile Include="TestBootstrapper.cs" />
     <Compile Include="TestRootPathProvider.cs" />
+    <Compile Include="UserMapperTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
