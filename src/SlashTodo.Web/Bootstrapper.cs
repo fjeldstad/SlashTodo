@@ -100,7 +100,7 @@ namespace SlashTodo.Web
                 {
                     CryptographyConfiguration = CryptographyConfiguration,
                     RequiresSSL = true,
-                    RedirectUrl = "/login",
+                    RedirectUrl = "/signin",
                     UserMapper = container.Resolve<IUserMapper>()
                 });
             }

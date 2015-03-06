@@ -75,6 +75,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HomeModuleTests.cs" />
     <Compile Include="AccountModuleTests.cs" />
     <Compile Include="AuthenticationModuleTests.cs" />
     <Compile Include="BrowserResponseExtensions.cs" />

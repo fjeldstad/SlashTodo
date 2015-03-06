@@ -3,4 +3,48 @@
     Layout = "_Layout.cshtml";
 }
 
-Account dashboard for @Model.SlackTeamName
+
+
+<div class="container">
+    <div class="page-header clearfix">
+        <a href="@Url.Content("~/signout")" class="btn btn-default btn-sm pull-right" style="margin-top: 25px;"><span class="glyphicon glyphicon-log-out"></span> Sign out</a>
+        <h1 class="logo">/todo</h1>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+            <h3>Settings</h3>
+            
+            <h6>Slack team</h6>
+            <p><code>@Model.SlackTeamName</code></p>
+
+            <h6>Slash command url</h6>
+            <p><code>@Model.SlashCommandUrl</code></p>
+            
+            <h6>Slash command token</h6>
+            @if (string.IsNullOrWhiteSpace(Model.SlashCommandToken))
+            {
+                <a href="" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-pencil"></span> Configure</a>
+            }
+            else
+            {
+                <p><code>@Model.SlashCommandToken</code></p>
+            }
+            
+            <h6>Incoming webhook url</h6>
+            @if (string.IsNullOrWhiteSpace(Model.IncomingWebhookUrl))
+            {
+                <a href="" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-pencil"></span> Configure</a>
+            }
+            else
+            {
+                <p><code>@Model.IncomingWebhookUrl</code></p>
+            }
+        </div>
+        <div class="col-sm-6">
+            <h3>Setup instructions</h3>
+            <ol>
+                <li>Go to Slack <strong>Integrations</strong> </li>
+            </ol>
+        </div>
+    </div>
+</div>

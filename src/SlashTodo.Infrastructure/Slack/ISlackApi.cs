@@ -76,6 +76,9 @@ namespace SlashTodo.Infrastructure.Slack
 
         [JsonProperty(PropertyName = "user_id")]
         public string UserId { get; set; }
+
+        [JsonProperty(PropertyName = "url")]
+        public string TeamUrl { get; set; }
     }
 
     public class UsersInfoRequest : AuthenticatedRequestBase

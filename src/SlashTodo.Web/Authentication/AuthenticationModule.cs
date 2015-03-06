@@ -27,7 +27,7 @@ namespace SlashTodo.Web.Authentication
         {
             this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
 
-            Get["/login"] = _ =>
+            Get["/signin"] = _ =>
             {
                 var authorizationUrl = new UriBuilder(slackSettings.OAuthAuthorizationUrl);
                 var query = HttpUtility.ParseQueryString(string.Empty);
@@ -39,7 +39,7 @@ namespace SlashTodo.Web.Authentication
                 return Response.AsRedirect(authorizationUrl.Uri.AbsoluteUri);
             };
 
-            Get["/logout"] = _ =>
+            Get["/signout"] = _ =>
             {
                 return this.LogoutAndRedirect("/");
             };

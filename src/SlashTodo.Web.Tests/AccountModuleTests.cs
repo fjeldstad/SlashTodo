@@ -87,7 +87,7 @@ namespace SlashTodo.Web.Tests
                     {
                         CryptographyConfiguration = CryptographyConfiguration.NoEncryption,
                         UserMapper = _userMapperMock.Object,
-                        RedirectUrl = "/login"
+                        RedirectUrl = "/signin"
                     });
                 });
             });
@@ -100,13 +100,15 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            result.ShouldHaveRedirectedTo("/login?returnUrl=/account");
+            result.ShouldHaveRedirectedTo("/signin?returnUrl=/account");
         }
 
         [Test]
         public void DisplaysDashboardWithCorrectAccountInfo()
         {
             // Arrange
+            var hostBaseUrl = "https://slashtodo.com/api/";
+            _hostSettingsMock.SetupGet(x => x.ApiBaseUrl).Returns(hostBaseUrl);
             var incomingWebhookUrl = new Uri("https://api.slack.com/incoming-webhooks/abc");
             var slashCommandToken = "slashCommandToken";
             var account = Core.Domain.Account.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
@@ -140,6 +142,7 @@ namespace SlashTodo.Web.Tests
             Assert.That(viewModel.SlackTeamName, Is.EqualTo(_userIdentity.SlackTeamName));
             Assert.That(viewModel.IncomingWebhookUrl, Is.EqualTo(incomingWebhookUrl.AbsoluteUri));
             Assert.That(viewModel.SlashCommandToken, Is.EqualTo(slashCommandToken));
+            Assert.That(viewModel.SlashCommandUrl, Is.EqualTo(hostBaseUrl.TrimEnd('/') + "/" + _userIdentity.AccountId.ToString("N")));
         }
     }
 }

@@ -8,6 +8,7 @@ namespace SlashTodo.Infrastructure.Configuration
 {
     public interface IHostSettings
     {
+        string ApiBaseUrl { get; }
         int HttpsPort { get; }
     }
 }

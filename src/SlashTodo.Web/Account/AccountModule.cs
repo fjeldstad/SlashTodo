@@ -32,6 +32,7 @@ namespace SlashTodo.Web.Account
                 {
                     viewModel.IncomingWebhookUrl = account.IncomingWebhookUrl.AbsoluteUri;
                 }
+                viewModel.SlashCommandUrl = string.Format("{0}/{1:N}", hostSettings.ApiBaseUrl.TrimEnd('/'), account.Id); 
                 return View["Dashboard.cshtml", viewModel];
             };
         }

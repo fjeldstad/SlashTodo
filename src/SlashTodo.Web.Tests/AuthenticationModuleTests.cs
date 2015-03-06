@@ -87,7 +87,7 @@ namespace SlashTodo.Web.Tests
                     {
                         CryptographyConfiguration = CryptographyConfiguration.NoEncryption,
                         UserMapper = _userMapperMock.Object,
-                        RedirectUrl = "/login"
+                        RedirectUrl = "/signin"
                     });
                 });
                 if (withConfig != null)
@@ -134,7 +134,7 @@ namespace SlashTodo.Web.Tests
             var browser = new Browser(bootstrapper);
 
             // Arrange
-            var result = browser.Get("/login", with =>
+            var result = browser.Get("/signin", with =>
             {
                 with.HttpsRequest();
             });
@@ -172,7 +172,7 @@ namespace SlashTodo.Web.Tests
             var browser = new Browser(bootstrapper);
 
             // Act
-            var result = browser.Get("/logout", with =>
+            var result = browser.Get("/signout", with =>
             {
                 with.HttpsRequest();
             });
