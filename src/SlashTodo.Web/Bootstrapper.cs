@@ -76,6 +76,9 @@ namespace SlashTodo.Web
             {
                 return string.Concat(context.ModuleName, "/Views/", viewName);
             });
+
+            // Register event subscriptions
+            // TODO
         }
 
         protected override void ConfigureRequestContainer(TinyIoCContainer container, NancyContext context)

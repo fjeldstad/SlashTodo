@@ -10,10 +10,12 @@ namespace SlashTodo.Core
     public class Repository<T> : IRepository<T> where T : Aggregate, new()
     {
         private readonly IEventStore _eventStore;
+        private readonly IMessageBus _bus;
 
-        protected Repository(IEventStore eventStore)
+        protected Repository(IEventStore eventStore, IMessageBus bus)
         {
             _eventStore = eventStore;
+            _bus = bus;
         } 
 
         public async Task<T> GetById(Guid id)
@@ -38,6 +40,11 @@ namespace SlashTodo.Core
             if (uncommittedEvents.Any())
             {
                 await _eventStore.Save(aggregate.Id, uncommittedEvents.First().OriginalVersion, uncommittedEvents).ConfigureAwait(false);
+                foreach (var @event in uncommittedEvents)
+                {
+                    await _bus.Publish(@event).ConfigureAwait(false);
+                }
+                aggregate.ClearUncommittedEvents();
             }
         }
     }

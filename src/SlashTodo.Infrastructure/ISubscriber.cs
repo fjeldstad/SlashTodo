@@ -11,4 +11,9 @@ namespace SlashTodo.Infrastructure
     {
         Task HandleEvent(TEvent @event);
     }
+
+    public interface ISubscriber
+    {
+        void RegisterSubscriptions(Action<IMessageBus> bus);
+    }
 }

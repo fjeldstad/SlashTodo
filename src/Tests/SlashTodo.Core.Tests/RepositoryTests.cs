@@ -12,6 +12,7 @@ namespace SlashTodo.Core.Tests
     [TestFixture]
     public class RepositoryTests
     {
+        private Mock<IMessageBus> _bus;
         private Mock<IEventStore> _eventStore;
         private Repository<DummyAggregate> _repository;
 
@@ -19,7 +20,9 @@ namespace SlashTodo.Core.Tests
         public void BeforeEachTest()
         {
             _eventStore = new Mock<IEventStore>();
-            _repository = new DummyRepository(_eventStore.Object);
+            _bus = new Mock<IMessageBus>();
+            _bus.Setup(x => x.Publish(It.IsAny<IMessage>())).Returns(Task.FromResult((object)null));
+            _repository = new DummyRepository(_eventStore.Object, _bus.Object);
         }
 
         [Test]
@@ -104,6 +107,47 @@ namespace SlashTodo.Core.Tests
         }
 
         [Test]
+        public async Task SavePublishesEventsToMessageBus()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var aggregate = new DummyAggregate(id);
+            aggregate.DoSomething();
+            aggregate.DoSomething();
+            aggregate.DoSomething();
+            var publishedMessages = new List<IMessage>();
+            _bus.Setup(x => x.Publish(It.IsAny<IMessage>())).Callback((IMessage m) => publishedMessages.Add(m)).Returns(Task.FromResult<object>(null));
+            var uncommittedEvents = aggregate.GetUncommittedEvents().ToArray();
+            Assert.That(uncommittedEvents, Is.Not.Empty);
+
+            // Act
+            await _repository.Save(aggregate);
+
+            // Assert
+            Assert.That(uncommittedEvents.SequenceEqual(publishedMessages));
+        }
+
+        [Test]
+        public async Task SaveClearsUncommittedEvents()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var aggregate = new DummyAggregate(id);
+            var expectedVersion = aggregate.Version;
+            aggregate.DoSomething();
+            aggregate.DoSomething();
+            aggregate.DoSomething();
+            var uncommittedEvents = aggregate.GetUncommittedEvents().ToArray();
+            Assert.That(uncommittedEvents, Is.Not.Empty);
+
+            // Act
+            await _repository.Save(aggregate);
+
+            // Assert
+            Assert.That(aggregate.GetUncommittedEvents(), Is.Empty);
+        }
+
+        [Test]
         public async Task SaveDoesNothingWhenThereAreNoUncommittedEvents()
         {
             // Arrange
@@ -119,7 +163,7 @@ namespace SlashTodo.Core.Tests
 
         public class DummyRepository : Repository<DummyAggregate>
         {
-            public DummyRepository(IEventStore eventStore) : base(eventStore)
+            public DummyRepository(IEventStore eventStore, IMessageBus bus) : base(eventStore, bus)
             {
             }
         }

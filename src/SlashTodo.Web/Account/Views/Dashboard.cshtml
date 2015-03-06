@@ -43,7 +43,32 @@
         <div class="col-sm-6">
             <h3>Setup instructions</h3>
             <ol>
-                <li>Go to Slack <strong>Integrations</strong> </li>
+                <li>
+                    Go to the
+                    <a href="@string.Format("{0}/services/new", Model.SlackTeamUrl.TrimEnd('/'))">Integrations</a> page of your Slack team.
+                </li>
+                <li>
+                    Add a new
+                    <strong><a href="@string.Format("{0}/services/new/slash-commands", Model.SlackTeamUrl.TrimEnd('/'))">Slash Command</a></strong>
+                    integration.
+                    <ul>
+                        <li><strong>Command:</strong> <code>/todo</code></li>
+                        <li><strong>Url:</strong> <code>@Model.SlashCommandUrl</code></li>
+                        <li><strong>Method:</strong> <code>POST</code></li>
+                    </ul>
+                    Copy or note the <strong>token</strong> of the integration.
+                    This is your <strong>Slash command token</strong>.
+                </li>
+                <li>
+                    Add a new
+                    <strong><a href="@string.Format("{0}/services/new/incoming-webhook", Model.SlackTeamUrl.TrimEnd('/'))">Incoming Webhook</a></strong>
+                    integration.
+                    <ul>
+                        <li><strong>Post to Channel:</strong> <code>@@slackbot</code></li>
+                    </ul>
+                    Copy or note the <strong>Webhook URL</strong> of the integration.
+                    This is your <strong>Incoming webhook url</strong>.
+                </li>
             </ol>
         </div>
     </div>
