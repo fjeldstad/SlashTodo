@@ -1,0 +1,22 @@
+﻿.jumbotron {
+    margin-top: 2em;
+    text-align: center;
+}
+
+.jumbotron small {
+    font-size: 12px;
+}
+
+h1.logo {
+    font-family: Monaco, Consolas, monospace;
+    font-weight: bold;
+}
+
+p.disclaimer {
+    font-size: 14px;
+    margin-top: 2em; 
+    padding: 0.5em; 
+    text-align: center;
+    border-radius: 0.4em;
+    background-color: #fff;
+}

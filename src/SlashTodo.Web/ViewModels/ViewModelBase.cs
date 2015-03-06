@@ -7,6 +7,6 @@ namespace SlashTodo.Web.ViewModels
 {
     public abstract class ViewModelBase
     {
-        public virtual string Title { get { return "SlashTodo"; } }
+        public virtual string Title { get { return "/todo"; } }
     }
 }
