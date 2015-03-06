@@ -103,8 +103,8 @@
     <Compile Include="Storage\AzureTables\Lookups\AzureTableUserLookup.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableAccountLookup.cs" />
     <Compile Include="Storage\AzureTables\Lookups\LookupAggregateIdByStringTableEntity.cs" />
-    <Compile Include="Storage\AzureTables\Queries\DummyAccountQuery.cs" />
-    <Compile Include="Storage\AzureTables\Queries\DummyUserQuery.cs" />
+    <Compile Include="Storage\AzureTables\Queries\AzureTableUserQuery.cs" />
+    <Compile Include="Storage\AzureTables\Queries\AzureTableAccountQuery.cs" />
     <Compile Include="Storage\AzureTables\Repositories\TodoRepository.cs" />
     <Compile Include="Storage\AzureTables\Repositories\UserRepository.cs" />
     <Compile Include="Storage\AzureTables\Repositories\AccountRepository.cs" />

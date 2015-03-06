@@ -93,6 +93,10 @@
       <Project>{53f70269-9818-4b4d-8ef6-568db8276bbb}</Project>
       <Name>SlashTodo.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\SlashTodo.Tests.Common\SlashTodo.Tests.Common.csproj">
+      <Project>{10847375-a76b-4c4e-9f49-46a0cfc3f376}</Project>
+      <Name>SlashTodo.Tests.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

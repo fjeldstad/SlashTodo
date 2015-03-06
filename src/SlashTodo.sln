@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Infrastructure.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Web.Tests", "SlashTodo.Web.Tests\SlashTodo.Web.Tests.csproj", "{49F1588A-1B64-4A38-8F19-886458093884}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlashTodo.Tests.Common", "SlashTodo.Tests.Common\SlashTodo.Tests.Common.csproj", "{10847375-A76B-4C4E-9F49-46A0CFC3F376}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{49F1588A-1B64-4A38-8F19-886458093884}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{49F1588A-1B64-4A38-8F19-886458093884}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{49F1588A-1B64-4A38-8F19-886458093884}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10847375-A76B-4C4E-9F49-46A0CFC3F376}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10847375-A76B-4C4E-9F49-46A0CFC3F376}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10847375-A76B-4C4E-9F49-46A0CFC3F376}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10847375-A76B-4C4E-9F49-46A0CFC3F376}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,5 +67,6 @@ Global
 		{82C1A30B-378C-4381-A3E1-DCB24DD67D83} = {8317C0CB-5273-44E7-96C1-1484EA989871}
 		{E6D8271A-06F5-49F6-816C-656D7E8B3F5C} = {8317C0CB-5273-44E7-96C1-1484EA989871}
 		{49F1588A-1B64-4A38-8F19-886458093884} = {8317C0CB-5273-44E7-96C1-1484EA989871}
+		{10847375-A76B-4C4E-9F49-46A0CFC3F376} = {8317C0CB-5273-44E7-96C1-1484EA989871}
 	EndGlobalSection
 EndGlobal

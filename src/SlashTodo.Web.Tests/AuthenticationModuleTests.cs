@@ -16,6 +16,7 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Slack;
+using SlashTodo.Tests.Common;
 using SlashTodo.Web.Authentication;
 using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
@@ -112,10 +113,10 @@ namespace SlashTodo.Web.Tests
             _slackApiMock.Setup(x => x.AuthTest(It.IsAny<AuthTestRequest>())).Returns(Task.FromResult(authTestResponse));
             _slackApiMock.Setup(x => x.UsersInfo(It.IsAny<UsersInfoRequest>())).Returns(Task.FromResult(usersInfoResponse));
             _accountLookupMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult(account != null ? account.Id : (Guid?)null));
-            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult(account.ToDto()));
+            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult(account.ToDto(DateTime.UtcNow.AddDays(-1))));
             _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult(account));
             _userLookupMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult(user != null ? user.Id : (Guid?)null));
-            _userQueryMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult(user.ToDto()));
+            _userQueryMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult(user.ToDto(DateTime.UtcNow.AddDays(-1))));
             _userRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult(user));
         }
 

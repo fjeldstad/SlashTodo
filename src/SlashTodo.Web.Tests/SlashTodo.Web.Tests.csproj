@@ -96,6 +96,10 @@
       <Project>{57a0ecad-268a-4dd4-a2e9-90bb5c620017}</Project>
       <Name>SlashTodo.Infrastructure</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SlashTodo.Tests.Common\SlashTodo.Tests.Common.csproj">
+      <Project>{10847375-a76b-4c4e-9f49-46a0cfc3f376}</Project>
+      <Name>SlashTodo.Tests.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SlashTodo.Web\SlashTodo.Web.csproj">
       <Project>{7d80bcba-44fe-4e32-9026-707e659dd12d}</Project>
       <Name>SlashTodo.Web</Name>

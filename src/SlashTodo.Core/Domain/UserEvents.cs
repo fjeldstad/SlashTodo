@@ -32,8 +32,4 @@ namespace SlashTodo.Core.Domain
     {
         public string SlackApiAccessToken { get; set; }
     }
-
-    public class UserSlackApiAccessTokenRemoved : UserEvent
-    {
-    }
 }

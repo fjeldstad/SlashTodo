@@ -12,24 +12,8 @@ namespace SlashTodo.Core.Dtos
         public string SlackUserId { get; set; }
         public string SlackUserName { get; set; }
         public string SlackApiAccessToken { get; set; }
-    }
-
-    public static class UserExtensions
-    {
-        public static UserDto ToDto(this Core.Domain.User user)
-        {
-            if (user == null)
-            {
-                return null;
-            }
-            return new UserDto
-            {
-                Id = user.Id,
-                AccountId = user.AccountId,
-                SlackUserId = user.SlackUserId,
-                SlackUserName = user.SlackUserName,
-                SlackApiAccessToken = user.SlackApiAccessToken
-            };
-        }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? ActivatedAt { get; set; }
+        public bool IsActive { get { return ActivatedAt.HasValue; } }
     }
 }

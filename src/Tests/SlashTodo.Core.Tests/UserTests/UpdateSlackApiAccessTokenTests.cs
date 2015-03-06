@@ -19,8 +19,8 @@ namespace SlashTodo.Core.Tests.UserTests
             var user = User.Create(Guid.NewGuid(), Guid.NewGuid(), "slackUserId");
             
             // Act
-            Assert.Throws<ArgumentNullException>(() => user.UpdateSlackApiAccessToken(string.Empty));
-            Assert.Throws<ArgumentNullException>(() => user.UpdateSlackApiAccessToken(" "));
+            Assert.Throws<ArgumentOutOfRangeException>(() => user.UpdateSlackApiAccessToken(string.Empty));
+            Assert.Throws<ArgumentOutOfRangeException>(() => user.UpdateSlackApiAccessToken(" "));
         }
 
         [Test]
@@ -117,8 +117,9 @@ namespace SlashTodo.Core.Tests.UserTests
             user.UpdateSlackApiAccessToken(null);
 
             // Assert
-            var @event = user.GetUncommittedEvents().Single() as UserSlackApiAccessTokenRemoved;
+            var @event = user.GetUncommittedEvents().Single() as UserSlackApiAccessTokenUpdated;
             @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
+            Assert.That(@event.SlackApiAccessToken, Is.Null);
         }
 
         [Test]

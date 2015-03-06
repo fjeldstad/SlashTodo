@@ -11,6 +11,7 @@ using Nancy.Security;
 using Nancy.Testing;
 using NUnit.Framework;
 using SlashTodo.Core;
+using SlashTodo.Core.Domain;
 using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
 using SlashTodo.Core.Queries;
@@ -18,6 +19,7 @@ using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Web.Account;
 using SlashTodo.Web.Account.ViewModels;
 using SlashTodo.Web.ViewModels;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Web.Tests
 {
@@ -111,11 +113,11 @@ namespace SlashTodo.Web.Tests
             account.UpdateSlackTeamName(_userIdentity.SlackTeamName);
             account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
             account.UpdateSlashCommandToken(slashCommandToken);
-            account.ClearUncommittedEvents();
             var accountDto = 
             _accountRepositoryMock.Setup(x => x.GetById(_userIdentity.AccountId)).Returns(Task.FromResult(account));
-            _accountQueryMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult(account.ToDto()));
+            _accountQueryMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult(account.ToDto(account.GetUncommittedEvents().Single(e => e is AccountCreated).Timestamp)));
             _accountLookupMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult((Guid?)account.Id));
+            account.ClearUncommittedEvents();
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>

@@ -64,23 +64,17 @@ namespace SlashTodo.Core.Domain
 
         public void UpdateSlackApiAccessToken(string slackApiAccessToken)
         {
-            if (slackApiAccessToken == null)
+            if (string.Equals(_slackApiAccessToken, slackApiAccessToken, StringComparison.Ordinal))
             {
-                if (_slackApiAccessToken != null)
-                {
-                    RaiseEvent(new UserSlackApiAccessTokenRemoved());
-                }
                 return;
             }
-            if (string.IsNullOrWhiteSpace(slackApiAccessToken))
+            if (slackApiAccessToken != null &&
+                string.IsNullOrWhiteSpace(slackApiAccessToken))
             {
-                throw new ArgumentNullException("slackApiAccessToken");
+                // A token cannot be empty or only consist of whitespace
+                throw new ArgumentOutOfRangeException("slackApiAccessToken", "Access token may not only consist of whitespace.");
             }
-            if (_slackApiAccessToken == null ||
-                !slackApiAccessToken.Equals(_slackApiAccessToken, StringComparison.Ordinal))
-            {
-                RaiseEvent(new UserSlackApiAccessTokenUpdated { SlackApiAccessToken = slackApiAccessToken });
-            }
+            RaiseEvent(new UserSlackApiAccessTokenUpdated { SlackApiAccessToken = slackApiAccessToken });
         }
 
         protected override void ApplyEventCore(IDomainEvent @event)
@@ -106,11 +100,6 @@ namespace SlashTodo.Core.Domain
         private void Apply(UserSlackApiAccessTokenUpdated @event)
         {
             _slackApiAccessToken = @event.SlackApiAccessToken;
-        }
-
-        private void Apply(UserSlackApiAccessTokenRemoved @event)
-        {
-            _slackApiAccessToken = null;
         }
 
         private void ConfigureStateMachine()
