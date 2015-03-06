@@ -18,7 +18,7 @@ namespace SlashTodo.Core
 
         public async Task<T> GetById(Guid id)
         {
-            var events = (await _eventStore.GetById(id)).ToArray();
+            var events = (await _eventStore.GetById(id).ConfigureAwait(false)).ToArray();
             if (!events.Any())
             {
                 return null;
@@ -37,7 +37,7 @@ namespace SlashTodo.Core
             var uncommittedEvents = aggregate.GetUncommittedEvents().ToArray();
             if (uncommittedEvents.Any())
             {
-                await _eventStore.Save(aggregate.Id, uncommittedEvents.First().OriginalVersion, uncommittedEvents);
+                await _eventStore.Save(aggregate.Id, uncommittedEvents.First().OriginalVersion, uncommittedEvents).ConfigureAwait(false);
             }
         }
     }

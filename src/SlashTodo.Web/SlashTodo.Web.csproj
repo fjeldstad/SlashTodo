@@ -155,12 +155,6 @@
     <Compile Include="Account\AccountModule.cs" />
     <Compile Include="Account\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
-    <Compile Include="Dtos\AccountDto.cs" />
-    <Compile Include="Dtos\UserDto.cs" />
-    <Compile Include="Lookups\IAccountLookup.cs" />
-    <Compile Include="Lookups\IUserLookup.cs" />
-    <Compile Include="Queries\IAccountQuery.cs" />
-    <Compile Include="Queries\IUserQuery.cs" />
     <Compile Include="SlackUserIdentity.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="RefitStubs.cs" />

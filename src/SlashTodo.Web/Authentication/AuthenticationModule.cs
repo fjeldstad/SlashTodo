@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using Nancy;
 using Nancy.Authentication.Forms;
@@ -9,7 +10,6 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Slack;
-using SlashTodo.Web.Lookups;
 using SlashTodo.Web.ViewModels;
 
 namespace SlashTodo.Web.Authentication
@@ -44,7 +44,7 @@ namespace SlashTodo.Web.Authentication
                 return this.LogoutAndRedirect("/");
             };
 
-            Get["/authenticate"] = _ =>
+            Get["/authenticate", true] = async (_,ct) =>
             {
                 // Handle authentication error
                 if (!string.IsNullOrEmpty((string)Request.Query["error"]))
@@ -63,13 +63,13 @@ namespace SlashTodo.Web.Authentication
                 }
 
                 // Request an access token from Slack
-                var oAuthAccess = slackApi.OAuthAccess(new OAuthAccessRequest
+                var oAuthAccess = await slackApi.OAuthAccess(new OAuthAccessRequest
                 {
                     ClientId = slackSettings.ClientId,
                     ClientSecret = slackSettings.ClientSecret,
                     Code = (string)Request.Query["code"],
                     RedirectUri = slackSettings.OAuthRedirectUrl.AbsoluteUri
-                }).Result; // TODO Await instead
+                });
                 if (!oAuthAccess.Ok)
                 {
                     // TODO Log error
@@ -77,10 +77,10 @@ namespace SlashTodo.Web.Authentication
                 }
 
                 // Request basic user identity info from Slack
-                var authTest = slackApi.AuthTest(new AuthTestRequest
+                var authTest = await slackApi.AuthTest(new AuthTestRequest
                 {
                     AccessToken = oAuthAccess.AccessToken
-                }).Result; // TODO Await instead
+                });
                 if (!authTest.Ok)
                 {
                     // TODO Log error
@@ -88,11 +88,11 @@ namespace SlashTodo.Web.Authentication
                 }
 
                 // Get the user object from Slack
-                var usersInfo = slackApi.UsersInfo(new UsersInfoRequest
+                var usersInfo = await slackApi.UsersInfo(new UsersInfoRequest
                 {
                     AccessToken = oAuthAccess.AccessToken,
                     UserId = authTest.UserId
-                }).Result; // TODO Await instead
+                });
                 if (!usersInfo.Ok)
                 {
                     // TODO Log error
@@ -108,25 +108,25 @@ namespace SlashTodo.Web.Authentication
 
                 // Get the account associated with the user's team, create if it
                 // does not already exist.
-                var accountId = accountKit.Lookup.BySlackTeamId(authTest.TeamId).Result; // TODO Await instead
+                var accountId = await accountKit.Lookup.BySlackTeamId(authTest.TeamId);
                 Core.Domain.Account account = null;
                 if (accountId.HasValue)
                 {
-                    account = accountKit.Repository.GetById(accountId.Value).Result; // TODO Await instead
+                    account = await accountKit.Repository.GetById(accountId.Value);
                 }
                 if (account == null)
                 {
                     account = Core.Domain.Account.Create(Guid.NewGuid(), authTest.TeamId);
                 }
                 account.UpdateSlackTeamName(authTest.TeamName);
-                accountKit.Repository.Save(account).Wait(); // TODO Await instead
+                await accountKit.Repository.Save(account);
                               
                 // Get the user, create if it does not already exist.
-                var userId = userKit.Lookup.BySlackUserId(authTest.UserId).Result; // TODO Await instead
+                var userId = await userKit.Lookup.BySlackUserId(authTest.UserId);
                 Core.Domain.User user = null;
                 if (userId.HasValue)
                 {
-                    user = userKit.Repository.GetById(userId.Value).Result; // TODO Await instead
+                    user = await userKit.Repository.GetById(userId.Value);
                 }
                 if (user == null)
                 {
@@ -136,7 +136,7 @@ namespace SlashTodo.Web.Authentication
                 // Store the access token with the user.
                 user.UpdateSlackApiAccessToken(oAuthAccess.AccessToken);
                 user.UpdateSlackUserName(authTest.UserName);
-                userKit.Repository.Save(user).Wait(); // TODO Await instead
+                await userKit.Repository.Save(user);
 
                 // Login and redirect to account page
                 return this.LoginAndRedirect(user.Id, fallbackRedirectUrl: "/account");

@@ -30,7 +30,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
 
         public async Task<IEnumerable<IDomainEvent>> GetById(Guid aggregateId)
         {
-            var events = (await RetrievePartition(_tableName, aggregateId.ToString()))
+            var events = (await RetrievePartition(_tableName, aggregateId.ToString()).ConfigureAwait(false))
                 .Select(x => x.GetData())
                 .OrderBy(x => x.OriginalVersion);
             return events;
@@ -48,12 +48,12 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
             var orderedEvents = events
                 .OrderBy(x => x.OriginalVersion)
                 .Select(x => new DomainEventTableEntity(x));
-            await InsertBatch(orderedEvents, _tableName);
+            await InsertBatch(orderedEvents, _tableName).ConfigureAwait(false);
         }
 
         public async Task Delete(Guid aggregateId)
         {
-            await DeletePartition(_tableName, aggregateId.ToString());
+            await DeletePartition(_tableName, aggregateId.ToString()).ConfigureAwait(false);
         }
 
         public class DomainEventTableEntity : ComplexTableEntity<IDomainEvent>

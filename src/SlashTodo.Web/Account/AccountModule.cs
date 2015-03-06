@@ -21,14 +21,17 @@ namespace SlashTodo.Web.Account
             this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
             this.RequiresAuthentication();
 
-            Get["/"] = _ =>
+            Get["/", true] = async (_,ct) =>
             {
                 var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
-                var account = accountKit.Repository.GetById(currentSlackUser.AccountId).Result; // TODO Await instead
+                var account = await accountKit.Repository.GetById(currentSlackUser.AccountId);
                 var viewModel = viewModelFactory.Create<DashboardViewModel>();
                 viewModel.SlackTeamName = account.SlackTeamName;
                 viewModel.SlashCommandToken = account.SlashCommandToken;
-                viewModel.IncomingWebhookUrl = account.IncomingWebhookUrl.AbsoluteUri;
+                if (account.IncomingWebhookUrl != null)
+                {
+                    viewModel.IncomingWebhookUrl = account.IncomingWebhookUrl.AbsoluteUri;
+                }
                 return View["Dashboard.cshtml", viewModel];
             };
         }

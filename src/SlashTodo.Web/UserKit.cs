@@ -4,8 +4,8 @@ using System.Linq;
 using System.Web;
 using SlashTodo.Core;
 using SlashTodo.Core.Domain;
-using SlashTodo.Web.Lookups;
-using SlashTodo.Web.Queries;
+using SlashTodo.Core.Lookups;
+using SlashTodo.Core.Queries;
 
 namespace SlashTodo.Web
 {
@@ -13,6 +13,13 @@ namespace SlashTodo.Web
     {
         public IUserLookup Lookup { get; set; }
         public IUserQuery Query { get; set; }
-        public IRepository<User> Repository { get; set; } 
+        public IRepository<Core.Domain.User> Repository { get; set; } 
+
+        public UserKit(IUserLookup lookup, IUserQuery query, IRepository<Core.Domain.User> repository)
+        {
+            Lookup = lookup;
+            Query = query;
+            Repository = repository;
+        } 
     }
 }

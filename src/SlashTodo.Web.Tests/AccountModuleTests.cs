@@ -11,12 +11,12 @@ using Nancy.Security;
 using Nancy.Testing;
 using NUnit.Framework;
 using SlashTodo.Core;
+using SlashTodo.Core.Dtos;
+using SlashTodo.Core.Lookups;
+using SlashTodo.Core.Queries;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Web.Account;
 using SlashTodo.Web.Account.ViewModels;
-using SlashTodo.Web.Dtos;
-using SlashTodo.Web.Lookups;
-using SlashTodo.Web.Queries;
 using SlashTodo.Web.ViewModels;
 
 namespace SlashTodo.Web.Tests
@@ -40,12 +40,10 @@ namespace SlashTodo.Web.Tests
             _accountLookupMock = new Mock<IAccountLookup>();
             _accountQueryMock = new Mock<IAccountQuery>();
             _accountRepositoryMock = new Mock<IRepository<Core.Domain.Account>>();
-            _accountKit = new AccountKit
-            {
-                Lookup = _accountLookupMock.Object,
-                Query = _accountQueryMock.Object,
-                Repository = _accountRepositoryMock.Object
-            };
+            _accountKit = new AccountKit(
+                _accountLookupMock.Object,
+                _accountQueryMock.Object,
+                _accountRepositoryMock.Object);
             _userIdentity = new SlackUserIdentity
             {
                 Id = Guid.NewGuid(),

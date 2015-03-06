@@ -81,7 +81,7 @@ namespace SlashTodo.Web
         protected override void ConfigureRequestContainer(TinyIoCContainer container, NancyContext context)
         {
             base.ConfigureRequestContainer(container, context);
-            container.Register<ISession>(context.Request.Session);
+            container.Register<ISession>((c, p) => context.Request.Session);
             container.Register<IOAuthState, SessionBasedOAuthState>();
         }
 

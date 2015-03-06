@@ -17,9 +17,9 @@ using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Slack;
 using SlashTodo.Web.Authentication;
-using SlashTodo.Web.Dtos;
-using SlashTodo.Web.Lookups;
-using SlashTodo.Web.Queries;
+using SlashTodo.Core.Dtos;
+using SlashTodo.Core.Lookups;
+using SlashTodo.Core.Queries;
 using SlashTodo.Web.ViewModels;
 using User = SlashTodo.Infrastructure.Slack.User;
 
@@ -56,18 +56,14 @@ namespace SlashTodo.Web.Tests
             _userLookupMock = new Mock<IUserLookup>();
             _userQueryMock = new Mock<IUserQuery>();
             _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
-            _accountKit = new AccountKit
-            {
-                Lookup = _accountLookupMock.Object,
-                Query = _accountQueryMock.Object,
-                Repository = _accountRepositoryMock.Object
-            };
-            _userKit = new UserKit
-            {
-                Lookup = _userLookupMock.Object,
-                Query = _userQueryMock.Object,
-                Repository = _userRepositoryMock.Object
-            };
+            _accountKit = new AccountKit(
+                _accountLookupMock.Object,
+                _accountQueryMock.Object,
+                _accountRepositoryMock.Object);
+            _userKit = new UserKit(
+                _userLookupMock.Object,
+                _userQueryMock.Object,
+                _userRepositoryMock.Object);
         }
 
         private TestBootstrapper GetBootstrapper(Action<ConfigurableBootstrapper.ConfigurableBootstrapperConfigurator> withConfig = null)

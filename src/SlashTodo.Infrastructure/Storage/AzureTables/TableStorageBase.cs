@@ -27,7 +27,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
         {
             var tableClient = _storageAccount.CreateCloudTableClient();
             var table = tableClient.GetTableReference(tableName);
-            await table.CreateIfNotExistsAsync();
+            await table.CreateIfNotExistsAsync().ConfigureAwait(false);
             return table;
         }
 
@@ -42,8 +42,8 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
                 throw new ArgumentNullException("tableName");
             }
             var insertOperation = TableOperation.Insert(entity);
-            var table = await GetTable(tableName);
-            await table.ExecuteAsync(insertOperation);
+            var table = await GetTable(tableName).ConfigureAwait(false);
+            await table.ExecuteAsync(insertOperation).ConfigureAwait(false);
         }
 
         protected async Task InsertBatch(IEnumerable<TEntity> entities, string tableName)
@@ -56,7 +56,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
             {
                 throw new ArgumentNullException("tableName");
             }
-            var table = await GetTable(tableName);
+            var table = await GetTable(tableName).ConfigureAwait(false);
             var entityArray = entities.ToArray();
             var insertedRows = 0;
             while (insertedRows < entityArray.Length)
@@ -66,7 +66,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
                 {
                     batch.Insert(entity);
                 }
-                var result = await table.ExecuteBatchAsync(batch);
+                var result = await table.ExecuteBatchAsync(batch).ConfigureAwait(false);
                 insertedRows += result.Count;
             }
         }
@@ -85,9 +85,9 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
             {
                 throw new ArgumentNullException("rowKey");
             }
-            var table = await GetTable(tableName);
+            var table = await GetTable(tableName).ConfigureAwait(false);
             var retrieveOperation = TableOperation.Retrieve<TEntity>(partitionKey, rowKey);
-            return (await table.ExecuteAsync(retrieveOperation)).Result as TEntity;
+            return (await table.ExecuteAsync(retrieveOperation).ConfigureAwait(false)).Result as TEntity;
         }
 
         protected async Task<IEnumerable<TEntity>> RetrievePartition(string tableName, string partitionKey)
@@ -100,7 +100,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
             {
                 throw new ArgumentNullException("partitionKey");
             }
-            var table = await GetTable(tableName);
+            var table = await GetTable(tableName).ConfigureAwait(false);
             var query = new TableQuery<TEntity>()
                 .Where(TableQuery.GenerateFilterCondition(
                     "PartitionKey",
@@ -119,8 +119,8 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
             {
                 throw new ArgumentNullException("partitionKey");
             }
-            var table = await GetTable(tableName);
-            var entities = (await RetrievePartition(tableName, partitionKey)).ToArray();
+            var table = await GetTable(tableName).ConfigureAwait(false);
+            var entities = (await RetrievePartition(tableName, partitionKey).ConfigureAwait(false)).ToArray();
             var deletedRows = 0;
             while (deletedRows < entities.Length)
             {
@@ -129,7 +129,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
                 {
                     batch.Delete(entity);
                 }
-                var result = await table.ExecuteBatchAsync(batch);
+                var result = await table.ExecuteBatchAsync(batch).ConfigureAwait(false);
                 deletedRows += result.Count;
             }
         }

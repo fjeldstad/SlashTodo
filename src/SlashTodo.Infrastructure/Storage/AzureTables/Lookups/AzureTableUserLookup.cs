@@ -19,7 +19,12 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Lookups
 
         public string TableName { get { return _tableName; } }
 
-        public AzureTableUserLookup(CloudStorageAccount storageAccount, string tableName = DefaultTableName)
+        public AzureTableUserLookup(CloudStorageAccount storageAccount)
+            : this(storageAccount, DefaultTableName)
+        {
+        }
+
+        public AzureTableUserLookup(CloudStorageAccount storageAccount, string tableName)
             : base(storageAccount)
         {
             if (string.IsNullOrWhiteSpace(tableName))
@@ -31,13 +36,13 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Lookups
 
         public async Task<Guid?> BySlackUserId(string slackUserId)
         {
-            var entity = await Retrieve(_tableName, slackUserId, slackUserId);
+            var entity = await Retrieve(_tableName, slackUserId, slackUserId).ConfigureAwait(false);
             return entity != null ? entity.AggregateId : (Guid?)null;
         }
 
-        public Task HandleEvent(UserCreated @event)
+        public async Task HandleEvent(UserCreated @event)
         {
-            return Insert(new LookupAggregateIdByStringTableEntity(@event.SlackUserId, @event.Id), _tableName);
+            await Insert(new LookupAggregateIdByStringTableEntity(@event.SlackUserId, @event.Id), _tableName).ConfigureAwait(false);
         }
     }
 }
