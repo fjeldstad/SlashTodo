@@ -24,9 +24,13 @@ namespace SlashTodo.Web.Account
             Get["/", true] = async (_,ct) =>
             {
                 var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
-                var account = await accountKit.Repository.GetById(currentSlackUser.AccountId);
+                var account = await accountKit.Query.ById(currentSlackUser.AccountId);
                 var viewModel = viewModelFactory.Create<DashboardViewModel>();
                 viewModel.SlackTeamName = account.SlackTeamName;
+                if (account.SlackTeamUrl != null)
+                {
+                    viewModel.SlackTeamUrl = account.SlackTeamUrl.AbsoluteUri;
+                }
                 viewModel.SlashCommandToken = account.SlashCommandToken;
                 if (account.IncomingWebhookUrl != null)
                 {

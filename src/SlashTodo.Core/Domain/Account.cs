@@ -16,9 +16,11 @@ namespace SlashTodo.Core.Domain
         private string _slashCommandToken;
         private Uri _incomingWebhookUrl;
         private string _slackTeamName;
+        private Uri _slackTeamUrl;
 
         public string SlackTeamId { get { return _slackTeamId; } }
         public string SlackTeamName { get { return _slackTeamName; } }
+        public Uri SlackTeamUrl { get { return _slackTeamUrl; } }
         public string SlashCommandToken { get { return _slashCommandToken; } }
         public Uri IncomingWebhookUrl { get { return _incomingWebhookUrl; } }
         public bool IsActive { get { return _stateMachine.IsInState(AccountState.Active); } }
@@ -97,17 +99,25 @@ namespace SlashTodo.Core.Domain
             }
         }
 
-        public void UpdateSlackTeamName(string slackTeamName)
+        public void UpdateSlackTeamInfo(string slackTeamName, Uri slackTeamUrl)
         {
             if (string.IsNullOrWhiteSpace(slackTeamName))
             {
                 throw new ArgumentNullException("slackTeamName");
             }
-            slackTeamName = slackTeamName.Trim();
-            if (string.IsNullOrWhiteSpace(_slackTeamName) ||
-                !slackTeamName.Equals(_slackTeamName, StringComparison.Ordinal))
+            if (slackTeamUrl == null)
             {
-                RaiseEvent(new AccountSlackTeamNameUpdated { SlackTeamName = slackTeamName });
+                throw new ArgumentNullException("slackTeamUrl");
+            }
+            slackTeamName = slackTeamName.Trim();
+            if (!string.Equals(_slackTeamName, slackTeamName, StringComparison.Ordinal) ||
+                _slackTeamUrl != slackTeamUrl)
+            {
+                RaiseEvent(new AccountSlackTeamInfoUpdated
+                {
+                    SlackTeamName = slackTeamName,
+                    SlackTeamUrl = slackTeamUrl
+                });
             }
         }
 
@@ -136,9 +146,10 @@ namespace SlashTodo.Core.Domain
             _stateMachine.Fire(AccountTrigger.Activate);
         }
 
-        private void Apply(AccountSlackTeamNameUpdated @event)
+        private void Apply(AccountSlackTeamInfoUpdated @event)
         {
             _slackTeamName = @event.SlackTeamName;
+            _slackTeamUrl = @event.SlackTeamUrl;
         }
 
         private void ConfigureStateMachine()

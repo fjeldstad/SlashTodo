@@ -54,7 +54,8 @@ namespace SlashTodo.Web.Tests
                 SlackUserName = "slackUserName",
                 SlackApiAccessToken = "slackApiAccessToken",
                 SlackTeamId = "slackTeamId",
-                SlackTeamName = "slackTeamName"
+                SlackTeamName = "slackTeamName",
+                SlackTeamUrl = new Uri("https://team.slack.com")
             };
         }
 
@@ -109,17 +110,18 @@ namespace SlashTodo.Web.Tests
             // Arrange
             var hostBaseUrl = "https://slashtodo.com/api/";
             _hostSettingsMock.SetupGet(x => x.ApiBaseUrl).Returns(hostBaseUrl);
-            var incomingWebhookUrl = new Uri("https://api.slack.com/incoming-webhooks/abc");
-            var slashCommandToken = "slashCommandToken";
-            var account = Core.Domain.Account.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
-            account.UpdateSlackTeamName(_userIdentity.SlackTeamName);
-            account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
-            account.UpdateSlashCommandToken(slashCommandToken);
-            var accountDto = 
-            _accountRepositoryMock.Setup(x => x.GetById(_userIdentity.AccountId)).Returns(Task.FromResult(account));
-            _accountQueryMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult(account.ToDto(account.GetUncommittedEvents().Single(e => e is AccountCreated).Timestamp)));
-            _accountLookupMock.Setup(x => x.BySlackTeamId(_userIdentity.SlackTeamId)).Returns(Task.FromResult((Guid?)account.Id));
-            account.ClearUncommittedEvents();
+            var accountDto = new AccountDto
+            {
+                Id = _userIdentity.AccountId,
+                SlackTeamId = _userIdentity.SlackTeamId,
+                SlackTeamName = _userIdentity.SlackTeamName,
+                SlackTeamUrl = _userIdentity.SlackTeamUrl,
+                SlashCommandToken = "slashCommandToken",
+                IncomingWebhookUrl = new Uri("https://api.slack.com/incoming-webhooks/abc"),
+                CreatedAt = DateTime.UtcNow.AddDays(-2),
+                ActivatedAt = DateTime.UtcNow.AddDays(-1)
+            };
+            _accountQueryMock.Setup(x => x.ById(_userIdentity.AccountId)).Returns(Task.FromResult(accountDto));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -140,8 +142,9 @@ namespace SlashTodo.Web.Tests
             var viewModel = result.GetModel<DashboardViewModel>();
             Assert.That(viewModel, Is.Not.Null);
             Assert.That(viewModel.SlackTeamName, Is.EqualTo(_userIdentity.SlackTeamName));
-            Assert.That(viewModel.IncomingWebhookUrl, Is.EqualTo(incomingWebhookUrl.AbsoluteUri));
-            Assert.That(viewModel.SlashCommandToken, Is.EqualTo(slashCommandToken));
+            Assert.That(viewModel.SlackTeamUrl, Is.EqualTo(_userIdentity.SlackTeamUrl.AbsoluteUri));
+            Assert.That(viewModel.IncomingWebhookUrl, Is.EqualTo(accountDto.IncomingWebhookUrl.AbsoluteUri));
+            Assert.That(viewModel.SlashCommandToken, Is.EqualTo(accountDto.SlashCommandToken));
             Assert.That(viewModel.SlashCommandUrl, Is.EqualTo(hostBaseUrl.TrimEnd('/') + "/" + _userIdentity.AccountId.ToString("N")));
         }
     }

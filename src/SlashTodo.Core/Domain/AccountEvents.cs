@@ -28,9 +28,10 @@ namespace SlashTodo.Core.Domain
         public Uri IncomingWebhookUrl { get; set; }
     }
 
-    public class AccountSlackTeamNameUpdated : AccountEvent
+    public class AccountSlackTeamInfoUpdated : AccountEvent
     {
         public string SlackTeamName { get; set; }
+        public Uri SlackTeamUrl { get; set; }
     }
 
     public class AccountActivated : AccountEvent

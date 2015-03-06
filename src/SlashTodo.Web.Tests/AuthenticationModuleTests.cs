@@ -243,7 +243,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -315,7 +316,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -389,7 +391,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -434,7 +437,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -472,7 +476,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -515,7 +520,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -561,7 +567,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -607,7 +614,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -633,7 +641,7 @@ namespace SlashTodo.Web.Tests
 
             // Assert
             _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a =>
-                a.GetUncommittedEvents().Any(e => e is AccountSlackTeamNameUpdated)
+                a.GetUncommittedEvents().Any(e => e is AccountSlackTeamInfoUpdated)
                 )), Times.Once);
         }
 
@@ -652,7 +660,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -701,7 +710,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -749,7 +759,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -795,7 +806,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {
@@ -841,7 +853,8 @@ namespace SlashTodo.Web.Tests
                 TeamId = "teamId",
                 TeamName = "teamName",
                 UserId = "userId",
-                UserName = "userName"
+                UserName = "userName",
+                TeamUrl = "https://team.slack.com"
             };
             var usersInfoResponse = new UsersInfoResponse
             {

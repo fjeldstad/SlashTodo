@@ -16,7 +16,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
         TableStorageBase<AzureTableAccountQuery.AccountDtoTableEntity>,
         IAccountQuery,
         ISubscriber<AccountCreated>,
-        ISubscriber<AccountSlackTeamNameUpdated>,
+        ISubscriber<AccountSlackTeamInfoUpdated>,
         ISubscriber<AccountSlashCommandTokenUpdated>,
         ISubscriber<AccountIncomingWebhookUpdated>,
         ISubscriber<AccountActivated>
@@ -73,7 +73,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
             }), _tableName).ConfigureAwait(false);
         }
 
-        public async Task HandleEvent(AccountSlackTeamNameUpdated @event)
+        public async Task HandleEvent(AccountSlackTeamInfoUpdated @event)
         {
             var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
             if (entity == null)
@@ -121,6 +121,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
         {
             public string SlackTeamId { get; set; }
             public string SlackTeamName { get; set; }
+            public string SlackTeamUrl { get; set; }
             public string SlashCommandToken { get; set; }
             public string IncomingWebhookUrl { get; set; }
             public DateTime CreatedAt { get; set; }
@@ -136,6 +137,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                 RowKey = dto.Id.ToString();
                 SlackTeamId = dto.SlackTeamId;
                 SlackTeamName = dto.SlackTeamName;
+                SlackTeamUrl = dto.SlackTeamUrl != null ? dto.SlackTeamUrl.AbsoluteUri : null;
                 SlashCommandToken = dto.SlashCommandToken;
                 IncomingWebhookUrl = dto.IncomingWebhookUrl != null ? dto.IncomingWebhookUrl.AbsoluteUri : null;
                 CreatedAt = dto.CreatedAt;
@@ -149,6 +151,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                     Id = Guid.Parse(PartitionKey),
                     SlackTeamId = SlackTeamId,
                     SlackTeamName = SlackTeamName,
+                    SlackTeamUrl = !string.IsNullOrEmpty(SlackTeamUrl) ? new Uri(SlackTeamUrl) : null,
                     SlashCommandToken = SlashCommandToken,
                     IncomingWebhookUrl = !string.IsNullOrEmpty(IncomingWebhookUrl) ? new Uri(IncomingWebhookUrl) : null,
                     CreatedAt = CreatedAt,

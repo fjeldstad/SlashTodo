@@ -84,20 +84,22 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableAccountQuery.AccountDtoTableEntity(dto));
             await table.ExecuteAsync(insertOp);
-            var accountSlackTeamNameUpdated = new AccountSlackTeamNameUpdated
+            var accountSlackTeamInfoUpdated = new AccountSlackTeamInfoUpdated
             {
                 Id = dto.Id,
-                SlackTeamName = "newSlackTeamName"
+                SlackTeamName = "newSlackTeamName",
+                SlackTeamUrl = new Uri("https://team.slack.com")
             };
 
             // Act
-            await _accountQuery.HandleEvent(accountSlackTeamNameUpdated);
+            await _accountQuery.HandleEvent(accountSlackTeamInfoUpdated);
 
             // Assert
-            var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountSlackTeamNameUpdated.Id.ToString(), accountSlackTeamNameUpdated.Id.ToString());
+            var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountSlackTeamInfoUpdated.Id.ToString(), accountSlackTeamInfoUpdated.Id.ToString());
             var row = table.Execute(retrieveOp).Result as AzureTableAccountQuery.AccountDtoTableEntity;
             Assert.That(row, Is.Not.Null);
-            Assert.That(row.SlackTeamName, Is.EqualTo(accountSlackTeamNameUpdated.SlackTeamName));
+            Assert.That(row.SlackTeamName, Is.EqualTo(accountSlackTeamInfoUpdated.SlackTeamName));
+            Assert.That(row.SlackTeamUrl, Is.EqualTo(accountSlackTeamInfoUpdated.SlackTeamUrl.AbsoluteUri));
         }
 
         [Test]
@@ -246,6 +248,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         private static AccountDto GetAccountDto(
             string slackTeamName = "slackTeamName", 
             string slashCommandToken = "slashCommandToken",
+            Uri slackTeamUrl = null,
             Uri incomingWebhookUrl = null,
             DateTime? activatedAt = null)
         {
@@ -254,6 +257,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
                 Id = Guid.NewGuid(),
                 SlackTeamId = "slackTeamId",
                 SlackTeamName = slackTeamName,
+                SlackTeamUrl = slackTeamUrl ?? new Uri("https://team.slack.com"),
                 SlashCommandToken = slashCommandToken,
                 IncomingWebhookUrl = incomingWebhookUrl ?? new Uri("http://api.slack.com/incoming-webhook"),
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
@@ -269,6 +273,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             Assert.That(actualDto.Id, Is.EqualTo(expectedDto.Id));
             Assert.That(actualDto.SlackTeamId, Is.EqualTo(expectedDto.SlackTeamId));
             Assert.That(actualDto.SlackTeamName, Is.EqualTo(expectedDto.SlackTeamName));
+            Assert.That(actualDto.SlackTeamUrl, Is.EqualTo(expectedDto.SlackTeamUrl));
             Assert.That(actualDto.SlashCommandToken, Is.EqualTo(expectedDto.SlashCommandToken));
             Assert.That(actualDto.IncomingWebhookUrl, Is.EqualTo(expectedDto.IncomingWebhookUrl));
             Assert.That(actualDto.CreatedAt, Is.EqualTo(expectedDto.CreatedAt));

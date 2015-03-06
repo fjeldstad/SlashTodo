@@ -118,7 +118,7 @@ namespace SlashTodo.Web.Authentication
                 {
                     account = Core.Domain.Account.Create(Guid.NewGuid(), authTest.TeamId);
                 }
-                account.UpdateSlackTeamName(authTest.TeamName);
+                account.UpdateSlackTeamInfo(authTest.TeamName, new Uri(authTest.TeamUrl));
                 await accountKit.Repository.Save(account);
                               
                 // Get the user, create if it does not already exist.

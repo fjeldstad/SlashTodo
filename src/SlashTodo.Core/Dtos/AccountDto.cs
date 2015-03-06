@@ -10,6 +10,7 @@ namespace SlashTodo.Core.Dtos
         public Guid Id { get; set; }
         public string SlackTeamId { get; set; }
         public string SlackTeamName { get; set; }
+        public Uri SlackTeamUrl { get; set; }
         public string SlashCommandToken { get; set; }
         public Uri IncomingWebhookUrl { get; set; }
         public DateTime CreatedAt { get; set; }

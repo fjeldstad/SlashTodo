@@ -68,7 +68,7 @@
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="AccountTests\AccountActivationTests.cs" />
-    <Compile Include="AccountTests\UpdateSlackTeamNameTests.cs" />
+    <Compile Include="AccountTests\UpdateSlackTeamInfoTests.cs" />
     <Compile Include="AccountTests\UpdateSlashCommandTokenTests.cs" />
     <Compile Include="AccountTests\UpdateIncomingWebhookUrlTests.cs" />
     <Compile Include="AccountTests\CreateAccountTests.cs" />
