@@ -83,10 +83,10 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         }
 
         [Test]
-        public async Task UpdatesRowOnAccountSlackTeamNameUpdated()
+        public async Task UpdatesRowOnAccountSlackTeamInfoUpdated()
         {
             // Arrange
-            var dto = GetAccountDto(slackTeamName: "oldSlackTeamName");
+            var dto = GetAccountDto(slackTeamName: "oldSlackTeamName", slackTeamUrl: new Uri("https://oldteam.slack.com"));
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableAccountQuery.AccountDtoTableEntity(dto));
             await table.ExecuteAsync(insertOp);

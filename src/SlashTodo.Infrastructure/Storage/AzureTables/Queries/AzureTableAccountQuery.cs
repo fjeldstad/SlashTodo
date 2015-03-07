@@ -78,6 +78,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                     return;
                 }
                 entity.SlackTeamName = @event.SlackTeamName;
+                entity.SlackTeamUrl = @event.SlackTeamUrl != null ? @event.SlackTeamUrl.AbsoluteUri : null;
                 Update(_tableName, entity).Wait();
             }));
             _subscriptionTokens.Add(registry.RegisterSubscription<AccountSlashCommandTokenUpdated>(@event =>

@@ -22,6 +22,7 @@ namespace SlashTodo.Web
 
         public Nancy.Security.IUserIdentity GetUserFromIdentifier(Guid identifier, Nancy.NancyContext context)
         {
+            // TODO Handle AggregateExceptions below
             var user = _userQuery.ById(identifier).Result;
             if (user == null)
             {
