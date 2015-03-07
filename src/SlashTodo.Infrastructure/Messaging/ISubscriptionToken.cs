@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using SlashTodo.Core.Domain;
 
-namespace SlashTodo.Core
+namespace SlashTodo.Infrastructure.Messaging
 {
-    public interface IEventDispatcher
+    public interface ISubscriptionToken : IDisposable
     {
-        Task Publish(IDomainEvent @event);
     }
 }

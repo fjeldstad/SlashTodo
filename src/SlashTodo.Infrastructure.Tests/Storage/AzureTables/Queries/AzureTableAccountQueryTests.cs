@@ -11,9 +11,11 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
 using SlashTodo.Infrastructure.Configuration;
+using SlashTodo.Infrastructure.Messaging;
 using SlashTodo.Infrastructure.Storage.AzureTables;
 using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
 using SlashTodo.Infrastructure.Storage.AzureTables.Queries;
+using TinyMessenger;
 
 namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
 {
@@ -23,15 +25,18 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         private readonly AzureSettings _azureSettings = new AzureSettings(new AppSettings());
         private AzureTableAccountQuery _accountQuery;
         private Mock<IAccountLookup> _accountLookupMock;
+        private IMessageBus _bus;
             
         [SetUp]
         public void BeforeEachTest()
         {
+            _bus = new TinyMessageBus(new TinyMessengerHub());
             _accountLookupMock = new Mock<IAccountLookup>();
             // Reference a different table for each test to ensure isolation.
             _accountQuery = new AzureTableAccountQuery(
                 CloudStorageAccount.Parse(_azureSettings.StorageConnectionString),
                 string.Format("test{0}", Guid.NewGuid().ToString("N")), _accountLookupMock.Object);
+            _accountQuery.RegisterSubscriptions((ISubscriptionRegistry)_bus);
             var table = GetTable();
             table.CreateIfNotExists();
         }
@@ -44,6 +49,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             // so we won't hang around waiting for the result.
             var table = GetTable();
             table.DeleteIfExists();
+            _accountQuery.Dispose();
         }
         private CloudTable GetTable()
         {
@@ -65,7 +71,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _accountQuery.HandleEvent(accountCreated);
+            await _bus.Publish(accountCreated);
 
             // Assert
             var table = GetTable();
@@ -92,7 +98,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _accountQuery.HandleEvent(accountSlackTeamInfoUpdated);
+            await _bus.Publish(accountSlackTeamInfoUpdated);
 
             // Assert
             var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountSlackTeamInfoUpdated.Id.ToString(), accountSlackTeamInfoUpdated.Id.ToString());
@@ -117,7 +123,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _accountQuery.HandleEvent(accountSlashCommandTokenUpdated);
+            await _bus.Publish(accountSlashCommandTokenUpdated);
 
             // Assert
             var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountSlashCommandTokenUpdated.Id.ToString(), accountSlashCommandTokenUpdated.Id.ToString());
@@ -141,7 +147,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _accountQuery.HandleEvent(accountIncomingWebhookUrlUpdated);
+            await _bus.Publish(accountIncomingWebhookUrlUpdated);
 
             // Assert
             var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountIncomingWebhookUrlUpdated.Id.ToString(), accountIncomingWebhookUrlUpdated.Id.ToString());
@@ -165,7 +171,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _accountQuery.HandleEvent(accountActivated);
+            await _bus.Publish(accountActivated);
 
             // Assert
             var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountActivated.Id.ToString(), accountActivated.Id.ToString());

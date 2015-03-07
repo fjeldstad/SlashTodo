@@ -6,16 +6,18 @@ using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
 using SlashTodo.Core.Domain;
 using SlashTodo.Core.Lookups;
+using SlashTodo.Infrastructure.Messaging;
 
 namespace SlashTodo.Infrastructure.Storage.AzureTables.Lookups
 {
-    public class AzureTableAccountLookup : 
-        TableStorageBase<LookupAggregateIdByStringTableEntity>, 
-        IAccountLookup, 
-        ISubscriber<AccountCreated>
+    public class AzureTableAccountLookup :
+        TableStorageBase<LookupAggregateIdByStringTableEntity>,
+        IAccountLookup,
+        ISubscriber
     {
         public const string DefaultTableName = "accountIdBySlackTeamId";
         private readonly string _tableName;
+        private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
 
         public string TableName { get { return _tableName; } }
 
@@ -40,9 +42,19 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Lookups
             return entity != null ? entity.AggregateId : (Guid?)null;
         }
 
-        public async Task HandleEvent(AccountCreated @event)
+        public void RegisterSubscriptions(ISubscriptionRegistry registry)
         {
-            await Insert(new LookupAggregateIdByStringTableEntity(@event.SlackTeamId, @event.Id), _tableName).ConfigureAwait(false);
+            _subscriptionTokens.Add(
+                registry.RegisterSubscription<AccountCreated>(@event =>
+                    Insert(new LookupAggregateIdByStringTableEntity(@event.SlackTeamId, @event.Id), _tableName).Wait()));
+        }
+
+        public void Dispose()
+        {
+            foreach (var token in _subscriptionTokens)
+            {
+                token.Dispose();
+            }
         }
     }
 }

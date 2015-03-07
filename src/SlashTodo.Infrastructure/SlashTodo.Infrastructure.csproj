@@ -83,7 +83,11 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="ISubscriber.cs" />
+    <Compile Include="Messaging\IMessageBus.cs" />
+    <Compile Include="Messaging\ISubscriber.cs" />
+    <Compile Include="Messaging\ISubscriptionRegistry.cs" />
+    <Compile Include="Messaging\ISubscriptionToken.cs" />
+    <Compile Include="Messaging\TinyMessageBus.cs" />
     <Compile Include="Storage\AzureTables\AzureTableEventStore.cs" />
     <Compile Include="Configuration\AppSettings.cs" />
     <Compile Include="Configuration\AzureSettings.cs" />
@@ -109,6 +113,7 @@
     <Compile Include="Storage\AzureTables\Repositories\UserRepository.cs" />
     <Compile Include="Storage\AzureTables\Repositories\AccountRepository.cs" />
     <Compile Include="Storage\AzureTables\TableStorageBase.cs" />
+    <Compile Include="TinyMessenger.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\SlashTodo.Core\SlashTodo.Core.csproj">

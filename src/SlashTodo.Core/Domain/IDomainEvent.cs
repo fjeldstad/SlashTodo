@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SlashTodo.Core.Domain
 {
-    public interface IDomainEvent : IMessage
+    public interface IDomainEvent
     {
         Guid Id { get; set; }
         DateTime Timestamp { get; set; }

@@ -8,8 +8,10 @@ using Microsoft.WindowsAzure.Storage.Table;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure.Configuration;
+using SlashTodo.Infrastructure.Messaging;
 using SlashTodo.Infrastructure.Storage.AzureTables;
 using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
+using TinyMessenger;
 
 namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Lookups
 {
@@ -18,14 +20,17 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Lookups
     {
         private readonly AzureSettings _azureSettings = new AzureSettings(new AppSettings());
         private AzureTableUserLookup _userLookup;
+        private IMessageBus _bus;
 
         [SetUp]
         public void BeforeEachTest()
         {
+            _bus = new TinyMessageBus(new TinyMessengerHub());
             // Reference a different table for each test to ensure isolation.
             _userLookup = new AzureTableUserLookup(
                 CloudStorageAccount.Parse(_azureSettings.StorageConnectionString),
                 string.Format("test{0}", Guid.NewGuid().ToString("N")));
+            _userLookup.RegisterSubscriptions((ISubscriptionRegistry)_bus);
             var table = GetTable();
             table.CreateIfNotExists();
         }
@@ -38,6 +43,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Lookups
             // so we won't hang around waiting for the result.
             var table = GetTable();
             table.DeleteIfExists();
+            _userLookup.Dispose();
         }
         private CloudTable GetTable()
         {
@@ -58,7 +64,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Lookups
             };
 
             // Act
-            await _userLookup.HandleEvent(userCreated);
+            await _bus.Publish(userCreated);
 
             // Assert
             var table = GetTable();

@@ -12,7 +12,7 @@ namespace SlashTodo.Core.Tests
     [TestFixture]
     public class RepositoryTests
     {
-        private Mock<IMessageBus> _bus;
+        private Mock<IEventDispatcher> _eventDispatcher;
         private Mock<IEventStore> _eventStore;
         private Repository<DummyAggregate> _repository;
 
@@ -20,9 +20,9 @@ namespace SlashTodo.Core.Tests
         public void BeforeEachTest()
         {
             _eventStore = new Mock<IEventStore>();
-            _bus = new Mock<IMessageBus>();
-            _bus.Setup(x => x.Publish(It.IsAny<IMessage>())).Returns(Task.FromResult((object)null));
-            _repository = new DummyRepository(_eventStore.Object, _bus.Object);
+            _eventDispatcher = new Mock<IEventDispatcher>();
+            _eventDispatcher.Setup(x => x.Publish(It.IsAny<IDomainEvent>())).Returns(Task.FromResult((object)null));
+            _repository = new DummyRepository(_eventStore.Object, _eventDispatcher.Object);
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace SlashTodo.Core.Tests
         }
 
         [Test]
-        public async Task SavePublishesEventsToMessageBus()
+        public async Task SaveDispatchesEvents()
         {
             // Arrange
             var id = Guid.NewGuid();
@@ -115,8 +115,8 @@ namespace SlashTodo.Core.Tests
             aggregate.DoSomething();
             aggregate.DoSomething();
             aggregate.DoSomething();
-            var publishedMessages = new List<IMessage>();
-            _bus.Setup(x => x.Publish(It.IsAny<IMessage>())).Callback((IMessage m) => publishedMessages.Add(m)).Returns(Task.FromResult<object>(null));
+            var dispatchedEvents = new List<IDomainEvent>();
+            _eventDispatcher.Setup(x => x.Publish(It.IsAny<IDomainEvent>())).Callback((IDomainEvent m) => dispatchedEvents.Add(m)).Returns(Task.FromResult<object>(null));
             var uncommittedEvents = aggregate.GetUncommittedEvents().ToArray();
             Assert.That(uncommittedEvents, Is.Not.Empty);
 
@@ -124,7 +124,7 @@ namespace SlashTodo.Core.Tests
             await _repository.Save(aggregate);
 
             // Assert
-            Assert.That(uncommittedEvents.SequenceEqual(publishedMessages));
+            Assert.That(uncommittedEvents.SequenceEqual(dispatchedEvents));
         }
 
         [Test]
@@ -163,7 +163,7 @@ namespace SlashTodo.Core.Tests
 
         public class DummyRepository : Repository<DummyAggregate>
         {
-            public DummyRepository(IEventStore eventStore, IMessageBus bus) : base(eventStore, bus)
+            public DummyRepository(IEventStore eventStore, IEventDispatcher eventDispatcher) : base(eventStore, eventDispatcher)
             {
             }
         }

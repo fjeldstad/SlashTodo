@@ -10,20 +10,19 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
 using SlashTodo.Core.Queries;
+using SlashTodo.Infrastructure.Messaging;
 
 namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
 {
     public class AzureTableUserQuery : 
         TableStorageBase<AzureTableUserQuery.UserDtoTableEntity>, 
         IUserQuery,
-        ISubscriber<UserCreated>,
-        ISubscriber<UserSlackUserNameUpdated>,
-        ISubscriber<UserSlackApiAccessTokenUpdated>,
-        ISubscriber<UserActivated>
+        ISubscriber
     {
         public const string DefaultTableName = "userDtos";
         private readonly string _tableName;
         private readonly IUserLookup _userLookup;
+        private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
 
         public string TableName { get { return _tableName; } }
 
@@ -63,48 +62,54 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
             return await ById(userId.Value).ConfigureAwait(false);
         }
 
-        public async Task HandleEvent(UserCreated @event)
+        public void RegisterSubscriptions(ISubscriptionRegistry registry)
         {
-            await Insert(new UserDtoTableEntity(new UserDto
+            _subscriptionTokens.Add(registry.RegisterSubscription<UserCreated>(@event =>
+                Insert(new UserDtoTableEntity(new UserDto
+                {
+                    Id = @event.Id,
+                    AccountId = @event.AccountId,
+                    CreatedAt = @event.Timestamp,
+                    SlackUserId = @event.SlackUserId
+                }), _tableName).Wait()));
+            _subscriptionTokens.Add(registry.RegisterSubscription<UserSlackUserNameUpdated>(@event =>
             {
-                Id = @event.Id,
-                AccountId = @event.AccountId,
-                CreatedAt = @event.Timestamp,
-                SlackUserId = @event.SlackUserId
-            }), _tableName).ConfigureAwait(false);
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.SlackUserName = @event.SlackUserName;
+                Update(_tableName, entity).Wait();
+            }));
+            _subscriptionTokens.Add(registry.RegisterSubscription<UserSlackApiAccessTokenUpdated>(@event =>
+            {
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.SlackApiAccessToken = @event.SlackApiAccessToken;
+                Update(_tableName, entity).Wait();
+            }));
+            _subscriptionTokens.Add(registry.RegisterSubscription<UserActivated>(@event =>
+            {
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.ActivatedAt = @event.Timestamp;
+                Update(_tableName, entity).Wait();
+            }));
         }
 
-        public async Task HandleEvent(UserSlackUserNameUpdated @event)
+        public void Dispose()
         {
-            var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
-            if (entity == null)
+            foreach (var token in _subscriptionTokens)
             {
-                return;
+                token.Dispose();
             }
-            entity.SlackUserName = @event.SlackUserName;
-            await Update(_tableName, entity).ConfigureAwait(false);
-        }
-
-        public async Task HandleEvent(UserSlackApiAccessTokenUpdated @event)
-        {
-            var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
-            if (entity == null)
-            {
-                return;
-            }
-            entity.SlackApiAccessToken = @event.SlackApiAccessToken;
-            await Update(_tableName, entity).ConfigureAwait(false);
-        }
-
-        public async Task HandleEvent(UserActivated @event)
-        {
-            var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
-            if (entity == null)
-            {
-                return;
-            }
-            entity.ActivatedAt = @event.Timestamp;
-            await Update(_tableName, entity).ConfigureAwait(false);
         }
 
         public class UserDtoTableEntity : TableEntity

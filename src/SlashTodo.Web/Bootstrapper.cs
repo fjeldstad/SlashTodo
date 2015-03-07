@@ -14,11 +14,17 @@ using Nancy.Session;
 using Nancy.TinyIoc;
 using Refit;
 using SlashTodo.Core;
+using SlashTodo.Core.Lookups;
+using SlashTodo.Core.Queries;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
+using SlashTodo.Infrastructure.Messaging;
 using SlashTodo.Infrastructure.Slack;
 using SlashTodo.Infrastructure.Storage.AzureTables;
+using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
+using SlashTodo.Infrastructure.Storage.AzureTables.Queries;
 using SlashTodo.Infrastructure.Storage.AzureTables.Repositories;
+using TinyMessenger;
 
 namespace SlashTodo.Web
 {
@@ -57,6 +63,10 @@ namespace SlashTodo.Web
             container.Register<IRepository<Core.Domain.Todo>, TodoRepository>();
             var slackSettings = container.Resolve<ISlackSettings>();
             container.Register<ISlackApi>(RestService.For<ISlackApi>(slackSettings.ApiBaseUrl));
+            //var messageBus = new TinyMessageBus(new TinyMessengerHub());
+            //container.Register<IMessageBus>(messageBus);
+            //container.Register<ISubscriptionRegistry>(messageBus);
+            //container.Register<IEventDispatcher>(messageBus);
 
             // Register a single CloudStorageAccount instance per application. Also turn off
             // the Nagle algorithm to improve performance.
@@ -78,7 +88,11 @@ namespace SlashTodo.Web
             });
 
             // Register event subscriptions
-            // TODO
+            var subscriptionRegistry = container.Resolve<ISubscriptionRegistry>();
+            foreach (var subscriber in container.ResolveAll<ISubscriber>(includeUnnamed: false))
+            {
+                subscriber.RegisterSubscriptions(subscriptionRegistry);
+            }
         }
 
         protected override void ConfigureRequestContainer(TinyIoCContainer container, NancyContext context)

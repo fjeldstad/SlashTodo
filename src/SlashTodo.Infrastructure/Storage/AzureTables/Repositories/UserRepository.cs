@@ -13,13 +13,13 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Repositories
     {
         public const string DefaultTableName = "users";
 
-        public UserRepository(CloudStorageAccount storageAccount)
-            : base(new AzureTableEventStore(storageAccount, DefaultTableName))
+        public UserRepository(CloudStorageAccount storageAccount, IEventDispatcher eventDispatcher)
+            : this(storageAccount, eventDispatcher, DefaultTableName)
         {
         }
 
-        public UserRepository(CloudStorageAccount storageAccount, string tableName)
-            : base(new AzureTableEventStore(storageAccount, tableName))
+        public UserRepository(CloudStorageAccount storageAccount, IEventDispatcher eventDispatcher, string tableName)
+            : base(new AzureTableEventStore(storageAccount, tableName), eventDispatcher)
         {
         }
     }

@@ -77,7 +77,6 @@
     <Compile Include="Dtos\AccountDto.cs" />
     <Compile Include="Dtos\UserDto.cs" />
     <Compile Include="IEventDispatcher.cs" />
-    <Compile Include="IMessageBus.cs" />
     <Compile Include="IRepository.cs" />
     <Compile Include="Lookups\IAccountLookup.cs" />
     <Compile Include="Lookups\IUserLookup.cs" />

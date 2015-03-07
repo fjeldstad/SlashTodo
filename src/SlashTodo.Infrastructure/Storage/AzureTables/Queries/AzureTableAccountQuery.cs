@@ -9,21 +9,19 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
 using SlashTodo.Core.Queries;
+using SlashTodo.Infrastructure.Messaging;
 
 namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
 {
     public class AzureTableAccountQuery :
         TableStorageBase<AzureTableAccountQuery.AccountDtoTableEntity>,
         IAccountQuery,
-        ISubscriber<AccountCreated>,
-        ISubscriber<AccountSlackTeamInfoUpdated>,
-        ISubscriber<AccountSlashCommandTokenUpdated>,
-        ISubscriber<AccountIncomingWebhookUpdated>,
-        ISubscriber<AccountActivated>
+        ISubscriber
     {
         public const string DefaultTableName = "accountDtos";
         private readonly string _tableName;
         private readonly IAccountLookup _accountLookup;
+        private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
 
         public string TableName { get { return _tableName; } }
 
@@ -63,58 +61,63 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
             return await ById(accountId.Value).ConfigureAwait(false);
         }
 
-        public async Task HandleEvent(AccountCreated @event)
+        public void RegisterSubscriptions(ISubscriptionRegistry registry)
         {
-            await Insert(new AccountDtoTableEntity(new AccountDto
+            _subscriptionTokens.Add(registry.RegisterSubscription<AccountCreated>(@event =>
+                Insert(new AccountDtoTableEntity(new AccountDto
+                {
+                    Id = @event.Id,
+                    CreatedAt = @event.Timestamp,
+                    SlackTeamId = @event.SlackTeamId
+                }), _tableName).Wait()));
+            _subscriptionTokens.Add(registry.RegisterSubscription<AccountSlackTeamInfoUpdated>(@event =>
             {
-                Id = @event.Id,
-                CreatedAt = @event.Timestamp,
-                SlackTeamId = @event.SlackTeamId
-            }), _tableName).ConfigureAwait(false);
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.SlackTeamName = @event.SlackTeamName;
+                Update(_tableName, entity).Wait();
+            }));
+            _subscriptionTokens.Add(registry.RegisterSubscription<AccountSlashCommandTokenUpdated>(@event =>
+            {
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.SlashCommandToken = @event.SlashCommandToken;
+                Update(_tableName, entity).Wait();
+            }));
+            _subscriptionTokens.Add(registry.RegisterSubscription<AccountIncomingWebhookUpdated>(@event =>
+            {
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.IncomingWebhookUrl = @event.IncomingWebhookUrl != null ? @event.IncomingWebhookUrl.AbsoluteUri : null;
+                Update(_tableName, entity).Wait();
+            }));
+            _subscriptionTokens.Add(registry.RegisterSubscription<AccountActivated>(@event =>
+            {
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.ActivatedAt = @event.Timestamp;
+                Update(_tableName, entity).Wait();
+            }));
         }
 
-        public async Task HandleEvent(AccountSlackTeamInfoUpdated @event)
+        public void Dispose()
         {
-            var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
-            if (entity == null)
+            foreach (var token in _subscriptionTokens)
             {
-                return;
+                token.Dispose();
             }
-            entity.SlackTeamName = @event.SlackTeamName;
-            await Update(_tableName, entity).ConfigureAwait(false);
-        }
-
-        public async Task HandleEvent(AccountSlashCommandTokenUpdated @event)
-        {
-            var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
-            if (entity == null)
-            {
-                return;
-            }
-            entity.SlashCommandToken = @event.SlashCommandToken;
-            await Update(_tableName, entity).ConfigureAwait(false);
-        }
-
-        public async Task HandleEvent(AccountIncomingWebhookUpdated @event)
-        {
-            var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
-            if (entity == null)
-            {
-                return;
-            }
-            entity.IncomingWebhookUrl = @event.IncomingWebhookUrl != null ? @event.IncomingWebhookUrl.AbsoluteUri : null;
-            await Update(_tableName, entity).ConfigureAwait(false);
-        }
-
-        public async Task HandleEvent(AccountActivated @event)
-        {
-            var entity = await Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).ConfigureAwait(false);
-            if (entity == null)
-            {
-                return;
-            }
-            entity.ActivatedAt = @event.Timestamp;
-            await Update(_tableName, entity).ConfigureAwait(false);
         }
 
         public class AccountDtoTableEntity : TableEntity
@@ -159,5 +162,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                 };
             }
         }
+
+
     }
 }

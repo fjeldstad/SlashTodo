@@ -11,9 +11,11 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
 using SlashTodo.Infrastructure.Configuration;
+using SlashTodo.Infrastructure.Messaging;
 using SlashTodo.Infrastructure.Storage.AzureTables;
 using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
 using SlashTodo.Infrastructure.Storage.AzureTables.Queries;
+using TinyMessenger;
 
 namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
 {
@@ -23,15 +25,18 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         private readonly AzureSettings _azureSettings = new AzureSettings(new AppSettings());
         private AzureTableUserQuery _userQuery;
         private Mock<IUserLookup> _userLookupMock;
+        private IMessageBus _bus;
             
         [SetUp]
         public void BeforeEachTest()
         {
+            _bus = new TinyMessageBus(new TinyMessengerHub());
             _userLookupMock = new Mock<IUserLookup>();
             // Reference a different table for each test to ensure isolation.
             _userQuery = new AzureTableUserQuery(
                 CloudStorageAccount.Parse(_azureSettings.StorageConnectionString),
                 string.Format("test{0}", Guid.NewGuid().ToString("N")), _userLookupMock.Object);
+            _userQuery.RegisterSubscriptions((ISubscriptionRegistry)_bus);
             var table = GetTable();
             table.CreateIfNotExists();
         }
@@ -65,7 +70,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _userQuery.HandleEvent(userCreated);
+            await _bus.Publish(userCreated);
 
             // Assert
             var table = GetTable();
@@ -91,7 +96,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _userQuery.HandleEvent(userSlackUserNameUpdated);
+            await _bus.Publish(userSlackUserNameUpdated);
 
             // Assert
             var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userSlackUserNameUpdated.Id.ToString(), userSlackUserNameUpdated.Id.ToString());
@@ -115,7 +120,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _userQuery.HandleEvent(userSlackApiAccessTokenUpdated);
+            await _bus.Publish(userSlackApiAccessTokenUpdated);
 
             // Assert
             var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userSlackApiAccessTokenUpdated.Id.ToString(), userSlackApiAccessTokenUpdated.Id.ToString());
@@ -139,7 +144,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             };
 
             // Act
-            await _userQuery.HandleEvent(userActivated);
+            await _bus.Publish(userActivated);
 
             // Assert
             var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userActivated.Id.ToString(), userActivated.Id.ToString());
