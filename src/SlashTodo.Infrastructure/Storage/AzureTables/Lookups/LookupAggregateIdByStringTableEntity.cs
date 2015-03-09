@@ -19,5 +19,12 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Lookups
             RowKey = key;
             AggregateId = aggregateId;
         }
+
+        public LookupAggregateIdByStringTableEntity(string partitionKey, string rowKey, Guid aggregateId)
+        {
+            PartitionKey = partitionKey;
+            RowKey = rowKey;
+            AggregateId = aggregateId;
+        }
     }
 }

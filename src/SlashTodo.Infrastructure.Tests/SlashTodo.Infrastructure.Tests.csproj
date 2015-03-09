@@ -83,6 +83,7 @@
     <Compile Include="DomainEventSubscriberTests.cs" />
     <Compile Include="Storage\AzureTables\AzureTableEventStoreTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Storage\AzureTables\Lookups\AzureTableTodoLookupTests.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableUserLookupTests.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableAccountLookupTests.cs" />
     <Compile Include="Storage\AzureTables\Queries\AzureTableUserQueryTests.cs" />

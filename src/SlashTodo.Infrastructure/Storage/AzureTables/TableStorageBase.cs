@@ -124,6 +124,29 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables
             await table.ExecuteAsync(updateOperation).ConfigureAwait(false);
         }
 
+        protected async Task Delete(string tableName, string partitionKey, string rowKey)
+        {
+            if (string.IsNullOrWhiteSpace(tableName))
+            {
+                throw new ArgumentNullException("tableName");
+            }
+            if (string.IsNullOrWhiteSpace(partitionKey))
+            {
+                throw new ArgumentNullException("partitionKey");
+            }
+            if (string.IsNullOrWhiteSpace(rowKey))
+            {
+                throw new ArgumentNullException("rowKey");
+            }
+            var table = await GetTable(tableName).ConfigureAwait(false);
+            var entity = await Retrieve(tableName, partitionKey, rowKey).ConfigureAwait(false);
+            if (entity != null)
+            {
+                var deleteOperation = TableOperation.Delete(entity);
+                await table.ExecuteAsync(deleteOperation).ConfigureAwait(false);
+            }
+        }
+
         protected async Task DeletePartition(string tableName, string partitionKey)
         {
             if (string.IsNullOrWhiteSpace(tableName))

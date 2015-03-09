@@ -104,6 +104,7 @@
     <Compile Include="RefitStubs.cs" />
     <Compile Include="Slack\ISlackApi.cs" />
     <Compile Include="Storage\AzureTables\ComplexTableEntity.cs" />
+    <Compile Include="Storage\AzureTables\Lookups\AzureTableTodoLookup.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableUserLookup.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableAccountLookup.cs" />
     <Compile Include="Storage\AzureTables\Lookups\LookupAggregateIdByStringTableEntity.cs" />
