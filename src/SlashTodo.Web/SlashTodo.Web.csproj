@@ -188,7 +188,9 @@
     <Compile Include="AccountKit.cs" />
     <Compile Include="Account\AccountModule.cs" />
     <Compile Include="Account\ViewModels\DashboardViewModel.cs" />
+    <Compile Include="Account\ViewModels\SettingsViewModel.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
+    <Compile Include="ResponseExtensions.cs" />
     <Compile Include="SlackUserIdentity.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="RefitStubs.cs" />

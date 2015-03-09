@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
@@ -149,6 +150,121 @@ namespace SlashTodo.Web.Tests
         }
 
         [Test]
-        public void 
+        public void NewAccountSettingsRequiresAuthenticatedUser()
+        {
+            // Arrange
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Post("/account/settings", with =>
+            {
+                with.HttpsRequest();
+                with.JsonBody(new
+                {
+                    slashCommandToken = "newSlashCommandToken",
+                    incomingWebhookUrl = new Uri("https://api.slack.com/new-incoming-webhook")
+                });
+            });
+
+            // Assert
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        }
+
+        [Test]
+        public void NewAccountSettingsReturnsNotFoundWhenAccountIsNotFound()
+        {
+            // Arrange
+            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Account>(null));
+            var bootstrapper = GetBootstrapper(with =>
+            {
+                with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
+                {
+                    requestContext.CurrentUser = _userIdentity;
+                });
+            });
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Post("/account/settings", with =>
+            {
+                with.HttpsRequest();
+                with.JsonBody(new
+                {
+                    slashCommandToken = "newSlashCommandToken",
+                    incomingWebhookUrl = new Uri("https://api.slack.com/new-incoming-webhook")
+                });
+            });
+
+            // Assert
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+        }
+
+        [Test]
+        public void NewAccountSettingsReturnsBadRequestWhenIncomingWebhookUrlIsNotValidUrl()
+        {
+            // Arrange
+            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Account>(null));
+            var bootstrapper = GetBootstrapper(with =>
+            {
+                with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
+                {
+                    requestContext.CurrentUser = _userIdentity;
+                });
+            });
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Post("/account/settings", with =>
+            {
+                with.HttpsRequest();
+                with.JsonBody(new
+                {
+                    incomingWebhookUrl = "not a valid url"
+                });
+            });
+
+            // Assert
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        }
+
+        [Test]
+        public void NewAccountSettingsAreSavedToCorrectAccount()
+        {
+            // Arrange
+            var account = Core.Domain.Account.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
+            account.ClearUncommittedEvents();
+            _accountRepositoryMock.Setup(x => x.GetById(account.Id)).Returns(Task.FromResult(account));
+            var savedEvents = new List<IDomainEvent>();
+            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Account>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Account a) => savedEvents.AddRange(a.GetUncommittedEvents()));
+            var bootstrapper = GetBootstrapper(with =>
+            {
+                with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
+                {
+                    requestContext.CurrentUser = _userIdentity;
+                });
+            });
+            var browser = new Browser(bootstrapper);
+            var originalVersion = account.Version;
+            var before = DateTime.UtcNow;
+
+            // Act
+            browser.Post("/account/settings", with =>
+            {
+                with.HttpsRequest();
+                with.JsonBody(new
+                {
+                    slashCommandToken = "newSlashCommandToken",
+                    incomingWebhookUrl = new Uri("https://api.slack.com/new-incoming-webhook")
+                });
+            });
+
+            // Assert
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a => a.Id == account.Id)), Times.Once);
+            var incomingWebhookUpdated = savedEvents.Single(x => x is AccountIncomingWebhookUpdated) as AccountIncomingWebhookUpdated;
+            incomingWebhookUpdated.AssertThatBasicEventDataIsCorrect(account.Id, before);
+            var slashCommandTokenUpdated = savedEvents.Single(x => x is AccountSlashCommandTokenUpdated) as AccountSlashCommandTokenUpdated;
+            slashCommandTokenUpdated.AssertThatBasicEventDataIsCorrect(account.Id, before);
+        }
     }
 }

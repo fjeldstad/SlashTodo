@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Core.Tests.AccountTests
 {
@@ -42,7 +43,7 @@ namespace SlashTodo.Core.Tests.AccountTests
 
             // Assert
             var @event = account.GetUncommittedEvents().Single() as AccountSlackTeamInfoUpdated;
-            @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
+            @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
             Assert.That(@event.SlackTeamName, Is.EqualTo(slackTeamName.Trim()));
             Assert.That(@event.SlackTeamUrl, Is.EqualTo(slackTeamUrl));
         }
@@ -94,7 +95,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             Assert.That(events.Select(x => x.SlackTeamUrl).SequenceEqual(slackTeamInfo.Select(x => x.Item2)));
             foreach (var @event in events)
             {
-                @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
+                @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
             }
         }
     }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Core.Tests.TodoTests
 {
@@ -35,16 +36,10 @@ namespace SlashTodo.Core.Tests.TodoTests
             DateTime earliestExpectedTimestamp,
             int? expectedOriginalVersion = null)
         {
-            Assert.That(@event, Is.Not.Null);
-            Assert.That(@event.Id, Is.EqualTo(id));
-            Assert.That(@event.Timestamp, Is.InRange(earliestExpectedTimestamp, DateTime.UtcNow));
+            @event.AssertThatBasicEventDataIsCorrect(id, earliestExpectedTimestamp, expectedOriginalVersion);
             Assert.That(@event.AccountId, Is.EqualTo(context.AccountId));
             Assert.That(@event.SlackConversationId, Is.EqualTo(slackConversationId));
             Assert.That(@event.UserId, Is.EqualTo(context.UserId));
-            if (expectedOriginalVersion.HasValue)
-            {
-                Assert.That(@event.OriginalVersion, Is.EqualTo(expectedOriginalVersion.Value));
-            }
         }
     }
 }

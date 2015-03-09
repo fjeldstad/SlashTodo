@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Core.Tests.TodoTests
 {
@@ -64,7 +65,7 @@ namespace SlashTodo.Core.Tests.TodoTests
 
             // Act & assert
             todo.Context = TodoTestHelpers.GetContext(userId: userId);
-            TestHelpers.AssertThrows<TodoClaimedBySomeoneElseException>(
+            CustomAssert.Throws<TodoClaimedBySomeoneElseException>(
                 () => todo.Claim(), 
                 ex => ex.ClaimedByUserId == otherUserContext.UserId);
         }

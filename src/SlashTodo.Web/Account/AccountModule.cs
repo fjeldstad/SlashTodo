@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Nancy;
+using Nancy.ModelBinding;
 using Nancy.Security;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Web.Account.ViewModels;
@@ -41,6 +42,26 @@ namespace SlashTodo.Web.Account
                 return Negotiate
                     .WithModel(viewModel)
                     .WithView("Dashboard.cshtml");
+            };
+
+            Post["/settings", true] = async (_, ct) =>
+            {
+                var settings = this.Bind<SettingsViewModel>();
+                if (settings == null || 
+                    (settings.IncomingWebhookUrl != null && !settings.IncomingWebhookUrl.IsAbsoluteUri))
+                {
+                    return HttpStatusCode.BadRequest.WithReasonPhrase("Unable to extract Slash Command Token and Incoming Webhook Url from request body.");
+                }
+                var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
+                var account = await accountKit.Repository.GetById(currentSlackUser.AccountId);
+                if (account == null)
+                {
+                    return HttpStatusCode.NotFound.WithReasonPhrase("The account does not exist. Try singing out and back in again.");
+                }
+                account.UpdateSlashCommandToken(settings.SlashCommandToken);
+                account.UpdateIncomingWebhookUrl(settings.IncomingWebhookUrl);
+                await accountKit.Repository.Save(account);
+                return HttpStatusCode.OK;
             };
         }
     }

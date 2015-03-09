@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Core.Tests.AccountTests
 {
@@ -36,7 +37,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             Assert.That(account.Id, Is.EqualTo(id));
             Assert.That(account.Version, Is.EqualTo(1));
             var @event = account.GetUncommittedEvents().Single() as AccountCreated;
-            @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: 0);
+            @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: 0);
             Assert.That(@event.SlackTeamId, Is.EqualTo(teamId));
         }
     }

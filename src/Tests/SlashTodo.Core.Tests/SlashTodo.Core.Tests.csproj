@@ -72,7 +72,6 @@
     <Compile Include="AccountTests\UpdateSlashCommandTokenTests.cs" />
     <Compile Include="AccountTests\UpdateIncomingWebhookUrlTests.cs" />
     <Compile Include="AccountTests\CreateAccountTests.cs" />
-    <Compile Include="AccountTests\AccountTestHelpers.cs" />
     <Compile Include="TodoTests\AddTodoTests.cs" />
     <Compile Include="TodoTests\ClaimTodoTests.cs" />
     <Compile Include="TodoTests\RemoveTodoTests.cs" />
@@ -82,10 +81,8 @@
     <Compile Include="TodoTests\TickTodoTests.cs" />
     <Compile Include="TodoTests\FreeTodoTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestHelpers.cs" />
     <Compile Include="UserTests\UpdateSlackApiAccessTokenTests.cs" />
     <Compile Include="UserTests\UpdateSlackUserNameTests.cs" />
-    <Compile Include="UserTests\UserTestHelpers.cs" />
     <Compile Include="UserTests\CreateUserTests.cs" />
   </ItemGroup>
   <ItemGroup>

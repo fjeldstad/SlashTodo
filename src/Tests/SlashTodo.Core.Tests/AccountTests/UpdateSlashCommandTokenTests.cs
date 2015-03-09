@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Core.Tests.AccountTests
 {
@@ -40,7 +41,7 @@ namespace SlashTodo.Core.Tests.AccountTests
 
             // Assert
             var @event = account.GetUncommittedEvents().Single() as AccountSlashCommandTokenUpdated;
-            @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
+            @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
             Assert.That(@event.SlashCommandToken, Is.EqualTo(slashCommandToken));
         }
 
@@ -89,7 +90,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             Assert.That(events.Select(x => x.SlashCommandToken).SequenceEqual(slashCommandTokens));
             foreach (var @event in events)
             {
-                @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
+                @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
             }
         }
     }

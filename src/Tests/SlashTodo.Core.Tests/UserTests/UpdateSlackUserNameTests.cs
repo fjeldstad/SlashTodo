@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Core.Tests.UserTests
 {
@@ -40,7 +41,7 @@ namespace SlashTodo.Core.Tests.UserTests
 
             // Assert
             var @event = user.GetUncommittedEvents().Single() as UserSlackUserNameUpdated;
-            @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
+            @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
             Assert.That(@event.SlackUserName, Is.EqualTo(slackUserName.Trim()));
         }
 
@@ -89,7 +90,7 @@ namespace SlashTodo.Core.Tests.UserTests
             Assert.That(events.Select(x => x.SlackUserName).SequenceEqual(slackUserNames));
             foreach (var @event in events)
             {
-                @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
+                @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
             }
         }
     }

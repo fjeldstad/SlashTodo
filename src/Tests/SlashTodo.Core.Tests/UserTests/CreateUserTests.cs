@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
+using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Core.Tests.UserTests
 {
@@ -37,7 +38,7 @@ namespace SlashTodo.Core.Tests.UserTests
             Assert.That(user.Id, Is.EqualTo(id));
             Assert.That(user.Version, Is.GreaterThanOrEqualTo(1));
             var @event = user.GetUncommittedEvents().First() as UserCreated;
-            @event.AssertThatBasicDataIsCorrect(id, before, expectedOriginalVersion: 0);
+            @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: 0);
             Assert.That(@event.SlackUserId, Is.EqualTo(slackUserId));
         }
 
@@ -55,7 +56,7 @@ namespace SlashTodo.Core.Tests.UserTests
 
             // Assert
             var @event = user.GetUncommittedEvents().Single(x => x is UserActivated) as UserActivated;
-            @event.AssertThatBasicDataIsCorrect(id, before);
+            @event.AssertThatBasicEventDataIsCorrect(id, before);
         }
     }
 }
