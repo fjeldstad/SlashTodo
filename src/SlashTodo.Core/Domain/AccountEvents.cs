@@ -37,4 +37,8 @@ namespace SlashTodo.Core.Domain
     public class AccountActivated : AccountEvent
     {
     }
+
+    public class AccountDeactivated : AccountEvent
+    {
+    }
 }

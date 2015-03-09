@@ -15,6 +15,7 @@ namespace SlashTodo.Web.Account
     {
         public AccountModule(
             IViewModelFactory viewModelFactory,
+            IAppSettings appSettings,
             IHostSettings hostSettings, 
             AccountKit accountKit)
             : base("/account")
@@ -38,19 +39,35 @@ namespace SlashTodo.Web.Account
                     viewModel.IncomingWebhookUrl = account.IncomingWebhookUrl.AbsoluteUri;
                 }
                 viewModel.SlashCommandUrl = string.Format("{0}/{1:N}", hostSettings.ApiBaseUrl.TrimEnd('/'), account.Id);
+                viewModel.HelpEmailAddress = appSettings.Get("misc:HelpEmailAddress");
 
                 return Negotiate
                     .WithModel(viewModel)
                     .WithView("Dashboard.cshtml");
             };
 
-            Post["/settings", true] = async (_, ct) =>
+            Post["/slash-command-token", true] = async (_, ct) =>
             {
-                var settings = this.Bind<SettingsViewModel>();
-                if (settings == null || 
-                    (settings.IncomingWebhookUrl != null && !settings.IncomingWebhookUrl.IsAbsoluteUri))
+                var viewModel = this.Bind<UpdateSlashCommandTokenViewModel>();
+                var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
+                var account = await accountKit.Repository.GetById(currentSlackUser.AccountId);
+                if (account == null)
                 {
-                    return HttpStatusCode.BadRequest.WithReasonPhrase("Unable to extract Slash Command Token and Incoming Webhook Url from request body.");
+                    return HttpStatusCode.NotFound.WithReasonPhrase("The account does not exist. Try singing out and back in again.");
+                }
+                account.UpdateSlashCommandToken(viewModel.SlashCommandToken);
+                await accountKit.Repository.Save(account);
+                return HttpStatusCode.OK;
+            };
+
+            Post["/incoming-webhook-url", true] = async (_, ct) =>
+            {
+                var viewModel = this.Bind<UpdateIncomingWebhookUrlViewModel>();
+                Uri incomingWebhookUrl = null;
+                if (!string.IsNullOrWhiteSpace(viewModel.IncomingWebhookUrl) &&
+                    !Uri.TryCreate(viewModel.IncomingWebhookUrl, UriKind.Absolute, out incomingWebhookUrl))
+                {
+                    return HttpStatusCode.BadRequest.WithReasonPhrase("Invalid Incoming Webhook Url.");
                 }
                 var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
                 var account = await accountKit.Repository.GetById(currentSlackUser.AccountId);
@@ -58,8 +75,7 @@ namespace SlashTodo.Web.Account
                 {
                     return HttpStatusCode.NotFound.WithReasonPhrase("The account does not exist. Try singing out and back in again.");
                 }
-                account.UpdateSlashCommandToken(settings.SlashCommandToken);
-                account.UpdateIncomingWebhookUrl(settings.IncomingWebhookUrl);
+                account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
                 await accountKit.Repository.Save(account);
                 return HttpStatusCode.OK;
             };

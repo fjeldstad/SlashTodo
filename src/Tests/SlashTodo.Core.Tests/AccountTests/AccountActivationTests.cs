@@ -68,5 +68,53 @@ namespace SlashTodo.Core.Tests.AccountTests
             // Assert
             Assert.That(account.GetUncommittedEvents().All(x => !(x is AccountActivated)));
         }
+
+        [Test]
+        public void AccountIsDeactivatedWhenSlashCommandTokenIsSetToNull()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var account = Account.Create(id, "teamId");
+            account.UpdateSlashCommandToken("slashCommandToken");
+            account.UpdateIncomingWebhookUrl(new Uri("https://api.slack.com/incoming-webhook"));
+            account.ClearUncommittedEvents();
+            Assert.That(account.IsActive);
+            var before = DateTime.UtcNow;
+
+            // Act
+            account.UpdateSlashCommandToken(null);
+
+            Assert.That(account.GetUncommittedEvents()
+                .Where(x => x is AccountDeactivated)
+                .Cast<AccountDeactivated>()
+                .SingleOrDefault(x =>
+                    x.Id == id &&
+                    x.Timestamp >= before &&
+                    x.Timestamp <= DateTime.UtcNow), Is.Not.Null);
+        }
+
+        [Test]
+        public void AccountIsDeactivatedWhenIncomingWebhookUrlIsSetToNull()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var account = Account.Create(id, "teamId");
+            account.UpdateSlashCommandToken("slashCommandToken");
+            account.UpdateIncomingWebhookUrl(new Uri("https://api.slack.com/incoming-webhook"));
+            account.ClearUncommittedEvents();
+            Assert.That(account.IsActive);
+            var before = DateTime.UtcNow;
+
+            // Act
+            account.UpdateIncomingWebhookUrl(null);
+
+            Assert.That(account.GetUncommittedEvents()
+                .Where(x => x is AccountDeactivated)
+                .Cast<AccountDeactivated>()
+                .SingleOrDefault(x =>
+                    x.Id == id &&
+                    x.Timestamp >= before &&
+                    x.Timestamp <= DateTime.UtcNow), Is.Not.Null);
+        }
     }
 }

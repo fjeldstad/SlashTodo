@@ -20,8 +20,27 @@ namespace SlashTodo.Core.Tests.AccountTests
             var account = Account.Create(Guid.NewGuid(), "teamId");
 
             // Act
-            Assert.Throws<ArgumentNullException>(() => account.UpdateIncomingWebhookUrl(null));
             Assert.Throws<ArgumentException>(() => account.UpdateIncomingWebhookUrl(new Uri("about:blank")));
+        }
+
+        [Test]
+        public void CanSetIncomingWebhookUrlToNull()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var account = Account.Create(id, "teamId");
+            account.UpdateIncomingWebhookUrl(new Uri("https://api.slack.com/incoming-webhook"));
+            account.ClearUncommittedEvents();
+            var originalVersion = account.Version;
+            var before = DateTime.UtcNow;
+
+            // Act
+            account.UpdateIncomingWebhookUrl(null);
+
+            // Assert
+            var @event = account.GetUncommittedEvents().Single(x => x is AccountIncomingWebhookUpdated) as AccountIncomingWebhookUpdated;
+            @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
+            Assert.That(@event.IncomingWebhookUrl, Is.Null);
         }
 
         [Test]
@@ -39,7 +58,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
 
             // Assert
-            var @event = account.GetUncommittedEvents().Single() as AccountIncomingWebhookUpdated;
+            var @event = account.GetUncommittedEvents().Single(x => x is AccountIncomingWebhookUpdated) as AccountIncomingWebhookUpdated;
             @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
             Assert.That(@event.IncomingWebhookUrl, Is.EqualTo(incomingWebhookUrl));
         }
@@ -59,7 +78,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
 
             // Assert
-            Assert.That(account.GetUncommittedEvents().ToArray(), Has.Length.EqualTo(1));
+            Assert.That(account.GetUncommittedEvents().Where(x => x is AccountIncomingWebhookUpdated).ToArray(), Has.Length.EqualTo(1));
         }
 
         [Test]
@@ -85,11 +104,11 @@ namespace SlashTodo.Core.Tests.AccountTests
             }
 
             // Assert
-            var events = account.GetUncommittedEvents().Cast<AccountIncomingWebhookUpdated>().ToArray();
+            var events = account.GetUncommittedEvents().Where(x => x is AccountIncomingWebhookUpdated).Cast<AccountIncomingWebhookUpdated>().ToArray();
             Assert.That(events.Select(x => x.IncomingWebhookUrl).SequenceEqual(incomingWebhookUrls));
             foreach (var @event in events)
             {
-                @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
+                @event.AssertThatBasicEventDataIsCorrect(id, before);
             }
         }
     }

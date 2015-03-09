@@ -13,16 +13,26 @@ namespace SlashTodo.Core.Tests.AccountTests
     [TestFixture]
     public class UpdateSlashCommandTokenTests
     {
-        [Test]
-        public void CanNotConfigureAccountWithEmptySlashCommandToken()
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        public void CanSetSlashCommandTokenToNullOrWhitespace(string token)
         {
             // Arrange
-            var account = Account.Create(Guid.NewGuid(), "teamId");
+            var id = Guid.NewGuid();
+            var account = Account.Create(id, "teamId");
+            account.UpdateSlashCommandToken("slashCommandToken");
+            account.ClearUncommittedEvents();
+            var originalVersion = account.Version;
+            var before = DateTime.UtcNow;
 
             // Act
-            Assert.Throws<ArgumentNullException>(() => account.UpdateSlashCommandToken(null));
-            Assert.Throws<ArgumentNullException>(() => account.UpdateSlashCommandToken(string.Empty));
-            Assert.Throws<ArgumentNullException>(() => account.UpdateSlashCommandToken(" "));
+            account.UpdateSlashCommandToken(token);
+
+            // Assert
+            var @event = account.GetUncommittedEvents().Single(x => x is AccountSlashCommandTokenUpdated) as AccountSlashCommandTokenUpdated;
+            @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
+            Assert.That(@event.SlashCommandToken, Is.Null);
         }
 
         [Test]
@@ -40,7 +50,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             account.UpdateSlashCommandToken(slashCommandToken);
 
             // Assert
-            var @event = account.GetUncommittedEvents().Single() as AccountSlashCommandTokenUpdated;
+            var @event = account.GetUncommittedEvents().Single(x => x is AccountSlashCommandTokenUpdated) as AccountSlashCommandTokenUpdated;
             @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
             Assert.That(@event.SlashCommandToken, Is.EqualTo(slashCommandToken));
         }
@@ -60,7 +70,7 @@ namespace SlashTodo.Core.Tests.AccountTests
             account.UpdateSlashCommandToken(slashCommandToken);
 
             // Assert
-            Assert.That(account.GetUncommittedEvents().ToArray(), Has.Length.EqualTo(1));
+            Assert.That(account.GetUncommittedEvents().Where(x => x is AccountSlashCommandTokenUpdated).ToArray(), Has.Length.EqualTo(1));
         }
 
         [Test]
@@ -86,11 +96,11 @@ namespace SlashTodo.Core.Tests.AccountTests
             }
 
             // Assert
-            var events = account.GetUncommittedEvents().Cast<AccountSlashCommandTokenUpdated>().ToArray();
+            var events = account.GetUncommittedEvents().Where(x => x is AccountSlashCommandTokenUpdated).Cast<AccountSlashCommandTokenUpdated>().ToArray();
             Assert.That(events.Select(x => x.SlashCommandToken).SequenceEqual(slashCommandTokens));
             foreach (var @event in events)
             {
-                @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);
+                @event.AssertThatBasicEventDataIsCorrect(id, before);
             }
         }
     }

@@ -160,7 +160,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         public async Task UpdatesRowOnAccountActivated()
         {
             // Arrange
-            var dto = GetAccountDto(activatedAt: null);
+            var dto = GetAccountDto(isActive: false);
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableAccountQuery.AccountDtoTableEntity(dto));
             await table.ExecuteAsync(insertOp);
@@ -177,7 +177,31 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountActivated.Id.ToString(), accountActivated.Id.ToString());
             var row = table.Execute(retrieveOp).Result as AzureTableAccountQuery.AccountDtoTableEntity;
             Assert.That(row, Is.Not.Null);
-            Assert.That(row.ActivatedAt, Is.EqualTo(accountActivated.Timestamp));
+            Assert.That(row.IsActive, Is.True);
+        }
+
+        [Test]
+        public async Task UpdatesRowOnAccountDeactivated()
+        {
+            // Arrange
+            var dto = GetAccountDto(isActive: true);
+            var table = GetTable();
+            var insertOp = TableOperation.Insert(new AzureTableAccountQuery.AccountDtoTableEntity(dto));
+            await table.ExecuteAsync(insertOp);
+            var accountDeactivated = new AccountDeactivated
+            {
+                Id = dto.Id,
+                Timestamp = DateTime.UtcNow
+            };
+
+            // Act
+            await _bus.Publish(accountDeactivated);
+
+            // Assert
+            var retrieveOp = TableOperation.Retrieve<AzureTableAccountQuery.AccountDtoTableEntity>(accountDeactivated.Id.ToString(), accountDeactivated.Id.ToString());
+            var row = table.Execute(retrieveOp).Result as AzureTableAccountQuery.AccountDtoTableEntity;
+            Assert.That(row, Is.Not.Null);
+            Assert.That(row.IsActive, Is.False);
         }
 
         [Test]
@@ -222,7 +246,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         public async Task ByIdReturnsAccountDtoWhenQueryIsSuccessful()
         {
             // Arrange
-            var expectedDto = GetAccountDto(activatedAt: DateTime.UtcNow.AddDays(-1));
+            var expectedDto = GetAccountDto(isActive: true);
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableAccountQuery.AccountDtoTableEntity(expectedDto));
             table.Execute(insertOp);
@@ -238,7 +262,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         public async Task BySlackTeamIdReturnsAccountDtoWhenQueryIsSuccessful()
         {
             // Arrange
-            var expectedDto = GetAccountDto(activatedAt: DateTime.UtcNow.AddDays(-1));
+            var expectedDto = GetAccountDto(isActive: true);
             _accountLookupMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult<Guid?>(expectedDto.Id));
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableAccountQuery.AccountDtoTableEntity(expectedDto));
@@ -256,7 +280,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             string slashCommandToken = "slashCommandToken",
             Uri slackTeamUrl = null,
             Uri incomingWebhookUrl = null,
-            DateTime? activatedAt = null)
+            bool isActive = false)
         {
             return new AccountDto
             {
@@ -267,7 +291,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
                 SlashCommandToken = slashCommandToken,
                 IncomingWebhookUrl = incomingWebhookUrl ?? new Uri("http://api.slack.com/incoming-webhook"),
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
-                ActivatedAt = activatedAt
+                IsActive = isActive
             };
         }
     }
@@ -283,7 +307,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             Assert.That(actualDto.SlashCommandToken, Is.EqualTo(expectedDto.SlashCommandToken));
             Assert.That(actualDto.IncomingWebhookUrl, Is.EqualTo(expectedDto.IncomingWebhookUrl));
             Assert.That(actualDto.CreatedAt, Is.EqualTo(expectedDto.CreatedAt));
-            Assert.That(actualDto.ActivatedAt, Is.EqualTo(expectedDto.ActivatedAt));
+            Assert.That(actualDto.IsActive, Is.EqualTo(expectedDto.IsActive));
         }
     }
 }

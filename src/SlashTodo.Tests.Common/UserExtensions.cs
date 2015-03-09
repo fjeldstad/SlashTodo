@@ -9,7 +9,7 @@ namespace SlashTodo.Tests.Common
 {
     public static class UserExtensions
     {
-        public static UserDto ToDto(this Core.Domain.User user, DateTime createdAt, DateTime? activatedAt = null)
+        public static UserDto ToDto(this Core.Domain.User user, DateTime createdAt, bool isActive = false)
         {
             if (user == null)
             {
@@ -23,7 +23,7 @@ namespace SlashTodo.Tests.Common
                 SlackUserName = user.SlackUserName,
                 SlackApiAccessToken = user.SlackApiAccessToken,
                 CreatedAt = createdAt,
-                ActivatedAt = activatedAt
+                IsActive = isActive
             };
         }
     }

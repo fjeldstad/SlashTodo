@@ -90,7 +90,7 @@ namespace SlashTodo.Web.Tests
                 SlackUserName = "slackUserName",
                 SlackApiAccessToken = "slackApiAccessToken",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
-                ActivatedAt = DateTime.UtcNow.AddDays(-1)
+                IsActive = true
             };
         }
 
@@ -105,7 +105,7 @@ namespace SlashTodo.Web.Tests
                 IncomingWebhookUrl = new Uri("https://api.slack.com/incoming-webhook"),
                 SlashCommandToken = "slashCommandToken",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
-                ActivatedAt = DateTime.UtcNow.AddDays(-1)
+                IsActive = true
             };
         }
     }

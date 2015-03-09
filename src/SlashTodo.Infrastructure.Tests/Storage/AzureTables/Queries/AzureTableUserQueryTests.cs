@@ -133,7 +133,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         public async Task UpdatesRowOnUserActivated()
         {
             // Arrange
-            var dto = GetUserDto(activatedAt: null);
+            var dto = GetUserDto(isActive: false);
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(dto));
             await table.ExecuteAsync(insertOp);
@@ -150,7 +150,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userActivated.Id.ToString(), userActivated.Id.ToString());
             var row = table.Execute(retrieveOp).Result as AzureTableUserQuery.UserDtoTableEntity;
             Assert.That(row, Is.Not.Null);
-            Assert.That(row.ActivatedAt, Is.EqualTo(userActivated.Timestamp));
+            Assert.That(row.IsActive, Is.True);
         }
 
         [Test]
@@ -195,7 +195,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         public async Task ByIdReturnsUserDtoWhenQueryIsSuccessful()
         {
             // Arrange
-            var expectedDto = GetUserDto(activatedAt: DateTime.UtcNow.AddDays(-1));
+            var expectedDto = GetUserDto(isActive: true);
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(expectedDto));
             table.Execute(insertOp);
@@ -211,7 +211,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         public async Task BySlackUserIdReturnsUserDtoWhenQueryIsSuccessful()
         {
             // Arrange
-            var expectedDto = GetUserDto(activatedAt: DateTime.UtcNow.AddDays(-1));
+            var expectedDto = GetUserDto(isActive: true);
             _userLookupMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult<Guid?>(expectedDto.Id));
             var table = GetTable();
             var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(expectedDto));
@@ -228,7 +228,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             string slackUserId = "slackUserId",
             string slackUserName = "slackUserName",
             string slackApiAccessToken = "slackApiAccessToken",
-            DateTime? activatedAt = null)
+            bool isActive = false)
         {
             return new UserDto
             {
@@ -238,7 +238,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
                 SlackUserName = slackUserName,
                 SlackApiAccessToken = slackApiAccessToken,
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
-                ActivatedAt = activatedAt
+                IsActive = isActive
             };
         }
     }
@@ -252,7 +252,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             Assert.That(actualDto.SlackUserName, Is.EqualTo(expectedDto.SlackUserName));
             Assert.That(actualDto.SlackApiAccessToken, Is.EqualTo(expectedDto.SlackApiAccessToken));
             Assert.That(actualDto.CreatedAt, Is.EqualTo(expectedDto.CreatedAt));
-            Assert.That(actualDto.ActivatedAt, Is.EqualTo(expectedDto.ActivatedAt));
+            Assert.That(actualDto.IsActive, Is.EqualTo(expectedDto.IsActive));
         }
     }
 }

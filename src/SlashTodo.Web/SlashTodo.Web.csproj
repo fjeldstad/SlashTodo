@@ -148,6 +148,8 @@
     <Content Include="Content\js\lib\angular\angular-touch.min.js" />
     <Content Include="Content\js\lib\angular\angular.js" />
     <Content Include="Content\js\lib\angular\angular.min.js" />
+    <Content Include="Content\js\lib\underscore-min.js" />
+    <Content Include="Content\js\lib\underscore.js" />
     <Content Include="packages.config" />
     <Content Include="Secret.config" />
     <Content Include="Secret.template.config">
@@ -169,6 +171,7 @@
     <Content Include="Content\js\lib\angular\angular-sanitize.min.js.map" />
     <Content Include="Content\js\lib\angular\angular-touch.min.js.map" />
     <Content Include="Content\js\lib\angular\angular.min.js.map" />
+    <Content Include="Content\js\lib\underscore-min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -188,7 +191,8 @@
     <Compile Include="AccountKit.cs" />
     <Compile Include="Account\AccountModule.cs" />
     <Compile Include="Account\ViewModels\DashboardViewModel.cs" />
-    <Compile Include="Account\ViewModels\SettingsViewModel.cs" />
+    <Compile Include="Account\ViewModels\UpdateIncomingWebhookUrlViewModel.cs" />
+    <Compile Include="Account\ViewModels\UpdateSlashCommandTokenViewModel.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
     <Compile Include="ResponseExtensions.cs" />
     <Compile Include="SlackUserIdentity.cs" />

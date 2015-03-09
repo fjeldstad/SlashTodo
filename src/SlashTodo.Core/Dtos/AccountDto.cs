@@ -14,7 +14,6 @@ namespace SlashTodo.Core.Dtos
         public string SlashCommandToken { get; set; }
         public Uri IncomingWebhookUrl { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? ActivatedAt { get; set; }
-        public bool IsActive { get { return ActivatedAt.HasValue; } }
+        public bool IsActive { get; set; }
     }
 }

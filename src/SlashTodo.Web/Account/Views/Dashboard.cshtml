@@ -9,48 +9,68 @@
         <h1 class="logo">/todo</h1>
     </div>
     <h3>Setup instructions for <strong>@Model.SlackTeamName</strong></h3>
-        <ol>
-            <li>
-                Go to the
-                <a href="@string.Format("{0}/services/new", Model.SlackTeamUrl.TrimEnd('/'))">Integrations</a>
-                page of your Slack team configuration.
-            </li>
-            <li>
-                Add a new
-                <strong><a href="@string.Format("{0}/services/new/slash-commands", Model.SlackTeamUrl.TrimEnd('/'))">Slash Command</a></strong>
-                integration.
-                <ul>
-                    <li><strong>Command:</strong> <code>/todo</code></li>
-                    <li><strong>Url:</strong> <code>@Model.SlashCommandUrl</code></li>
-                    <li><strong>Method:</strong> <code>POST</code></li>
-                </ul>
-                <form class="form-inline">
-                    <div class="form-group" ng-class="{ 'has-error': !slashCommandToken }">
-                        <label class="control-label" for="slashCommandToken">Slash Command Token:</label>
-                        <input type="text" id="slashCommandToken" class="form-control" ng-model="slashCommandToken">
-                    </div>
-                </form>
-            </li>
-            <li>
-                Add a new
-                <strong><a href="@string.Format("{0}/services/new/incoming-webhook", Model.SlackTeamUrl.TrimEnd('/'))">Incoming Webhook</a></strong>
-                integration.
-                <ul>
-                    <li><strong>Post to Channel:</strong> <code>@@slackbot</code></li>
-                </ul>
-                <form class="form-inline">
-                    <div class="form-group" ng-class="{ 'has-error': !incomingWebhookUrl }">
-                        <label class="control-label" for="incomingWebhookUrl">Incoming Webhook Url:</label>
-                        <input type="text" id="incomingWebhookUrl" class="form-control" ng-model="incomingWebhookUrl">
-                    </div>
-                </form>
-            </li>
-        </ol>
+    <ol>
+        <li>
+            Go to the
+            <a href="@string.Format("{0}/services/new", Model.SlackTeamUrl.TrimEnd('/'))" target="_blank">Integrations</a>
+            page of your Slack team configuration.
+        </li>
+        <li>
+            Add a new
+            <strong><a href="@string.Format("{0}/services/new/slash-commands", Model.SlackTeamUrl.TrimEnd('/'))" target="_blank">Slash Command</a></strong>
+            integration with the following settings:
+            <ul>
+                <li><strong>Command:</strong> <code>/todo</code></li>
+                <li><strong>Url:</strong> <code>@Model.SlashCommandUrl</code></li>
+                <li><strong>Method:</strong> <code>POST</code></li>
+                <li><strong>Descriptive label:</strong> <code>/todo</code></li>
+            </ul>
+            <p>
+                Copy the <code>Token</code> and paste it below.
+            </p>
+            <form>
+                <div class="form-group" ng-class="{ 'has-warning': !settings.slashCommandToken, 'has-success': updateSlashCommandTokenSuccess }">
+                    <input placeholder="Slash command token" type="text" id="slashCommandToken" class="form-control" ng-model="settings.slashCommandToken" ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" ng-disabled="waitingForServer || pendingUpdateSlashCommandToken">
+                </div>
+            </form>
+        </li>
+        <li>
+            Add a new
+            <strong><a href="@string.Format("{0}/services/new/incoming-webhook", Model.SlackTeamUrl.TrimEnd('/'))" target="_blank">Incoming Webhook</a></strong>
+            integration with the following settings:
+            <ul>
+                <li><strong>Post to Channel:</strong> <code>@@slackbot</code></li>
+                <li><strong>Descriptive label:</strong> <code>/todo</code></li>
+            </ul>
+            <p>
+                Copy the <code>Webhook URL</code> and paste it below.
+            </p>
+            <form>
+                <div class="form-group" ng-class="{ 'has-warning': !settings.incomingWebhookUrl, 'has-error': incomingWebhookUrlInvalid, 'has-success': updateIncomingWebhookUrlSuccess }">
+                    <input placeholder="Incoming webhook url" type="url" id="incomingWebhookUrl" class="form-control" ng-model="settings.incomingWebhookUrl" ng-model-options="{ allowInvalid: true, updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }" ng-disabled="waitingForServer || pendingUpdateIncomingWebhookUrl">
+                </div>
+            </form>
+        </li>
+    </ol>
+    <div ng-show="setupComplete">
+        <p class="alert alert-success">
+            <strong>You're done!</strong>
+            <a href="@Model.SlackTeamUrl" target="_blank">Switch over to Slack</a> and type <code>/todo help</code> to get started.
+        </p>
+
+    </div>
+    <p>
+        If you have any questions at all, please send an e-mail to
+        <a href="mailto:@Model.HelpEmailAddress">@Model.HelpEmailAddress</a>.
+    </p>
 </div>
 
+
 @section EndOfBody {
+    <script src="@Url.Content("~/Content/js/lib/underscore-min.js")"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
     <script src="@Url.Content("~/Content/js/lib/angular/angular-resource.min.js")"></script>
+    <script src="@Url.Content("~/Content/js/lib/angular/angular-animate.min.js")"></script>
     <script src="@Url.Content("~/Content/js/app.js")"></script>
     <script type="text/javascript">
         angular.module('app').constant('BaseUrl', '@Url.Content("~/").TrimEnd('/')');

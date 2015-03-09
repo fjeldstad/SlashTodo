@@ -13,5 +13,6 @@ namespace SlashTodo.Web.Account.ViewModels
         public string SlackTeamUrl { get; set; }
         public string IncomingWebhookUrl { get; set; }
         public string SlashCommandToken { get; set; }
+        public string HelpEmailAddress { get; set; }
     }
 }

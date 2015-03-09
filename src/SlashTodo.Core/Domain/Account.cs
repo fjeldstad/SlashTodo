@@ -59,42 +59,47 @@ namespace SlashTodo.Core.Domain
         {
             if (string.IsNullOrWhiteSpace(slashCommandToken))
             {
-                throw new ArgumentNullException("slashCommandToken");
+                slashCommandToken = null;
             }
-            if (_slashCommandToken == null ||
-                !slashCommandToken.Equals(_slashCommandToken, StringComparison.Ordinal))
+            if (!string.Equals(slashCommandToken, _slashCommandToken, StringComparison.Ordinal))
             {
                 RaiseEvent(new AccountSlashCommandTokenUpdated { SlashCommandToken = slashCommandToken });
                 if (_stateMachine.CanFire(AccountTrigger.Activate))
                 {
                     RaiseEvent(new AccountActivated());
                 }
+                else if (_stateMachine.CanFire(AccountTrigger.Deactivate))
+                {
+                    RaiseEvent(new AccountDeactivated());
+                }
             }
         }
 
         public void UpdateIncomingWebhookUrl(Uri incomingWebhookUrl)
         {
-            if (incomingWebhookUrl == null)
+            if (incomingWebhookUrl != null)
             {
-                throw new ArgumentNullException("incomingWebhookUrl");
+                if (!incomingWebhookUrl.IsAbsoluteUri)
+                {
+                    throw new ArgumentException("The incoming webhook url must be absolute.");
+                }
+                if (string.IsNullOrWhiteSpace(incomingWebhookUrl.Scheme) ||
+                    !incomingWebhookUrl.Scheme.StartsWith("http") ||
+                    string.IsNullOrWhiteSpace(incomingWebhookUrl.Host))
+                {
+                    throw new ArgumentException("The incoming webhook url is not valid.");
+                }
             }
-            if (!incomingWebhookUrl.IsAbsoluteUri)
-            {
-                throw new ArgumentException("The incoming webhook url must be absolute.");
-            }
-            if (string.IsNullOrWhiteSpace(incomingWebhookUrl.Scheme) ||
-                !incomingWebhookUrl.Scheme.StartsWith("http") ||
-                string.IsNullOrWhiteSpace(incomingWebhookUrl.Host))
-            {
-                throw new ArgumentException("The incoming webhook url is not valid.");
-            }
-            if (_incomingWebhookUrl == null ||
-                !incomingWebhookUrl.AbsoluteUri.Equals(_incomingWebhookUrl.AbsoluteUri, StringComparison.Ordinal))
+            if (!Uri.Equals(incomingWebhookUrl, _incomingWebhookUrl))
             {
                 RaiseEvent(new AccountIncomingWebhookUpdated { IncomingWebhookUrl = incomingWebhookUrl });
                 if (_stateMachine.CanFire(AccountTrigger.Activate))
                 {
                     RaiseEvent(new AccountActivated());
+                }
+                else if (_stateMachine.CanFire(AccountTrigger.Deactivate))
+                {
+                    RaiseEvent(new AccountDeactivated());
                 }
             }
         }
@@ -146,6 +151,11 @@ namespace SlashTodo.Core.Domain
             _stateMachine.Fire(AccountTrigger.Activate);
         }
 
+        private void Apply(AccountDeactivated @event)
+        {
+            _stateMachine.Fire(AccountTrigger.Deactivate);
+        }
+
         private void Apply(AccountSlackTeamInfoUpdated @event)
         {
             _slackTeamName = @event.SlackTeamName;
@@ -163,12 +173,15 @@ namespace SlashTodo.Core.Domain
             _stateMachine.Configure(AccountState.Initial)
                 .Permit(AccountTrigger.Create, AccountState.Created);
             _stateMachine.Configure(AccountState.Created)
+                .PermitReentry(AccountTrigger.Deactivate)
                 .OnEntryFrom(_createTrigger, (id, slackTeamId) =>
                 {
                     Id = id;
                     _slackTeamId = slackTeamId;
                 })
                 .PermitIf(AccountTrigger.Activate, AccountState.Active, () => HasValidConfiguration);
+            _stateMachine.Configure(AccountState.Active)
+                .PermitIf(AccountTrigger.Deactivate, AccountState.Created, () => !HasValidConfiguration);
         }
 
         private enum AccountState
@@ -181,7 +194,8 @@ namespace SlashTodo.Core.Domain
         private enum AccountTrigger
         {
             Create,
-            Activate
+            Activate,
+            Deactivate
         }
     }
 }

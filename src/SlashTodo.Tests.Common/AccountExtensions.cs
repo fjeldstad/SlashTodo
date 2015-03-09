@@ -9,7 +9,7 @@ namespace SlashTodo.Tests.Common
 {
     public static class AccountExtensions
     {
-        public static AccountDto ToDto(this Core.Domain.Account account, DateTime createdAt, DateTime? activatedAt = null)
+        public static AccountDto ToDto(this Core.Domain.Account account, DateTime createdAt, bool isActive = false)
         {
             if (account == null)
             {
@@ -23,7 +23,7 @@ namespace SlashTodo.Tests.Common
                 SlashCommandToken = account.SlashCommandToken,
                 IncomingWebhookUrl = account.IncomingWebhookUrl,
                 CreatedAt = createdAt,
-                ActivatedAt = activatedAt
+                IsActive = isActive
             };
         }
     }

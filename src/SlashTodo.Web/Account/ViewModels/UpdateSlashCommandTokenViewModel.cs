@@ -5,9 +5,8 @@ using System.Web;
 
 namespace SlashTodo.Web.Account.ViewModels
 {
-    public class SettingsViewModel
+    public class UpdateSlashCommandTokenViewModel
     {
-        public Uri IncomingWebhookUrl { get; set; }
         public string SlashCommandToken { get; set; }
     }
 }

@@ -108,7 +108,17 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                 {
                     return;
                 }
-                entity.ActivatedAt = @event.Timestamp;
+                entity.IsActive = true;
+                Update(_tableName, entity).Wait();
+            }));
+            _subscriptionTokens.Add(registry.RegisterSubscription<AccountDeactivated>(@event =>
+            {
+                var entity = Retrieve(_tableName, @event.Id.ToString(), @event.Id.ToString()).Result;
+                if (entity == null)
+                {
+                    return;
+                }
+                entity.IsActive = false;
                 Update(_tableName, entity).Wait();
             }));
         }
@@ -129,7 +139,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
             public string SlashCommandToken { get; set; }
             public string IncomingWebhookUrl { get; set; }
             public DateTime CreatedAt { get; set; }
-            public DateTime? ActivatedAt { get; set; }
+            public bool IsActive { get; set; }
 
             public AccountDtoTableEntity()
             {
@@ -145,7 +155,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                 SlashCommandToken = dto.SlashCommandToken;
                 IncomingWebhookUrl = dto.IncomingWebhookUrl != null ? dto.IncomingWebhookUrl.AbsoluteUri : null;
                 CreatedAt = dto.CreatedAt;
-                ActivatedAt = dto.ActivatedAt;
+                IsActive = dto.IsActive;
             }
 
             public AccountDto GetAccountDto()
@@ -159,7 +169,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                     SlashCommandToken = SlashCommandToken,
                     IncomingWebhookUrl = !string.IsNullOrEmpty(IncomingWebhookUrl) ? new Uri(IncomingWebhookUrl) : null,
                     CreatedAt = CreatedAt,
-                    ActivatedAt = ActivatedAt
+                    IsActive = IsActive
                 };
             }
         }

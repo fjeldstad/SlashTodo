@@ -99,7 +99,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                 {
                     return;
                 }
-                entity.ActivatedAt = @event.Timestamp;
+                entity.IsActive = true;
                 Update(_tableName, entity).Wait();
             }));
         }
@@ -119,7 +119,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
             public string SlackUserName { get; set; }
             public string SlackApiAccessToken { get; set; }
             public DateTime CreatedAt { get; set; }
-            public DateTime? ActivatedAt { get; set; }
+            public bool IsActive { get; set; }
 
             public UserDtoTableEntity()
             {
@@ -134,7 +134,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                 SlackUserName = dto.SlackUserName;
                 SlackApiAccessToken = dto.SlackApiAccessToken;
                 CreatedAt = dto.CreatedAt;
-                ActivatedAt = dto.ActivatedAt;
+                IsActive = dto.IsActive;
             }
 
             public UserDto GetUserDto()
@@ -147,7 +147,7 @@ namespace SlashTodo.Infrastructure.Storage.AzureTables.Queries
                     SlackUserName = SlackUserName,
                     SlackApiAccessToken = SlackApiAccessToken,
                     CreatedAt = CreatedAt,
-                    ActivatedAt = ActivatedAt
+                    IsActive = IsActive
                 };
             }
         }
