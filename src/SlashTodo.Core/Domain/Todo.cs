@@ -15,11 +15,13 @@ namespace SlashTodo.Core.Domain
         private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid> _claimTrigger;
         private string _text;
         private string _slackConversationId;
+        private string _shortCode;
         private Guid? _claimedByUserId;
 
         public TodoContext Context { get; set; }
         public string Text { get { return _text; } }
         public string SlackConversationId { get { return _slackConversationId; } }
+        public string ShortCode { get { return _shortCode; } }
         public Guid? ClaimedByUserId { get { return _claimedByUserId; } }
 
         public Todo()
@@ -27,11 +29,19 @@ namespace SlashTodo.Core.Domain
             ConfigureStateMachine();
         }
 
-        public static Todo Add(Guid id, string text, string slackConversationId, TodoContext context)
+        public static Todo Add(Guid id, string text, string slackConversationId, string shortCode, TodoContext context)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
                 throw new ArgumentNullException("text");
+            }
+            if (string.IsNullOrWhiteSpace(slackConversationId))
+            {
+                throw new ArgumentNullException("slackConversationId");
+            }
+            if (string.IsNullOrWhiteSpace(shortCode))
+            {
+                throw new ArgumentNullException("shortCode");
             }
             if (context == null)
             {
@@ -47,6 +57,7 @@ namespace SlashTodo.Core.Domain
             }
             todo.Id = id;
             todo._slackConversationId = slackConversationId;
+            todo._shortCode = shortCode;
             todo.RaiseEvent(new TodoAdded { Text = text.Trim() });
             return todo;
         }
@@ -138,6 +149,7 @@ namespace SlashTodo.Core.Domain
             }
             ((TodoEvent)@event).AccountId = Context.AccountId;
             ((TodoEvent)@event).SlackConversationId = _slackConversationId;
+            ((TodoEvent)@event).ShortCode = _shortCode;
             ((TodoEvent)@event).UserId = Context.UserId;
             base.RaiseEvent(@event);
         }

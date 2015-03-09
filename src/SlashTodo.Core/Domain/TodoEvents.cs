@@ -13,6 +13,7 @@ namespace SlashTodo.Core.Domain
         public int OriginalVersion { get; set; }
         public Guid AccountId { get; set; }
         public string SlackConversationId { get; set; }
+        public string ShortCode { get; set; }
         public Guid UserId { get; set; }
     }
 

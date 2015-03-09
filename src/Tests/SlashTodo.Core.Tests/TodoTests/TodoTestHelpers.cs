@@ -32,6 +32,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             this TodoEvent @event, 
             Guid id,
             string slackConversationId,
+            string shortCode,
             TodoContext context, 
             DateTime earliestExpectedTimestamp,
             int? expectedOriginalVersion = null)
@@ -39,6 +40,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             @event.AssertThatBasicEventDataIsCorrect(id, earliestExpectedTimestamp, expectedOriginalVersion);
             Assert.That(@event.AccountId, Is.EqualTo(context.AccountId));
             Assert.That(@event.SlackConversationId, Is.EqualTo(slackConversationId));
+            Assert.That(@event.ShortCode, Is.EqualTo(shortCode));
             Assert.That(@event.UserId, Is.EqualTo(context.UserId));
         }
     }

@@ -18,7 +18,8 @@ namespace SlashTodo.Core.Tests.TodoTests
             var id = Guid.NewGuid();
             var context = TodoTestHelpers.GetContext();
             var slackConversationId = "slackConversationId";
-            var todo = Todo.Add(id, "text", slackConversationId, context);
+            var shortCode = "x";
+            var todo = Todo.Add(id, "text", slackConversationId, shortCode, context);
             todo.Tick();
             todo.ClearUncommittedEvents();
             var before = DateTime.UtcNow;
@@ -29,7 +30,7 @@ namespace SlashTodo.Core.Tests.TodoTests
 
             // Assert
             var @event = todo.GetUncommittedEvents().Single() as TodoUnticked;
-            @event.AssertThatBasicDataIsCorrect(id, slackConversationId, context, before, expectedOriginalVersion: originalVersion);
+            @event.AssertThatBasicDataIsCorrect(id, slackConversationId, shortCode, context, before, expectedOriginalVersion: originalVersion);
         }
 
         [Test]
@@ -38,7 +39,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             // Arrange
             var id = Guid.NewGuid();
             var context = TodoTestHelpers.GetContext();
-            var todo = Todo.Add(id, "text", "slackConversationId", context);
+            var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.Tick();
             todo.ClearUncommittedEvents();
 
@@ -57,7 +58,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             // Arrange
             var id = Guid.NewGuid();
             var context = TodoTestHelpers.GetContext();
-            var todo = Todo.Add(id, "text", "slackConversationId", context);
+            var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.Remove();
             todo.ClearUncommittedEvents();
 

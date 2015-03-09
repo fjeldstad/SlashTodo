@@ -16,18 +16,27 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanNotAddTodoWithEmptyText()
         {
             // Act & assert
-            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), null, It.IsAny<string>(), It.IsAny<TodoContext>()));
-            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), string.Empty, It.IsAny<string>(), It.IsAny<TodoContext>()));
-            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), " ", It.IsAny<string>(), It.IsAny<TodoContext>()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), null, "conversationId", "shortCode", TodoTestHelpers.GetContext()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), string.Empty, "conversationId", "shortCode", TodoTestHelpers.GetContext()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), " ", "conversationId", "shortCode", TodoTestHelpers.GetContext()));
         }
 
         [Test]
         public void CanNotAddTodoWithEmptySlackConversationId()
         {
             // Act & assert
-            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), It.IsAny<string>(), null, It.IsAny<TodoContext>()));
-            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), It.IsAny<string>(), string.Empty, It.IsAny<TodoContext>()));
-            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), It.IsAny<string>(), " ", It.IsAny<TodoContext>()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), "text", null, "shortCode", TodoTestHelpers.GetContext()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), "text", string.Empty, "shortCode", TodoTestHelpers.GetContext()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), "text", " ", "shortCode", TodoTestHelpers.GetContext()));
+        }
+
+        [Test]
+        public void CanNotAddTodoWithEmptyShortCode()
+        {
+            // Act & assert
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), "text", "conversationId", null, TodoTestHelpers.GetContext()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), "text", "conversationId", string.Empty, TodoTestHelpers.GetContext()));
+            Assert.Throws<ArgumentNullException>(() => Todo.Add(It.IsAny<Guid>(), "text", "conversationId", " ", TodoTestHelpers.GetContext()));
         }
 
         [Test]
@@ -38,17 +47,18 @@ namespace SlashTodo.Core.Tests.TodoTests
             var context = TodoTestHelpers.GetContext();
             const string text = " text ";
             var slackConversationId = "slackConversationId";
+            var shortCode = "x";
             var before = DateTime.UtcNow;
 
             // Act
-            var todo = Todo.Add(id, text, slackConversationId, context);
+            var todo = Todo.Add(id, text, slackConversationId, shortCode, context);
 
             // Assert
             Assert.That(todo, Is.Not.Null);
             Assert.That(todo.Id, Is.EqualTo(id));
             Assert.That(todo.Version, Is.EqualTo(1));
             var @event = todo.GetUncommittedEvents().Single() as TodoAdded;
-            @event.AssertThatBasicDataIsCorrect(id, slackConversationId, context, before, expectedOriginalVersion: 0);
+            @event.AssertThatBasicDataIsCorrect(id, slackConversationId, shortCode, context, before, expectedOriginalVersion: 0);
             Assert.That(@event.Text, Is.EqualTo(text.Trim()));
         }
     }
