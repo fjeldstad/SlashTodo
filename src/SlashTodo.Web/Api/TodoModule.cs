@@ -51,7 +51,7 @@ namespace SlashTodo.Web.Api
                 {
                     var user = Core.Domain.User.Create(Guid.NewGuid(), account.Id, command.UserId);
                     user.UpdateSlackUserName(command.UserName);
-                    await userKit.Repository.Save(user); // TODO Await later to reduce response time?
+                    await userKit.Repository.Save(user); // TODO Await later to reduce response time? Or don't await at all?
                 }
                 throw new NotImplementedException();
             };

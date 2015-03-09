@@ -227,6 +227,7 @@ namespace SlashTodo.Web.Tests
         }
 
 
+
         private static AccountDto GetAccountDto(Guid? accountId = null, string slackTeamId = "slackTeamId", string slashCommandToken = "token", bool isActive = true)
         {
             return new AccountDto
