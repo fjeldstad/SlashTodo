@@ -114,8 +114,8 @@ namespace SlashTodo.Web.Tests
             // Arrange
             var helpEmailAddress = "help@slashtodo.com";
             _appSettingsMock.Setup(x => x.Get("misc:HelpEmailAddress")).Returns(helpEmailAddress);
-            var hostBaseUrl = "https://slashtodo.com/api/";
-            _hostSettingsMock.SetupGet(x => x.ApiBaseUrl).Returns(hostBaseUrl);
+            var hostBaseUrl = "https://slashtodo.com/";
+            _hostSettingsMock.SetupGet(x => x.BaseUrl).Returns(hostBaseUrl);
             var accountDto = new AccountDto
             {
                 Id = _userIdentity.AccountId,
@@ -151,7 +151,7 @@ namespace SlashTodo.Web.Tests
             Assert.That(viewModel.SlackTeamUrl, Is.EqualTo(_userIdentity.SlackTeamUrl.AbsoluteUri));
             Assert.That(viewModel.IncomingWebhookUrl, Is.EqualTo(accountDto.IncomingWebhookUrl.AbsoluteUri));
             Assert.That(viewModel.SlashCommandToken, Is.EqualTo(accountDto.SlashCommandToken));
-            Assert.That(viewModel.SlashCommandUrl, Is.EqualTo(hostBaseUrl.TrimEnd('/') + "/" + _userIdentity.AccountId.ToString("N")));
+            Assert.That(viewModel.SlashCommandUrl, Is.EqualTo(hostBaseUrl.TrimEnd('/') + "/api/" + _userIdentity.AccountId.ToString("N")));
             Assert.That(viewModel.HelpEmailAddress, Is.EqualTo(helpEmailAddress));
         }
 

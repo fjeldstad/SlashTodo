@@ -8,7 +8,7 @@ namespace SlashTodo.Infrastructure.Configuration
 {
     public class HostSettings : SettingsBase, IHostSettings
     {
-        public string ApiBaseUrl { get { return AppSettings.Get("host:ApiBaseUrl"); } }
+        public string BaseUrl { get { return AppSettings.Get("host:BaseUrl"); } }
         public int HttpsPort { get { return int.Parse(AppSettings.Get("host:HttpsPort")); } }
 
         public HostSettings(IAppSettings appSettings)

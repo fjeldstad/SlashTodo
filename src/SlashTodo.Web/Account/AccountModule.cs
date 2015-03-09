@@ -38,7 +38,7 @@ namespace SlashTodo.Web.Account
                 {
                     viewModel.IncomingWebhookUrl = account.IncomingWebhookUrl.AbsoluteUri;
                 }
-                viewModel.SlashCommandUrl = string.Format("{0}/{1:N}", hostSettings.ApiBaseUrl.TrimEnd('/'), account.Id);
+                viewModel.SlashCommandUrl = string.Format("{0}/api/{1:N}", hostSettings.BaseUrl.TrimEnd('/'), account.Id);
                 viewModel.HelpEmailAddress = appSettings.Get("misc:HelpEmailAddress");
 
                 return Negotiate

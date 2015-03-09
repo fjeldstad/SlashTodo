@@ -193,6 +193,10 @@
     <Compile Include="Account\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Account\ViewModels\UpdateIncomingWebhookUrlViewModel.cs" />
     <Compile Include="Account\ViewModels\UpdateSlashCommandTokenViewModel.cs" />
+    <Compile Include="Api\ISlashCommandErrorResponseFactory.cs" />
+    <Compile Include="Api\SlackSlashCommand.cs" />
+    <Compile Include="Api\SlashCommandErrorResponseFactory.cs" />
+    <Compile Include="Api\TodoModule.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
     <Compile Include="ResponseExtensions.cs" />
     <Compile Include="SlackUserIdentity.cs" />
@@ -219,9 +223,7 @@
       <Name>SlashTodo.Infrastructure</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Api\" />
-  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
