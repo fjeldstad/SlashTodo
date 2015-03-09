@@ -3,73 +3,56 @@
     Layout = "_Layout.cshtml";
 }
 
-
-
-<div class="container">
+<div class="container" ng-app="app" ng-cloak ng-controller="DashboardController">
     <div class="page-header clearfix">
         <a href="@Url.Content("~/signout")" class="btn btn-default btn-sm pull-right" style="margin-top: 25px;"><span class="glyphicon glyphicon-log-out"></span> Sign out</a>
         <h1 class="logo">/todo</h1>
     </div>
-    <div class="row">
-        <div class="col-sm-6">
-            <h3>Settings</h3>
-            
-            <h6>Slack team</h6>
-            <p><code>@Model.SlackTeamName</code></p>
-
-            <h6>Slash command url</h6>
-            <p><code>@Model.SlashCommandUrl</code></p>
-            
-            <h6>Slash command token</h6>
-            @if (string.IsNullOrWhiteSpace(Model.SlashCommandToken))
-            {
-                <a href="" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-pencil"></span> Configure</a>
-            }
-            else
-            {
-                <p><code>@Model.SlashCommandToken</code></p>
-            }
-            
-            <h6>Incoming webhook url</h6>
-            @if (string.IsNullOrWhiteSpace(Model.IncomingWebhookUrl))
-            {
-                <a href="" class="btn btn-primary btn-sm"><span class="glyphicon glyphicon-pencil"></span> Configure</a>
-            }
-            else
-            {
-                <p><code>@Model.IncomingWebhookUrl</code></p>
-            }
-        </div>
-        <div class="col-sm-6">
-            <h3>Setup instructions</h3>
-            <ol>
-                <li>
-                    Go to the
-                    <a href="@string.Format("{0}/services/new", Model.SlackTeamUrl.TrimEnd('/'))">Integrations</a> page of your Slack team.
-                </li>
-                <li>
-                    Add a new
-                    <strong><a href="@string.Format("{0}/services/new/slash-commands", Model.SlackTeamUrl.TrimEnd('/'))">Slash Command</a></strong>
-                    integration.
-                    <ul>
-                        <li><strong>Command:</strong> <code>/todo</code></li>
-                        <li><strong>Url:</strong> <code>@Model.SlashCommandUrl</code></li>
-                        <li><strong>Method:</strong> <code>POST</code></li>
-                    </ul>
-                    Copy or note the <strong>token</strong> of the integration.
-                    This is your <strong>Slash command token</strong>.
-                </li>
-                <li>
-                    Add a new
-                    <strong><a href="@string.Format("{0}/services/new/incoming-webhook", Model.SlackTeamUrl.TrimEnd('/'))">Incoming Webhook</a></strong>
-                    integration.
-                    <ul>
-                        <li><strong>Post to Channel:</strong> <code>@@slackbot</code></li>
-                    </ul>
-                    Copy or note the <strong>Webhook URL</strong> of the integration.
-                    This is your <strong>Incoming webhook url</strong>.
-                </li>
-            </ol>
-        </div>
-    </div>
+    <h3>Setup instructions for <strong>@Model.SlackTeamName</strong></h3>
+        <ol>
+            <li>
+                Go to the
+                <a href="@string.Format("{0}/services/new", Model.SlackTeamUrl.TrimEnd('/'))">Integrations</a>
+                page of your Slack team configuration.
+            </li>
+            <li>
+                Add a new
+                <strong><a href="@string.Format("{0}/services/new/slash-commands", Model.SlackTeamUrl.TrimEnd('/'))">Slash Command</a></strong>
+                integration.
+                <ul>
+                    <li><strong>Command:</strong> <code>/todo</code></li>
+                    <li><strong>Url:</strong> <code>@Model.SlashCommandUrl</code></li>
+                    <li><strong>Method:</strong> <code>POST</code></li>
+                </ul>
+                <form class="form-inline">
+                    <div class="form-group" ng-class="{ 'has-error': !slashCommandToken }">
+                        <label class="control-label" for="slashCommandToken">Slash Command Token:</label>
+                        <input type="text" id="slashCommandToken" class="form-control" ng-model="slashCommandToken">
+                    </div>
+                </form>
+            </li>
+            <li>
+                Add a new
+                <strong><a href="@string.Format("{0}/services/new/incoming-webhook", Model.SlackTeamUrl.TrimEnd('/'))">Incoming Webhook</a></strong>
+                integration.
+                <ul>
+                    <li><strong>Post to Channel:</strong> <code>@@slackbot</code></li>
+                </ul>
+                <form class="form-inline">
+                    <div class="form-group" ng-class="{ 'has-error': !incomingWebhookUrl }">
+                        <label class="control-label" for="incomingWebhookUrl">Incoming Webhook Url:</label>
+                        <input type="text" id="incomingWebhookUrl" class="form-control" ng-model="incomingWebhookUrl">
+                    </div>
+                </form>
+            </li>
+        </ol>
 </div>
+
+@section EndOfBody {
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
+    <script src="@Url.Content("~/Content/js/lib/angular/angular-resource.min.js")"></script>
+    <script src="@Url.Content("~/Content/js/app.js")"></script>
+    <script type="text/javascript">
+        angular.module('app').constant('BaseUrl', '@Url.Content("~/").TrimEnd('/')');
+    </script>
+}

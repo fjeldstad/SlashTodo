@@ -135,6 +135,19 @@
     <Content Include="Content\bootstrap\js\bootstrap.min.js" />
     <Content Include="Content\bootstrap\js\npm.js" />
     <Content Include="Content\css\app.css" />
+    <Content Include="Content\js\app.js" />
+    <Content Include="Content\js\lib\angular\angular-animate.js" />
+    <Content Include="Content\js\lib\angular\angular-animate.min.js" />
+    <Content Include="Content\js\lib\angular\angular-resource.js" />
+    <Content Include="Content\js\lib\angular\angular-resource.min.js" />
+    <Content Include="Content\js\lib\angular\angular-route.js" />
+    <Content Include="Content\js\lib\angular\angular-route.min.js" />
+    <Content Include="Content\js\lib\angular\angular-sanitize.js" />
+    <Content Include="Content\js\lib\angular\angular-sanitize.min.js" />
+    <Content Include="Content\js\lib\angular\angular-touch.js" />
+    <Content Include="Content\js\lib\angular\angular-touch.min.js" />
+    <Content Include="Content\js\lib\angular\angular.js" />
+    <Content Include="Content\js\lib\angular\angular.min.js" />
     <Content Include="packages.config" />
     <Content Include="Secret.config" />
     <Content Include="Secret.template.config">
@@ -150,6 +163,12 @@
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Content\bootstrap\fonts\glyphicons-halflings-regular.woff2" />
+    <Content Include="Content\js\lib\angular\angular-animate.min.js.map" />
+    <Content Include="Content\js\lib\angular\angular-resource.min.js.map" />
+    <Content Include="Content\js\lib\angular\angular-route.min.js.map" />
+    <Content Include="Content\js\lib\angular\angular-sanitize.min.js.map" />
+    <Content Include="Content\js\lib\angular\angular-touch.min.js.map" />
+    <Content Include="Content\js\lib\angular\angular.min.js.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -196,7 +215,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Api\" />
-    <Folder Include="Content\js\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

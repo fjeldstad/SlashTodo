@@ -12,6 +12,7 @@ using Nancy.Bootstrapper;
 using Nancy.Cryptography;
 using Nancy.Session;
 using Nancy.TinyIoc;
+using Newtonsoft.Json;
 using Refit;
 using SlashTodo.Core;
 using SlashTodo.Core.Lookups;
@@ -63,10 +64,6 @@ namespace SlashTodo.Web
             container.Register<IRepository<Core.Domain.Todo>, TodoRepository>();
             var slackSettings = container.Resolve<ISlackSettings>();
             container.Register<ISlackApi>(RestService.For<ISlackApi>(slackSettings.ApiBaseUrl));
-            //var messageBus = new TinyMessageBus(new TinyMessengerHub());
-            //container.Register<IMessageBus>(messageBus);
-            //container.Register<ISubscriptionRegistry>(messageBus);
-            //container.Register<IEventDispatcher>(messageBus);
 
             // Register a single CloudStorageAccount instance per application. Also turn off
             // the Nagle algorithm to improve performance.
@@ -75,6 +72,9 @@ namespace SlashTodo.Web
             var cloudStorageAccount = CloudStorageAccount.Parse(azureSettings.StorageConnectionString);
             ServicePointManager.FindServicePoint(cloudStorageAccount.TableEndpoint).UseNagleAlgorithm = false;
             container.Register<CloudStorageAccount>(cloudStorageAccount);
+
+            // Custom JSON serialization settings
+            container.Register<JsonSerializer, CustomJsonSerializer>();
         }
 
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)

@@ -147,5 +147,8 @@ namespace SlashTodo.Web.Tests
             Assert.That(viewModel.SlashCommandToken, Is.EqualTo(accountDto.SlashCommandToken));
             Assert.That(viewModel.SlashCommandUrl, Is.EqualTo(hostBaseUrl.TrimEnd('/') + "/" + _userIdentity.AccountId.ToString("N")));
         }
+
+        [Test]
+        public void 
     }
 }
