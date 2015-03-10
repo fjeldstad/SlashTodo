@@ -86,6 +86,7 @@
     <Compile Include="Storage\AzureTables\Lookups\AzureTableTodoLookupTests.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableUserLookupTests.cs" />
     <Compile Include="Storage\AzureTables\Lookups\AzureTableAccountLookupTests.cs" />
+    <Compile Include="Storage\AzureTables\Queries\AzureTableTodoQueryTests.cs" />
     <Compile Include="Storage\AzureTables\Queries\AzureTableUserQueryTests.cs" />
     <Compile Include="Storage\AzureTables\Queries\AzureTableAccountQueryTests.cs" />
   </ItemGroup>

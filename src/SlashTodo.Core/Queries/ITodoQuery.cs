@@ -9,8 +9,8 @@ namespace SlashTodo.Core.Queries
 {
     public interface ITodoQuery
     {
-        Task<TodoDto[]> BySlackConversationId(string slackConversationId, bool includeRemoved = false);
-        Task<TodoDto[]> ClaimedByUserId(Guid userId);
-        Task<TodoDto[]> CompletedByUserId(Guid userId, DateTime? since = null, bool includeRemoved = true);
+        Task<TodoDto[]> BySlackConversationId(string slackConversationId);
+        Task<TodoDto[]> ClaimedBySlackUserId(string slackUserId);
+        Task<TodoDto[]> CompletedBySlackUserId(string slackUserId, DateTime? since = null, bool includeRemoved = true);
     }
 }
