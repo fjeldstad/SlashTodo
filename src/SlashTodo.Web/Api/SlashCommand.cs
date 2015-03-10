@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace SlashTodo.Web.Api
 {
-    public class SlackSlashCommand
+    public class SlashCommand
     {
         [JsonProperty(PropertyName = "token")]
         public string Token { get; set; }

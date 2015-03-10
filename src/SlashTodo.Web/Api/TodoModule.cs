@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using Nancy;
 using Nancy.ModelBinding;
+using Nancy.Responses;
 using Nancy.Security;
 using SlashTodo.Core;
 using SlashTodo.Core.Queries;
@@ -19,7 +20,8 @@ namespace SlashTodo.Web.Api
             IHostSettings hostSettings,
             QueryTeams.IById queryTeamsById,
             QueryUsers.IById queryUsersById,
-            IRepository<Core.Domain.User> userRepository)
+            IRepository<Core.Domain.User> userRepository,
+            ISlashCommandHandler slashCommandHandler)
             : base("/api")
         {
             this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
@@ -36,7 +38,7 @@ namespace SlashTodo.Web.Api
                 {
                     return errorResponseFactory.ActiveAccountNotFound();
                 }
-                var command = this.Bind<SlackSlashCommand>();
+                var command = this.Bind<SlashCommand>();
                 if (!team.IsActive)
                 {
                     return errorResponseFactory.ActiveAccountNotFound();
@@ -52,7 +54,12 @@ namespace SlashTodo.Web.Api
                     user.UpdateName(command.UserName);
                     await userRepository.Save(user); // TODO Await later to reduce response time? Or don't await at all?
                 }
-                throw new NotImplementedException();
+                var responseText = await slashCommandHandler.Handle(command);
+                if (responseText.HasValue())
+                {
+                    return new TextResponse(statusCode: HttpStatusCode.OK, contents: responseText);
+                }
+                return HttpStatusCode.OK;
             };
         }
     }

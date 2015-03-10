@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Nancy.Session;
 using NUnit.Framework;
 using Moq;
+using SlashTodo.Web.Security;
 
 namespace SlashTodo.Web.Tests
 {

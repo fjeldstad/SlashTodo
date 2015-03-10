@@ -193,7 +193,8 @@
     <Compile Include="Account\ViewModels\UpdateIncomingWebhookUrlViewModel.cs" />
     <Compile Include="Account\ViewModels\UpdateSlashCommandTokenViewModel.cs" />
     <Compile Include="Api\ISlashCommandErrorResponseFactory.cs" />
-    <Compile Include="Api\SlackSlashCommand.cs" />
+    <Compile Include="Api\ISlashCommandHandler.cs" />
+    <Compile Include="Api\SlashCommand.cs" />
     <Compile Include="Api\SlashCommandErrorResponseFactory.cs" />
     <Compile Include="Api\TodoModule.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />

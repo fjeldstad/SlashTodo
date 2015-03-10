@@ -5,21 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using Moq;
 using Nancy;
-using Nancy.Authentication.Forms;
-using Nancy.Cryptography;
 using Nancy.Security;
 using Nancy.Testing;
 using NUnit.Framework;
-using SlashTodo.Core;
-using SlashTodo.Core.Domain;
-using SlashTodo.Core.Dtos;
-using SlashTodo.Core.Lookups;
-using SlashTodo.Core.Queries;
 using SlashTodo.Infrastructure.Configuration;
-using SlashTodo.Web.Account;
-using SlashTodo.Web.Account.ViewModels;
 using SlashTodo.Web.ViewModels;
-using SlashTodo.Tests.Common;
 
 namespace SlashTodo.Web.Tests
 {

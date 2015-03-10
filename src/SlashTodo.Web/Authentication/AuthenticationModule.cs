@@ -126,11 +126,6 @@ namespace SlashTodo.Web.Authentication
 
                 // Ensure the user has a corresponding Nancy user.
                 var nancyUser = await nancyUserIdentityService.GetOrCreate(user.Id, user.TeamId, user.Name);
-                if (nancyUser == null)
-                {
-                    // This should never happen, but if it does it's bad.
-                    throw new InvalidOperationException(string.Format("Could not create Nancy user for {0}.", user.Id));
-                }
 
                 // Login and redirect to account page
                 return this.LoginAndRedirect(nancyUser.Id, fallbackRedirectUrl: "/account");
