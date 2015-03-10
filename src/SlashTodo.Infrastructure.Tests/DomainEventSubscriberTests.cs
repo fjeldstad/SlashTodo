@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Data.Edm.Expressions;
 using Moq;
 using NUnit.Framework;
 using SlashTodo.Core;
@@ -20,9 +18,9 @@ namespace SlashTodo.Infrastructure.Tests
         public async Task SubscriberReceivesDomainEventPublishedByRepository()
         {
             // Arrange
-            var aggregate = new DummyAggregate(id: Guid.NewGuid());
+            var aggregate = new DummyAggregate(id: "id");
             var eventStore = new Mock<IEventStore>();
-            eventStore.Setup(x => x.Save(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<IEnumerable<IDomainEvent>>())).Returns(Task.FromResult<object>(null));
+            eventStore.Setup(x => x.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<IEnumerable<IDomainEvent>>())).Returns(Task.FromResult<object>(null));
             var bus = new TinyMessageBus(new TinyMessengerHub());
             var repository = new DummyRepository(eventStore.Object, bus);
             var subscriber = new DummySubscriber();
@@ -72,11 +70,11 @@ namespace SlashTodo.Infrastructure.Tests
             private readonly List<IDomainEvent> _appliedEvents = new List<IDomainEvent>();
 
             public DummyAggregate()
-                : this(Guid.NewGuid())
+                : this("id")
             {
             }
 
-            public DummyAggregate(Guid id)
+            public DummyAggregate(string id)
             {
                 Id = id;
             }
@@ -99,7 +97,7 @@ namespace SlashTodo.Infrastructure.Tests
 
         public class DummyEvent : IDomainEvent
         {
-            public Guid Id { get; set; }
+            public string Id { get; set; }
             public DateTime Timestamp { get; set; }
             public int OriginalVersion { get; set; }
         }

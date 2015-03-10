@@ -81,14 +81,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DomainEventSubscriberTests.cs" />
-    <Compile Include="Storage\AzureTables\AzureTableEventStoreTests.cs" />
+    <Compile Include="AzureTables\EventStoreTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Storage\AzureTables\Lookups\AzureTableTodoLookupTests.cs" />
-    <Compile Include="Storage\AzureTables\Lookups\AzureTableUserLookupTests.cs" />
-    <Compile Include="Storage\AzureTables\Lookups\AzureTableAccountLookupTests.cs" />
-    <Compile Include="Storage\AzureTables\Queries\AzureTableTodoQueryTests.cs" />
-    <Compile Include="Storage\AzureTables\Queries\AzureTableUserQueryTests.cs" />
-    <Compile Include="Storage\AzureTables\Queries\AzureTableAccountQueryTests.cs" />
+    <Compile Include="AzureTables\Queries\QueryUsersByIdTests.cs" />
+    <Compile Include="AzureTables\Queries\QueryTeamsByIdTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -114,6 +110,7 @@
       <Name>SlashTodo.Tests.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

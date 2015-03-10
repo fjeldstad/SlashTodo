@@ -11,11 +11,12 @@ using SlashTodo.Infrastructure.Messaging;
 namespace SlashTodo.Infrastructure.AzureTables.Queries
 {
     public class QueryUsersById : 
-        TableStorageBase<UserDtoTableEntity>, 
         QueryUsers.IById,
         ISubscriber
     {
         public const string DefaultTableName = "queryUsersById";
+
+        private readonly CloudStorageAccount _storageAccount;
         private readonly string _tableName;
         private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
 
@@ -27,59 +28,70 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
         }
 
         public QueryUsersById(CloudStorageAccount storageAccount, string tableName)
-            : base(storageAccount)
         {
+            if (storageAccount == null)
+            {
+                throw new ArgumentNullException("storageAccount");
+            }
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 throw new ArgumentNullException("tableName");
             }
+            _storageAccount = storageAccount;
             _tableName = tableName;
         }
 
         public async Task<UserDto> ById(string id)
         {
-            var entity = await Retrieve(_tableName, id, id).ConfigureAwait(false);
+            var table = await _storageAccount.GetTableAsync(_tableName).ConfigureAwait(false);
+            var entity = await table.RetrieveAsync<UserDtoTableEntity>(id, id).ConfigureAwait(false);
             return entity != null ? entity.GetDto() : null;
         }
 
         public void RegisterSubscriptions(ISubscriptionRegistry registry)
         {
             _subscriptionTokens.Add(registry.RegisterSubscription<UserCreated>(@event =>
-                Insert(new UserDtoTableEntity(new UserDto
+            {
+                var table = _storageAccount.GetTable(_tableName);
+                table.Insert(new UserDtoTableEntity(new UserDto
                 {
                     Id = @event.Id,
                     TeamId = @event.TeamId,
                     CreatedAt = @event.Timestamp
-                }), _tableName).Wait()));
+                }));
+            }));
             _subscriptionTokens.Add(registry.RegisterSubscription<UserNameUpdated>(@event =>
             {
-                var entity = Retrieve(_tableName, @event.Id, @event.Id).Result;
+                var table = _storageAccount.GetTable(_tableName);
+                var entity = table.Retrieve<UserDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
                     return;
                 }
                 entity.Name = @event.Name;
-                Update(_tableName, entity).Wait();
+                table.Update(entity);
             }));
             _subscriptionTokens.Add(registry.RegisterSubscription<UserSlackApiAccessTokenUpdated>(@event =>
             {
-                var entity = Retrieve(_tableName, @event.Id, @event.Id).Result;
+                var table = _storageAccount.GetTable(_tableName);
+                var entity = table.Retrieve<UserDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
                     return;
                 }
                 entity.SlackApiAccessToken = @event.SlackApiAccessToken;
-                Update(_tableName, entity).Wait();
+                table.Update(entity);
             }));
             _subscriptionTokens.Add(registry.RegisterSubscription<UserActivated>(@event =>
             {
-                var entity = Retrieve(_tableName, @event.Id, @event.Id).Result;
+                var table = _storageAccount.GetTable(_tableName);
+                var entity = table.Retrieve<UserDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
                     return;
                 }
                 entity.ActivatedAt = @event.Timestamp;
-                Update(_tableName, entity).Wait();
+                table.Update(entity);
             }));
         }
 

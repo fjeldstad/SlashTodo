@@ -83,6 +83,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AzureTables\Helpers.cs" />
     <Compile Include="AzureTables\Queries\Entities\TodoDtoTableEntity.cs" />
     <Compile Include="AzureTables\Queries\Entities\UserDtoTableEntity.cs" />
     <Compile Include="AzureTables\Queries\QueryTodosBySlackConversationId.cs" />
@@ -113,7 +114,6 @@
     <Compile Include="AzureTables\Repositories\TodoRepository.cs" />
     <Compile Include="AzureTables\Repositories\UserRepository.cs" />
     <Compile Include="AzureTables\Repositories\TeamRepository.cs" />
-    <Compile Include="AzureTables\TableStorageBase.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="TinyMessenger.cs" />
   </ItemGroup>

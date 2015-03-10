@@ -11,12 +11,13 @@ using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.AzureTables;
 
-namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
+namespace SlashTodo.Infrastructure.Tests.AzureTables
 {
     [TestFixture]
-    public class AzureTableEventStoreTests
+    public class EventStoreTests
     {
-        private readonly AzureSettings _azureSettings = new AzureSettings(new AppSettings());
+        private readonly CloudStorageAccount _storageAccount = CloudStorageAccount.Parse((new AzureSettings(new AppSettings())).StorageConnectionString);
+        private string _tableName;
         private EventStore _eventStore;
 
         [SetUp]
@@ -24,10 +25,8 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
         {
             // Reference a different table for each test to ensure isolation.
             _eventStore = new EventStore(
-                CloudStorageAccount.Parse(_azureSettings.StorageConnectionString), 
+                _storageAccount, 
                 string.Format("test{0}", Guid.NewGuid().ToString("N")));
-            var table = GetTableForEventStore();
-            table.CreateIfNotExists();
         }
 
         [TearDown]
@@ -36,7 +35,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
             // Delete the table used by the test that just finished running.
             // Note that according to MSDN, deleting a table can take minutes,
             // so we won't hang around waiting for the result.
-            var table = GetTableForEventStore();
+            var table = _storageAccount.GetTable(_eventStore.TableName);
             table.DeleteIfExists();
         }
 
@@ -44,10 +43,9 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
         public async Task GetByIdReturnsEmptySequenceWhenAggregateDoesNotExist()
         {
             // Arrange
-            var aggregateId = Guid.NewGuid();
 
             // Act
-            var events = await _eventStore.GetById(aggregateId);
+            var events = await _eventStore.GetById("whatever");
 
             // Assert
             Assert.That(events, Is.Empty);
@@ -57,12 +55,11 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
         public async Task GetByIdReturnsEventsForValidAggregateId()
         {
             // Arrange
-            var aggregateId = Guid.NewGuid();
+            var aggregateId = "id";
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
             var dummyEntity = new EventStore.DomainEventTableEntity(dummyEvent);
-            var table = GetTableForEventStore();
-            var insertOp = TableOperation.Insert(dummyEntity);
-            table.Execute(insertOp);
+            var table = _storageAccount.GetTable(_eventStore.TableName);
+            table.Insert(dummyEntity);
 
             // Act
             var events = await _eventStore.GetById(aggregateId);
@@ -78,7 +75,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
         public async Task SaveWritesToAzureTable()
         {
             // Arrange
-            var aggregateId = Guid.NewGuid();
+            var aggregateId = "id";
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
             var dummyEntity = new EventStore.DomainEventTableEntity(dummyEvent);
 
@@ -86,10 +83,8 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
             await _eventStore.Save(aggregateId, 0, new[] { dummyEvent });
 
             // Assert
-            var table = GetTableForEventStore();
-            var retrieveOp = TableOperation.Retrieve<EventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
-            var retrieveResult = await table.ExecuteAsync(retrieveOp);
-            var actualEntity = retrieveResult.Result as EventStore.DomainEventTableEntity;
+            var table = _storageAccount.GetTable(_eventStore.TableName);
+            var actualEntity = table.Retrieve<EventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
             Assert.That(actualEntity.PartitionKey, Is.EqualTo(dummyEntity.PartitionKey));
             Assert.That(actualEntity.RowKey, Is.EqualTo(dummyEntity.RowKey));
         }
@@ -98,34 +93,23 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
         public async Task DeleteRemovesAllEntitiesFromAzureTableForSpecifiedAggregateId()
         {
             // Arrange
-            var aggregateId = Guid.NewGuid();
+            var aggregateId = "id";
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
             var dummyEntity = new EventStore.DomainEventTableEntity(dummyEvent);
-            var table = GetTableForEventStore();
-            var insertOp = TableOperation.Insert(dummyEntity);
-            table.Execute(insertOp);
+            var table = _storageAccount.GetTable(_eventStore.TableName);
+            table.Insert(dummyEntity);
 
             // Act
             await _eventStore.Delete(aggregateId);
 
             // Assert
-            table = GetTableForEventStore();
-            var retrieveOp = TableOperation.Retrieve<EventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
-            var retrieveResult = await table.ExecuteAsync(retrieveOp);
-            Assert.That(retrieveResult.Result, Is.Null);
-        }
-
-        private CloudTable GetTableForEventStore()
-        {
-            var storageAccount = CloudStorageAccount.Parse(_azureSettings.StorageConnectionString);
-            var cloudTableClient = storageAccount.CreateCloudTableClient();
-            var table = cloudTableClient.GetTableReference(_eventStore.TableName);
-            return table;
+            var actualEntity = table.Retrieve<EventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
+            Assert.That(actualEntity, Is.Null);
         }
 
         public class DummyDomainEvent : IDomainEvent
         {
-            public Guid Id { get; set; }
+            public string Id { get; set; }
             public DateTime Timestamp { get; set; }
             public int OriginalVersion { get; set; }
         }

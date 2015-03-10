@@ -9,12 +9,13 @@ using SlashTodo.Infrastructure.Messaging;
 
 namespace SlashTodo.Infrastructure.AzureTables.Queries
 {
-    public class QueryTodosBySlackConversationId
-        : TableStorageBase<TodoDtoTableEntity>,
+    public class QueryTodosBySlackConversationId :
         QueryTodos.IBySlackConversationId,
         ISubscriber
     {
         public const string DefaultTableName = "queryTodosBySlackConversationId";
+
+        private readonly CloudStorageAccount _storageAccount;
         private readonly string _tableName;
         private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
 
@@ -26,12 +27,16 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
         }
 
         public QueryTodosBySlackConversationId(CloudStorageAccount storageAccount, string tableName)
-            : base(storageAccount)
         {
+            if (storageAccount == null)
+            {
+                throw new ArgumentNullException("storageAccount");
+            }
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 throw new ArgumentNullException("tableName");
             }
+            _storageAccount = storageAccount;
             _tableName = tableName;
         }
 

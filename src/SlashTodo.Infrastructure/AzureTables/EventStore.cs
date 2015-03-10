@@ -1,36 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Table;
-using Newtonsoft.Json;
-using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Core;
 using SlashTodo.Core.Domain;
 
 namespace SlashTodo.Infrastructure.AzureTables
 {
-    public class EventStore : TableStorageBase<EventStore.DomainEventTableEntity>, IEventStore
+    public class EventStore : IEventStore
     {
+        private readonly CloudStorageAccount _storageAccount;
         private readonly string _tableName;
 
         public string TableName { get { return _tableName; } }
 
         public EventStore(CloudStorageAccount storageAccount, string tableName)
-            : base(storageAccount)
         {
+            if (storageAccount == null)
+            {
+                throw new ArgumentNullException("storageAccount");
+            }
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 throw new ArgumentNullException("tableName");
             }
+            _storageAccount = storageAccount;
             _tableName = tableName;
         }
 
         public async Task<IEnumerable<IDomainEvent>> GetById(string aggregateId)
         {
-            var events = (await RetrievePartition(_tableName, aggregateId).ConfigureAwait(false))
+            var table = await _storageAccount.GetTableAsync(_tableName).ConfigureAwait(false);
+            var events = (await table.RetrievePartitionAsync<DomainEventTableEntity>(aggregateId).ConfigureAwait(false))
                 .Select(x => x.GetData())
                 .OrderBy(x => x.OriginalVersion);
             return events;
@@ -48,12 +50,14 @@ namespace SlashTodo.Infrastructure.AzureTables
             var orderedEvents = events
                 .OrderBy(x => x.OriginalVersion)
                 .Select(x => new DomainEventTableEntity(x));
-            await InsertBatch(orderedEvents, _tableName).ConfigureAwait(false);
+            var table = await _storageAccount.GetTableAsync(_tableName).ConfigureAwait(false);
+            await table.InsertBatchAsync(orderedEvents).ConfigureAwait(false);
         }
 
         public async Task Delete(string aggregateId)
         {
-            await DeletePartition(_tableName, aggregateId).ConfigureAwait(false);
+            var table = await _storageAccount.GetTableAsync(_tableName).ConfigureAwait(false);
+            await table.DeletePartitionAsync(aggregateId).ConfigureAwait(false);
         }
 
         public class DomainEventTableEntity : ComplexTableEntity<IDomainEvent>
