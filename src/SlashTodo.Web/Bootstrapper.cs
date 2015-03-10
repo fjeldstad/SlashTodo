@@ -15,6 +15,7 @@ using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Messaging;
 using SlashTodo.Infrastructure.Slack;
 using SlashTodo.Infrastructure.AzureTables.Repositories;
+using SlashTodo.Web.Security;
 
 namespace SlashTodo.Web
 {
@@ -48,9 +49,9 @@ namespace SlashTodo.Web
             container.Register<CryptographyConfiguration>(_cryptographyConfiguration);
             container.Register<IHmacProvider>(_cryptographyConfiguration.HmacProvider);
             container.Register<IEncryptionProvider>(_cryptographyConfiguration.EncryptionProvider);
-            container.Register<IRepository<Core.Domain.Team>, TeamRepository>();
-            container.Register<IRepository<Core.Domain.User>, UserRepository>();
-            container.Register<IRepository<Core.Domain.Todo>, TodoRepository>();
+            //container.Register<IRepository<Core.Domain.Team>, TeamRepository>();
+            //container.Register<IRepository<Core.Domain.User>, UserRepository>();
+            //container.Register<IRepository<Core.Domain.Todo>, TodoRepository>();
             var slackSettings = container.Resolve<ISlackSettings>();
             container.Register<ISlackApi>(RestService.For<ISlackApi>(slackSettings.ApiBaseUrl));
 

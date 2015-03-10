@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Web;
 using Nancy;
 using Nancy.Authentication.Forms;
 using Nancy.Security;
-using SlashTodo.Core.Domain;
+using SlashTodo.Core;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Slack;
+using SlashTodo.Web.Security;
 using SlashTodo.Web.ViewModels;
 
 namespace SlashTodo.Web.Authentication
@@ -21,9 +19,10 @@ namespace SlashTodo.Web.Authentication
             ISlackSettings slackSettings, 
             IOAuthState oAuthState,
             ISlackApi slackApi,
-            AccountKit accountKit,
-            UserKit userKit,
-            IHostSettings hostSettings)
+            IHostSettings hostSettings,
+            IRepository<Core.Domain.Team> teamRepository,
+            IRepository<Core.Domain.User> userRepository,
+            INancyUserIdentityService nancyUserIdentityService)
         {
             this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
 
@@ -108,38 +107,33 @@ namespace SlashTodo.Web.Authentication
 
                 // Get the account associated with the user's team, create if it
                 // does not already exist.
-                var accountId = await accountKit.Lookup.BySlackTeamId(authTest.TeamId);
-                Core.Domain.Team account = null;
-                if (accountId.HasValue)
-                {
-                    account = await accountKit.Repository.GetById(accountId.Value);
-                }
-                if (account == null)
-                {
-                    account = Core.Domain.Team.Create(Guid.NewGuid(), authTest.TeamId);
-                }
-                account.UpdateInfo(authTest.TeamName, new Uri(authTest.TeamUrl));
-                await accountKit.Repository.Save(account);
+                var team = (await teamRepository.GetById(authTest.TeamId)) ??
+                    Core.Domain.Team.Create(authTest.TeamId);
+                team.UpdateInfo(authTest.TeamName, new Uri(authTest.TeamUrl));
+                await teamRepository.Save(team);
                               
                 // Get the user, create if it does not already exist.
-                var userId = await userKit.Lookup.BySlackUserId(authTest.UserId);
-                Core.Domain.User user = null;
-                if (userId.HasValue)
-                {
-                    user = await userKit.Repository.GetById(userId.Value);
-                }
+                var user = await userRepository.GetById(authTest.UserId);
                 if (user == null)
                 {
-                    user = Core.Domain.User.Create(Guid.NewGuid(), account.Id, authTest.UserId);
+                    user = Core.Domain.User.Create(authTest.UserId, team.Id);
                 }
 
                 // Store the access token with the user.
                 user.UpdateSlackApiAccessToken(oAuthAccess.AccessToken);
                 user.UpdateName(authTest.UserName);
-                await userKit.Repository.Save(user);
+                await userRepository.Save(user);
+
+                // Ensure the user has a corresponding Nancy user.
+                var nancyUser = await nancyUserIdentityService.GetOrCreate(user.Id, user.TeamId, user.Name);
+                if (nancyUser == null)
+                {
+                    // This should never happen, but if it does it's bad.
+                    throw new InvalidOperationException(string.Format("Could not create Nancy user for {0}.", user.Id));
+                }
 
                 // Login and redirect to account page
-                return this.LoginAndRedirect(user.Id, fallbackRedirectUrl: "/account");
+                return this.LoginAndRedirect(nancyUser.Id, fallbackRedirectUrl: "/account");
             };
         }
     }

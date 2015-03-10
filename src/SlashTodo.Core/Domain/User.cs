@@ -45,10 +45,6 @@ namespace SlashTodo.Core.Domain
             {
                 TeamId = teamId
             });
-            if (user._stateMachine.CanFire(UserTrigger.Activate))
-            {
-                user.RaiseEvent(new UserActivated());
-            }
             return user;
         }
 
@@ -91,11 +87,6 @@ namespace SlashTodo.Core.Domain
             _stateMachine.Fire(_createTrigger, @event.Id, @event.TeamId);
         }
 
-        private void Apply(UserActivated @event)
-        {
-            _stateMachine.Fire(UserTrigger.Activate);
-        }
-
         private void Apply(UserNameUpdated @event)
         {
             _name = @event.Name;
@@ -115,27 +106,24 @@ namespace SlashTodo.Core.Domain
             _createTrigger = _stateMachine.SetTriggerParameters<string, string>(UserTrigger.Create);
 
             _stateMachine.Configure(UserState.Initial)
-                .Permit(UserTrigger.Create, UserState.Created);
-            _stateMachine.Configure(UserState.Created)
+                .Permit(UserTrigger.Create, UserState.Active);
+            _stateMachine.Configure(UserState.Active)
                 .OnEntryFrom(_createTrigger, (id, teamId) =>
                 {
                     Id = id;
                     _teamId = teamId;
-                })
-                .Permit(UserTrigger.Activate, UserState.Active);
+                });
         }
 
         public enum UserState
         {
             Initial,
-            Created,
             Active
         }
 
         public enum UserTrigger
         {
-            Create,
-            Activate
+            Create
         }
     }
 }

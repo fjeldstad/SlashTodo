@@ -12,7 +12,5 @@ namespace SlashTodo.Core.Dtos
         public string Name { get; set; }
         public string SlackApiAccessToken { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? ActivatedAt { get; set; }
-        public bool IsActive { get { return ActivatedAt.HasValue; } }
     }
 }

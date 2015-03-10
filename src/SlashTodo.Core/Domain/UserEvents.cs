@@ -18,10 +18,6 @@ namespace SlashTodo.Core.Domain
         public string TeamId { get; set; }
     }
 
-    public class UserActivated : UserEvent
-    {
-    }
-
     public class UserNameUpdated : UserEvent
     {
         public string Name { get; set; }

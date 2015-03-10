@@ -7,7 +7,7 @@ using SlashTodo.Core.Domain;
 
 namespace SlashTodo.Core
 {
-    public class Repository<T> : IRepository<T> where T : Aggregate, new()
+    public abstract class Repository<T> : IRepository<T> where T : Aggregate, new()
     {
         private readonly IEventStore _eventStore;
         private readonly IEventDispatcher _eventDispatcher;

@@ -5,9 +5,11 @@ using System.Web;
 using Nancy;
 using Nancy.ModelBinding;
 using Nancy.Security;
+using SlashTodo.Core;
 using SlashTodo.Core.Queries;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Web.Account.ViewModels;
+using SlashTodo.Web.Security;
 using SlashTodo.Web.ViewModels;
 
 namespace SlashTodo.Web.Account
@@ -18,7 +20,8 @@ namespace SlashTodo.Web.Account
             IViewModelFactory viewModelFactory,
             IAppSettings appSettings,
             IHostSettings hostSettings,
-            QueryTeams.IById queryTeamsById)
+            QueryTeams.IById queryTeamsById,
+            IRepository<Core.Domain.Team> teamRepository)
             : base("/account")
         {
             this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
@@ -26,20 +29,20 @@ namespace SlashTodo.Web.Account
 
             Get["/", true] = async (_,ct) =>
             {
-                var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
-                var account = await queryTeamsById.ById(currentSlackUser.AccountId);
+                var currentSlackUser = (NancyUserIdentity)Context.CurrentUser;
+                var team = await queryTeamsById.ById(currentSlackUser.SlackTeamId);
                 var viewModel = viewModelFactory.Create<DashboardViewModel>();
-                viewModel.SlackTeamName = account.Name;
-                if (account.SlackUrl != null)
+                viewModel.SlackTeamName = team.Name;
+                if (team.SlackUrl != null)
                 {
-                    viewModel.SlackTeamUrl = account.SlackUrl.AbsoluteUri;
+                    viewModel.SlackTeamUrl = team.SlackUrl.AbsoluteUri;
                 }
-                viewModel.SlashCommandToken = account.SlashCommandToken;
-                if (account.IncomingWebhookUrl != null)
+                viewModel.SlashCommandToken = team.SlashCommandToken;
+                if (team.IncomingWebhookUrl != null)
                 {
-                    viewModel.IncomingWebhookUrl = account.IncomingWebhookUrl.AbsoluteUri;
+                    viewModel.IncomingWebhookUrl = team.IncomingWebhookUrl.AbsoluteUri;
                 }
-                viewModel.SlashCommandUrl = string.Format("{0}/api/{1:N}", hostSettings.BaseUrl.TrimEnd('/'), account.Id);
+                viewModel.SlashCommandUrl = string.Format("{0}/api/{1}", hostSettings.BaseUrl.TrimEnd('/'), team.Id);
                 viewModel.HelpEmailAddress = appSettings.Get("misc:HelpEmailAddress");
 
                 return Negotiate
@@ -50,14 +53,14 @@ namespace SlashTodo.Web.Account
             Post["/slash-command-token", true] = async (_, ct) =>
             {
                 var viewModel = this.Bind<UpdateSlashCommandTokenViewModel>();
-                var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
-                var account = await accountKit.Repository.GetById(currentSlackUser.AccountId);
-                if (account == null)
+                var currentSlackUser = (NancyUserIdentity)Context.CurrentUser;
+                var team = await teamRepository.GetById(currentSlackUser.SlackTeamId);
+                if (team == null)
                 {
                     return HttpStatusCode.NotFound.WithReasonPhrase("The account does not exist. Try singing out and back in again.");
                 }
-                account.UpdateSlashCommandToken(viewModel.SlashCommandToken);
-                await accountKit.Repository.Save(account);
+                team.UpdateSlashCommandToken(viewModel.SlashCommandToken);
+                await teamRepository.Save(team);
                 return HttpStatusCode.OK;
             };
 
@@ -70,14 +73,14 @@ namespace SlashTodo.Web.Account
                 {
                     return HttpStatusCode.BadRequest.WithReasonPhrase("Invalid Incoming Webhook Url.");
                 }
-                var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
-                var account = await accountKit.Repository.GetById(currentSlackUser.AccountId);
-                if (account == null)
+                var currentSlackUser = (NancyUserIdentity)Context.CurrentUser;
+                var team = await teamRepository.GetById(currentSlackUser.SlackTeamId);
+                if (team == null)
                 {
                     return HttpStatusCode.NotFound.WithReasonPhrase("The account does not exist. Try singing out and back in again.");
                 }
-                account.UpdateIncomingWebhookUrl(incomingWebhookUrl);
-                await accountKit.Repository.Save(account);
+                team.UpdateIncomingWebhookUrl(incomingWebhookUrl);
+                await teamRepository.Save(team);
                 return HttpStatusCode.OK;
             };
         }

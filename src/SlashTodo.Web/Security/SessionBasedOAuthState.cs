@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Nancy.Session;
 using SlashTodo.Infrastructure;
 
-namespace SlashTodo.Web
+namespace SlashTodo.Web.Security
 {
     public class SessionBasedOAuthState : IOAuthState
     {

@@ -11,7 +11,6 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries.Entities
         public string Name { get; set; }
         public string SlackApiAccessToken { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime? ActivatedAt { get; set; }
 
         public UserDtoTableEntity()
         {
@@ -32,7 +31,6 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries.Entities
             Name = dto.Name;
             SlackApiAccessToken = dto.SlackApiAccessToken;
             CreatedAt = dto.CreatedAt;
-            ActivatedAt = dto.ActivatedAt;
         }
 
         public UserDto GetDto()
@@ -43,8 +41,7 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries.Entities
                 TeamId = TeamId,
                 Name = Name,
                 SlackApiAccessToken = SlackApiAccessToken,
-                CreatedAt = CreatedAt,
-                ActivatedAt = ActivatedAt
+                CreatedAt = CreatedAt
             };
         }
     }

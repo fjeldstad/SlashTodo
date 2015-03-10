@@ -35,8 +35,7 @@ namespace SlashTodo.Tests.Common
             string teamId = "teamId",
             string name = "userName",
             string slackApiAccessToken = "slackApiAccessToken",
-            DateTime? createdAt = null,
-            DateTime? activatedAt = null)
+            DateTime? createdAt = null)
         {
             return new UserDto
             {
@@ -45,7 +44,6 @@ namespace SlashTodo.Tests.Common
                 Name = name,
                 SlackApiAccessToken = slackApiAccessToken,
                 CreatedAt = createdAt ?? DateTime.UtcNow.AddDays(-7),
-                ActivatedAt = activatedAt ?? DateTime.UtcNow.AddDays(-7).AddSeconds(1)
             };
         }
 

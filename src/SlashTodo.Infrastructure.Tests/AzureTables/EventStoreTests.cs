@@ -17,7 +17,6 @@ namespace SlashTodo.Infrastructure.Tests.AzureTables
     public class EventStoreTests
     {
         private readonly CloudStorageAccount _storageAccount = CloudStorageAccount.Parse((new AzureSettings(new AppSettings())).StorageConnectionString);
-        private string _tableName;
         private EventStore _eventStore;
 
         [SetUp]

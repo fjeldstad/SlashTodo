@@ -20,7 +20,6 @@ namespace SlashTodo.Infrastructure.Tests.AzureTables.Queries
     public class QueryTeamsByIdTests
     {
         private readonly CloudStorageAccount _storageAccount = CloudStorageAccount.Parse((new AzureSettings(new AppSettings())).StorageConnectionString);
-        private string _tableName;
         private QueryTeamsById _queryTeamsById;
         private IMessageBus _bus;
             

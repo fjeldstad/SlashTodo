@@ -5,7 +5,9 @@ using System.Web;
 using Nancy;
 using Nancy.ModelBinding;
 using Nancy.Security;
+using SlashTodo.Core;
 using SlashTodo.Core.Queries;
+using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 
 namespace SlashTodo.Web.Api
@@ -15,43 +17,40 @@ namespace SlashTodo.Web.Api
         public TodoModule(
             ISlashCommandErrorResponseFactory errorResponseFactory,
             IHostSettings hostSettings,
-            IQueryTeamsById queryTeamsById,
-            UserKit userKit)
+            QueryTeams.IById queryTeamsById,
+            QueryUsers.IById queryUsersById,
+            IRepository<Core.Domain.User> userRepository)
             : base("/api")
         {
             this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
 
-            Post["/{accountId}", true] = async (_, ct) =>
+            Post["/{teamId}", true] = async (_, ct) =>
             {
-                Guid accountId;
-                if (!Guid.TryParse((string)_.accountId, out accountId))
+                var teamId = (string)_.teamId;
+                if (!teamId.HasValue())
                 {
                     return HttpStatusCode.NotFound;
                 }
-                var account = await queryTeamsById.Query(accountId);
-                if (account == null)
+                var team = await queryTeamsById.ById(teamId);
+                if (team == null)
                 {
                     return errorResponseFactory.ActiveAccountNotFound();
                 }
                 var command = this.Bind<SlackSlashCommand>();
-                if (!string.Equals(account.SlackTeamId, command.TeamId, StringComparison.Ordinal))
-                {
-                    return errorResponseFactory.InvalidAccountIntegrationSettings();
-                }
-                if (!account.IsActive)
+                if (!team.IsActive)
                 {
                     return errorResponseFactory.ActiveAccountNotFound();
                 }
-                if (!string.Equals(account.SlashCommandToken, command.Token))
+                if (!string.Equals(team.SlashCommandToken, command.Token))
                 {
                     return errorResponseFactory.InvalidSlashCommandToken();
                 }
-                var userId = await userKit.Lookup.BySlackUserId(command.UserId);
-                if (!userId.HasValue)
+                var userDto = await queryUsersById.ById(command.UserId);
+                if (userDto == null)
                 {
-                    var user = Core.Domain.User.Create(Guid.NewGuid(), account.Id, command.UserId);
+                    var user = Core.Domain.User.Create(command.UserId, team.Id);
                     user.UpdateName(command.UserName);
-                    await userKit.Repository.Save(user); // TODO Await later to reduce response time? Or don't await at all?
+                    await userRepository.Save(user); // TODO Await later to reduce response time? Or don't await at all?
                 }
                 throw new NotImplementedException();
             };

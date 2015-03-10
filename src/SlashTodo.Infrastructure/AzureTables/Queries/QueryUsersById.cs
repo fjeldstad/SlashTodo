@@ -82,17 +82,6 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 entity.SlackApiAccessToken = @event.SlackApiAccessToken;
                 table.Update(entity);
             }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<UserActivated>(@event =>
-            {
-                var table = _storageAccount.GetTable(_tableName);
-                var entity = table.Retrieve<UserDtoTableEntity>(@event.Id, @event.Id);
-                if (entity == null)
-                {
-                    return;
-                }
-                entity.ActivatedAt = @event.Timestamp;
-                table.Update(entity);
-            }));
         }
 
         public void Dispose()

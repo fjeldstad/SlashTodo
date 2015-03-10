@@ -18,7 +18,6 @@ namespace SlashTodo.Infrastructure.Tests.AzureTables.Queries
     public class QueryUsersByIdTests
     {
         private readonly CloudStorageAccount _storageAccount = CloudStorageAccount.Parse((new AzureSettings(new AppSettings())).StorageConnectionString);
-        private string _tableName;
         private QueryUsersById _userQuery;
         private IMessageBus _bus;
             
@@ -109,28 +108,6 @@ namespace SlashTodo.Infrastructure.Tests.AzureTables.Queries
         }
 
         [Test]
-        public async Task UpdatesRowOnUserActivated()
-        {
-            // Arrange
-            var dto = DtoFactory.User(activatedAt: null);
-            var table = _storageAccount.GetTable(_userQuery.TableName);
-            table.Insert(new UserDtoTableEntity(dto));
-            var userActivated = new UserActivated
-            {
-                Id = dto.Id,
-                Timestamp = DateTime.UtcNow
-            };
-
-            // Act
-            await _bus.Publish(userActivated);
-
-            // Assert
-            var row = table.Retrieve<UserDtoTableEntity>(dto.Id, dto.Id);
-            Assert.That(row, Is.Not.Null);
-            Assert.That(row.ActivatedAt, Is.EqualTo(userActivated.Timestamp));
-        }
-
-        [Test]
         public async Task ByIdReturnsNullWhenQueryFails()
         {
             // Arrange
@@ -146,7 +123,7 @@ namespace SlashTodo.Infrastructure.Tests.AzureTables.Queries
         public async Task ByIdReturnsDtoWhenQueryIsSuccessful()
         {
             // Arrange
-            var expectedDto = DtoFactory.User(activatedAt: DateTime.UtcNow.AddDays(-1));
+            var expectedDto = DtoFactory.User();
             var table = _storageAccount.GetTable(_userQuery.TableName);
             table.Insert(new UserDtoTableEntity(expectedDto));
 
@@ -168,7 +145,6 @@ namespace SlashTodo.Infrastructure.Tests.AzureTables.Queries
             Assert.That(actualDto.Name, Is.EqualTo(expectedDto.Name));
             Assert.That(actualDto.SlackApiAccessToken, Is.EqualTo(expectedDto.SlackApiAccessToken));
             Assert.That(actualDto.CreatedAt, Is.EqualTo(expectedDto.CreatedAt));
-            Assert.That(actualDto.ActivatedAt, Is.EqualTo(expectedDto.ActivatedAt));
         }
     }
 }

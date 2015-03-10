@@ -47,21 +47,5 @@ namespace SlashTodo.Core.Tests.UserTests
             var @event = user.GetUncommittedEvents().First() as UserCreated;
             @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: 0);
         }
-
-        [Test]
-        public void UserIsActivatedWhenCreated()
-        {
-            // Arrange
-            var id = "id";
-            var teamId = "teamId";
-            var before = DateTime.UtcNow;
-
-            // Act
-            var user = User.Create(id, teamId);
-
-            // Assert
-            var @event = user.GetUncommittedEvents().Single(x => x is UserActivated) as UserActivated;
-            @event.AssertThatBasicEventDataIsCorrect(id, before);
-        }
     }
 }

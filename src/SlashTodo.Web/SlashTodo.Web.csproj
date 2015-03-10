@@ -198,11 +198,13 @@
     <Compile Include="Api\TodoModule.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
     <Compile Include="ResponseExtensions.cs" />
-    <Compile Include="SlackUserIdentity.cs" />
+    <Compile Include="Security\INancyUserIdentityService.cs" />
+    <Compile Include="Security\NancyUserIdentity.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="RefitStubs.cs" />
-    <Compile Include="SessionBasedOAuthState.cs" />
-    <Compile Include="UserMapper.cs" />
+    <Compile Include="Security\SessionBasedOAuthState.cs" />
+    <Compile Include="Security\DefaultNancyUserIdentityService.cs" />
+    <Compile Include="Security\NancyUserIdentityIdProvider.cs" />
     <Compile Include="ViewModels\EmptyViewModel.cs" />
     <Compile Include="HomeModule.cs" />
     <Compile Include="ViewModels\IViewModelFactory.cs" />
