@@ -5,6 +5,7 @@ using System.Web;
 using Nancy;
 using Nancy.ModelBinding;
 using Nancy.Security;
+using SlashTodo.Core.Queries;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Web.Account.ViewModels;
 using SlashTodo.Web.ViewModels;
@@ -16,8 +17,8 @@ namespace SlashTodo.Web.Account
         public AccountModule(
             IViewModelFactory viewModelFactory,
             IAppSettings appSettings,
-            IHostSettings hostSettings, 
-            AccountKit accountKit)
+            IHostSettings hostSettings,
+            QueryTeams.IById queryTeamsById)
             : base("/account")
         {
             this.RequiresHttps(redirect: true, httpsPort: hostSettings.HttpsPort);
@@ -26,12 +27,12 @@ namespace SlashTodo.Web.Account
             Get["/", true] = async (_,ct) =>
             {
                 var currentSlackUser = (SlackUserIdentity)Context.CurrentUser;
-                var account = await accountKit.Query.ById(currentSlackUser.AccountId);
+                var account = await queryTeamsById.ById(currentSlackUser.AccountId);
                 var viewModel = viewModelFactory.Create<DashboardViewModel>();
-                viewModel.SlackTeamName = account.SlackTeamName;
-                if (account.SlackTeamUrl != null)
+                viewModel.SlackTeamName = account.Name;
+                if (account.SlackUrl != null)
                 {
-                    viewModel.SlackTeamUrl = account.SlackTeamUrl.AbsoluteUri;
+                    viewModel.SlackTeamUrl = account.SlackUrl.AbsoluteUri;
                 }
                 viewModel.SlashCommandToken = account.SlashCommandToken;
                 if (account.IncomingWebhookUrl != null)

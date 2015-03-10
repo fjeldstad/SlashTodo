@@ -16,14 +16,14 @@ namespace SlashTodo.Web.Tests
     public class UserMapperTests
     {
         private Mock<IUserQuery> _userQueryMock;
-        private Mock<IAccountQuery> _accountQueryMock;
+        private Mock<IQueryTeamsById> _accountQueryMock;
         private UserMapper _userMapper;
 
         [SetUp]
         public void BeforeEachTest()
         {
             _userQueryMock = new Mock<IUserQuery>();
-            _accountQueryMock = new Mock<IAccountQuery>();
+            _accountQueryMock = new Mock<IQueryTeamsById>();
             _userMapper = new UserMapper(_userQueryMock.Object, _accountQueryMock.Object);
         }
 
@@ -46,7 +46,7 @@ namespace SlashTodo.Web.Tests
             // Arrange
             var userDto = GetUserDto();
             _userQueryMock.Setup(x => x.ById(It.IsAny<Guid>())).Returns(Task.FromResult(userDto));
-            _accountQueryMock.Setup(x => x.ById(It.IsAny<Guid>())).Returns(Task.FromResult<AccountDto>(null));
+            _accountQueryMock.Setup(x => x.Query(It.IsAny<Guid>())).Returns(Task.FromResult<TeamDto>(null));
 
             // Act
             var userIdentity = _userMapper.GetUserFromIdentifier(Guid.NewGuid(), It.IsAny<NancyContext>());
@@ -61,9 +61,9 @@ namespace SlashTodo.Web.Tests
             // Arrange
             var accountDto = GetAccountDto();
             var userDto = GetUserDto();
-            userDto.AccountId = accountDto.Id;
+            userDto.TeamId = accountDto.Id;
             _userQueryMock.Setup(x => x.ById(It.IsAny<Guid>())).Returns(Task.FromResult(userDto));
-            _accountQueryMock.Setup(x => x.ById(It.IsAny<Guid>())).Returns(Task.FromResult(accountDto));
+            _accountQueryMock.Setup(x => x.Query(It.IsAny<Guid>())).Returns(Task.FromResult(accountDto));
 
             // Act
             var userIdentity = _userMapper.GetUserFromIdentifier(Guid.NewGuid(), It.IsAny<NancyContext>()) as SlackUserIdentity;
@@ -73,11 +73,11 @@ namespace SlashTodo.Web.Tests
             Assert.That(userIdentity.Id, Is.EqualTo(userDto.Id));
             Assert.That(userIdentity.AccountId, Is.EqualTo(accountDto.Id));
             Assert.That(userIdentity.SlackUserId, Is.EqualTo(userDto.SlackUserId));
-            Assert.That(userIdentity.SlackUserName, Is.EqualTo(userDto.SlackUserName));
+            Assert.That(userIdentity.SlackUserName, Is.EqualTo(userDto.Name));
             Assert.That(userIdentity.SlackApiAccessToken, Is.EqualTo(userDto.SlackApiAccessToken));
             Assert.That(userIdentity.SlackTeamId, Is.EqualTo(accountDto.SlackTeamId));
-            Assert.That(userIdentity.SlackTeamName, Is.EqualTo(accountDto.SlackTeamName));
-            Assert.That(userIdentity.SlackTeamUrl, Is.EqualTo(accountDto.SlackTeamUrl));
+            Assert.That(userIdentity.SlackTeamName, Is.EqualTo(accountDto.Name));
+            Assert.That(userIdentity.SlackTeamUrl, Is.EqualTo(accountDto.SlackUrl));
         }
 
         private static UserDto GetUserDto()
@@ -85,23 +85,23 @@ namespace SlashTodo.Web.Tests
             return new UserDto
             {
                 Id = Guid.NewGuid(),
-                AccountId = Guid.NewGuid(),
+                TeamId = Guid.NewGuid(),
                 SlackUserId = "slackUserId",
-                SlackUserName = "slackUserName",
+                Name = "slackUserName",
                 SlackApiAccessToken = "slackApiAccessToken",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
                 IsActive = true
             };
         }
 
-        private static AccountDto GetAccountDto()
+        private static TeamDto GetAccountDto()
         {
-            return new AccountDto
+            return new TeamDto
             {
                 Id = Guid.NewGuid(),
                 SlackTeamId = "slackTeamId",
-                SlackTeamName = "slackTeamName",
-                SlackTeamUrl = new Uri("https://team.slack.com"),
+                Name = "slackTeamName",
+                SlackUrl = new Uri("https://team.slack.com"),
                 IncomingWebhookUrl = new Uri("https://api.slack.com/incoming-webhook"),
                 SlashCommandToken = "slashCommandToken",
                 CreatedAt = DateTime.UtcNow.AddDays(-2),

@@ -64,27 +64,23 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Domain\Account.cs" />
+    <Compile Include="Domain\Team.cs" />
     <Compile Include="Domain\UserEvents.cs" />
-    <Compile Include="Domain\AccountEvents.cs" />
+    <Compile Include="Domain\TeamEvents.cs" />
     <Compile Include="Domain\Aggregate.cs" />
     <Compile Include="Domain\TodoEvents.cs" />
     <Compile Include="Domain\Exceptions.cs" />
-    <Compile Include="Domain\TodoData.cs" />
     <Compile Include="Domain\IDomainEvent.cs" />
     <Compile Include="Domain\Todo.cs" />
     <Compile Include="Domain\User.cs" />
-    <Compile Include="Dtos\AccountDto.cs" />
+    <Compile Include="Dtos\TeamDto.cs" />
     <Compile Include="Dtos\TodoDto.cs" />
     <Compile Include="Dtos\UserDto.cs" />
     <Compile Include="IEventDispatcher.cs" />
     <Compile Include="IRepository.cs" />
-    <Compile Include="Lookups\IAccountLookup.cs" />
-    <Compile Include="Lookups\ITodoLookup.cs" />
-    <Compile Include="Lookups\IUserLookup.cs" />
-    <Compile Include="Queries\IAccountQuery.cs" />
-    <Compile Include="Queries\ITodoQuery.cs" />
-    <Compile Include="Queries\IUserQuery.cs" />
+    <Compile Include="Queries\QueryTeams.cs" />
+    <Compile Include="Queries\TodoQueries.cs" />
+    <Compile Include="Queries\UserQueries.cs" />
     <Compile Include="Repository.cs" />
     <Compile Include="IEventStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -93,6 +89,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

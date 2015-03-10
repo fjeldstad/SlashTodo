@@ -14,24 +14,31 @@ namespace SlashTodo.Core.Tests.UserTests
     public class CreateUserTests
     {
         [Test]
-        public void CanNotCreateUserWithoutSlackUserId()
+        public void CanNotCreateUserWithoutId()
         {
-            Assert.Throws<ArgumentNullException>(() => User.Create(It.IsAny<Guid>(), It.IsAny<Guid>(), null));
-            Assert.Throws<ArgumentNullException>(() => User.Create(It.IsAny<Guid>(), It.IsAny<Guid>(), string.Empty));
-            Assert.Throws<ArgumentNullException>(() => User.Create(It.IsAny<Guid>(), It.IsAny<Guid>(), " "));
+            Assert.Throws<ArgumentNullException>(() => User.Create(null, "teamId"));
+            Assert.Throws<ArgumentNullException>(() => User.Create(string.Empty, "teamId"));
+            Assert.Throws<ArgumentNullException>(() => User.Create(" ", "teamId"));
+        }
+
+        [Test]
+        public void CanNotCreateUserWithoutTeamId()
+        {
+            Assert.Throws<ArgumentNullException>(() => User.Create("id", null));
+            Assert.Throws<ArgumentNullException>(() => User.Create("id", string.Empty));
+            Assert.Throws<ArgumentNullException>(() => User.Create("id", " "));
         }
 
         [Test]
         public void CanCreateUser()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var accountId = Guid.NewGuid();
-            const string slackUserId = "userId";
+            var id = "id";
+            var teamId = "teamId";
             var before = DateTime.UtcNow;
 
             // Act
-            var user = User.Create(id, accountId, slackUserId);
+            var user = User.Create(id, teamId);
 
             // Assert
             Assert.That(user, Is.Not.Null);
@@ -39,20 +46,18 @@ namespace SlashTodo.Core.Tests.UserTests
             Assert.That(user.Version, Is.GreaterThanOrEqualTo(1));
             var @event = user.GetUncommittedEvents().First() as UserCreated;
             @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: 0);
-            Assert.That(@event.SlackUserId, Is.EqualTo(slackUserId));
         }
 
         [Test]
         public void UserIsActivatedWhenCreated()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var accountId = Guid.NewGuid();
-            const string slackUserId = "userId";
+            var id = "id";
+            var teamId = "teamId";
             var before = DateTime.UtcNow;
 
             // Act
-            var user = User.Create(id, accountId, slackUserId);
+            var user = User.Create(id, teamId);
 
             // Assert
             var @event = user.GetUncommittedEvents().Single(x => x is UserActivated) as UserActivated;

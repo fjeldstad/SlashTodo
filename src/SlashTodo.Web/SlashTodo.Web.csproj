@@ -188,7 +188,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AccountKit.cs" />
     <Compile Include="Account\AccountModule.cs" />
     <Compile Include="Account\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Account\ViewModels\UpdateIncomingWebhookUrlViewModel.cs" />
@@ -203,7 +202,6 @@
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="RefitStubs.cs" />
     <Compile Include="SessionBasedOAuthState.cs" />
-    <Compile Include="UserKit.cs" />
     <Compile Include="UserMapper.cs" />
     <Compile Include="ViewModels\EmptyViewModel.cs" />
     <Compile Include="HomeModule.cs" />

@@ -35,8 +35,8 @@ namespace SlashTodo.Web.Tests
         private Mock<ISlackApi> _slackApiMock;
         private Mock<IUserMapper> _userMapperMock;
         private Mock<IAccountLookup> _accountLookupMock;
-        private Mock<IAccountQuery> _accountQueryMock;
-        private Mock<IRepository<Core.Domain.Account>> _accountRepositoryMock;
+        private Mock<IQueryTeamsById> _accountQueryMock;
+        private Mock<IRepository<Core.Domain.Team>> _accountRepositoryMock;
         private Mock<IUserLookup> _userLookupMock;
         private Mock<IUserQuery> _userQueryMock;
         private Mock<IRepository<Core.Domain.User>> _userRepositoryMock;
@@ -52,8 +52,8 @@ namespace SlashTodo.Web.Tests
             _slackApiMock = new Mock<ISlackApi>();
             _userMapperMock = new Mock<IUserMapper>();
             _accountLookupMock = new Mock<IAccountLookup>();
-            _accountQueryMock = new Mock<IAccountQuery>();
-            _accountRepositoryMock = new Mock<IRepository<Core.Domain.Account>>();
+            _accountQueryMock = new Mock<IQueryTeamsById>();
+            _accountRepositoryMock = new Mock<IRepository<Core.Domain.Team>>();
             _userLookupMock = new Mock<IUserLookup>();
             _userQueryMock = new Mock<IUserQuery>();
             _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
@@ -102,7 +102,7 @@ namespace SlashTodo.Web.Tests
             OAuthAccessResponse oAuthAccessResponse,
             AuthTestResponse authTestResponse,
             UsersInfoResponse usersInfoResponse,
-            Core.Domain.Account account,
+            Core.Domain.Team account,
             Core.Domain.User user)
         {
             _hostSettingsMock.SetupGet(x => x.HttpsPort).Returns(443);
@@ -546,9 +546,9 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a => 
-                a.GetUncommittedEvents().First() is AccountCreated &&
-                (a.GetUncommittedEvents().First() as AccountCreated).SlackTeamId == authTestResponse.TeamId
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Team>(a => 
+                a.GetUncommittedEvents().First() is TeamCreated &&
+                (a.GetUncommittedEvents().First() as TeamCreated).SlackTeamId == authTestResponse.TeamId
                 )), Times.Once);
         }
 
@@ -580,7 +580,7 @@ namespace SlashTodo.Web.Tests
                     IsAdmin = true
                 }
             };
-            var account = Core.Domain.Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
+            var account = Core.Domain.Team.Create(Guid.NewGuid(), authTestResponse.TeamId);
             account.ClearUncommittedEvents();
             ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, account, null);
             var bootstrapper = GetBootstrapper();
@@ -595,8 +595,8 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a =>
-                a.GetUncommittedEvents().Any(e => e is AccountCreated))), Times.Never);
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Team>(a =>
+                a.GetUncommittedEvents().Any(e => e is TeamCreated))), Times.Never);
         }
 
         [Test]
@@ -640,8 +640,8 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a =>
-                a.GetUncommittedEvents().Any(e => e is AccountSlackTeamInfoUpdated)
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Team>(a =>
+                a.GetUncommittedEvents().Any(e => e is TeamInfoUpdated)
                 )), Times.Once);
         }
 
@@ -673,7 +673,7 @@ namespace SlashTodo.Web.Tests
                     IsAdmin = true
                 }
             };
-            var account = Core.Domain.Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
+            var account = Core.Domain.Team.Create(Guid.NewGuid(), authTestResponse.TeamId);
             account.ClearUncommittedEvents();
             ArrangeAuthenticationFlow(true, accessResponse, authTestResponse, usersInfoResponse, account, null);
             var bootstrapper = GetBootstrapper();
@@ -691,7 +691,7 @@ namespace SlashTodo.Web.Tests
             _userRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.User>(u =>
                 u.GetUncommittedEvents().First() is UserCreated &&
                 (u.GetUncommittedEvents().First() as UserCreated).SlackUserId == authTestResponse.UserId &&
-                (u.GetUncommittedEvents().First() as UserCreated).AccountId == account.Id
+                (u.GetUncommittedEvents().First() as UserCreated).TeamId == account.Id
                 )), Times.Once);
         }
 
@@ -723,7 +723,7 @@ namespace SlashTodo.Web.Tests
                     IsAdmin = true
                 }
             };
-            var account = Core.Domain.Account.Create(Guid.NewGuid(), authTestResponse.TeamId);
+            var account = Core.Domain.Team.Create(Guid.NewGuid(), authTestResponse.TeamId);
             account.ClearUncommittedEvents();
             var user = Core.Domain.User.Create(Guid.NewGuid(), account.Id, authTestResponse.UserId);
             user.ClearUncommittedEvents();
@@ -833,8 +833,8 @@ namespace SlashTodo.Web.Tests
 
             // Assert
             _userRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.User>(u =>
-                u.GetUncommittedEvents().Any(e => e is UserSlackUserNameUpdated) &&
-                ((UserSlackUserNameUpdated)u.GetUncommittedEvents().Single(e => e is UserSlackUserNameUpdated)).SlackUserName == authTestResponse.UserName
+                u.GetUncommittedEvents().Any(e => e is UserNameUpdated) &&
+                ((UserNameUpdated)u.GetUncommittedEvents().Single(e => e is UserNameUpdated)).Name == authTestResponse.UserName
                 )), Times.Once);
         }
 

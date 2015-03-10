@@ -19,18 +19,18 @@ namespace SlashTodo.Core.Tests.TodoTests
             };
         }
 
-        public static TodoContext GetContext(Guid? accountId = null, Guid? userId = null)
+        public static TodoContext GetContext(string teamId = "teamId", string userId = "userId")
         {
             return new TodoContext
             {
-                AccountId = accountId ?? Guid.NewGuid(),
-                UserId = userId ?? Guid.NewGuid()
+                TeamId = teamId,
+                UserId = userId
             };
         }
 
         public static void AssertThatBasicDataIsCorrect(
             this TodoEvent @event, 
-            Guid id,
+            string id,
             string slackConversationId,
             string shortCode,
             TodoContext context, 
@@ -38,7 +38,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             int? expectedOriginalVersion = null)
         {
             @event.AssertThatBasicEventDataIsCorrect(id, earliestExpectedTimestamp, expectedOriginalVersion);
-            Assert.That(@event.AccountId, Is.EqualTo(context.AccountId));
+            Assert.That(@event.TeamId, Is.EqualTo(context.TeamId));
             Assert.That(@event.SlackConversationId, Is.EqualTo(slackConversationId));
             Assert.That(@event.ShortCode, Is.EqualTo(shortCode));
             Assert.That(@event.UserId, Is.EqualTo(context.UserId));

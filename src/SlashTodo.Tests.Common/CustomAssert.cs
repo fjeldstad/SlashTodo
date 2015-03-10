@@ -28,7 +28,7 @@ namespace SlashTodo.Tests.Common
 
         public static void AssertThatBasicEventDataIsCorrect(
             this IDomainEvent @event,
-            Guid id,
+            string id,
             DateTime earliestExpectedTimestamp,
             int? expectedOriginalVersion = null)
         {

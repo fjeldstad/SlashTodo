@@ -18,7 +18,7 @@ namespace SlashTodo.Core
             _eventDispatcher = eventDispatcher;
         } 
 
-        public async Task<T> GetById(Guid id)
+        public async Task<T> GetById(string id)
         {
             var events = (await _eventStore.GetById(id).ConfigureAwait(false)).ToArray();
             if (!events.Any())

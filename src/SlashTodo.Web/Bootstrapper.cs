@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Text;
-using System.Web;
 using Microsoft.WindowsAzure.Storage;
 using Nancy;
 using Nancy.Authentication.Forms;
-using Nancy.Authentication.Stateless;
 using Nancy.Bootstrapper;
 using Nancy.Cryptography;
 using Nancy.Session;
@@ -15,17 +10,11 @@ using Nancy.TinyIoc;
 using Newtonsoft.Json;
 using Refit;
 using SlashTodo.Core;
-using SlashTodo.Core.Lookups;
-using SlashTodo.Core.Queries;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Messaging;
 using SlashTodo.Infrastructure.Slack;
-using SlashTodo.Infrastructure.Storage.AzureTables;
-using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
-using SlashTodo.Infrastructure.Storage.AzureTables.Queries;
-using SlashTodo.Infrastructure.Storage.AzureTables.Repositories;
-using TinyMessenger;
+using SlashTodo.Infrastructure.AzureTables.Repositories;
 
 namespace SlashTodo.Web
 {
@@ -59,7 +48,7 @@ namespace SlashTodo.Web
             container.Register<CryptographyConfiguration>(_cryptographyConfiguration);
             container.Register<IHmacProvider>(_cryptographyConfiguration.HmacProvider);
             container.Register<IEncryptionProvider>(_cryptographyConfiguration.EncryptionProvider);
-            container.Register<IRepository<Core.Domain.Account>, AccountRepository>();
+            container.Register<IRepository<Core.Domain.Team>, TeamRepository>();
             container.Register<IRepository<Core.Domain.User>, UserRepository>();
             container.Register<IRepository<Core.Domain.Todo>, TodoRepository>();
             var slackSettings = container.Resolve<ISlackSettings>();

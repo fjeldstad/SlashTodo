@@ -16,7 +16,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanTickTodo()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var slackConversationId = "slackConversationId";
             var shortCode = "x";
@@ -37,7 +37,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void TickTodoIsIdempotentOperation()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.ClearUncommittedEvents();
@@ -55,7 +55,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void TickingRemovedTodoDoesNothing()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.Remove();
@@ -72,9 +72,9 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CannotTickTodoThatIsClaimedBySomeoneElseWithoutUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var todo = Todo.Add(id, "text", "slackConversationId", "x", otherUserContext);
@@ -92,9 +92,9 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanTickTodoThatIsClaimedBySomeoneElseWhenUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var slackConversationId = "slackConversationId";
@@ -118,7 +118,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanTickTodoThatIsClaimedBySameUserWithoutUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var slackConversationId = "slackConversationId";
             var shortCode = "x";

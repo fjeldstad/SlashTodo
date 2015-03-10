@@ -11,26 +11,30 @@ namespace SlashTodo.Core.Domain
     {
         private TodoState _state = TodoState.Initial;
         private StateMachine<TodoState, TodoTrigger> _stateMachine;
-        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid, string> _addTrigger;
-        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<Guid> _claimTrigger;
+        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<string, string> _addTrigger;
+        private StateMachine<TodoState, TodoTrigger>.TriggerWithParameters<string> _claimTrigger;
         private string _text;
         private string _slackConversationId;
         private string _shortCode;
-        private Guid? _claimedByUserId;
+        private string _claimedByUserId;
 
         public TodoContext Context { get; set; }
         public string Text { get { return _text; } }
         public string SlackConversationId { get { return _slackConversationId; } }
         public string ShortCode { get { return _shortCode; } }
-        public Guid? ClaimedByUserId { get { return _claimedByUserId; } }
+        public string ClaimedByUserId { get { return _claimedByUserId; } }
 
         public Todo()
         {
             ConfigureStateMachine();
         }
 
-        public static Todo Add(Guid id, string text, string slackConversationId, string shortCode, TodoContext context)
+        public static Todo Add(string id, string text, string slackConversationId, string shortCode, TodoContext context)
         {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("id");
+            }
             if (string.IsNullOrWhiteSpace(text))
             {
                 throw new ArgumentNullException("text");
@@ -70,13 +74,13 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (_claimedByUserId.Equals(Context.UserId))
+                if (string.Equals(_claimedByUserId, Context.UserId, StringComparison.OrdinalIgnoreCase))
                 {
                     return;
                 }
                 if (!force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId);
                 }
             }
             RaiseEvent(new TodoClaimed());
@@ -90,10 +94,10 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (!_claimedByUserId.Equals(Context.UserId) && 
+                if (!string.Equals(_claimedByUserId, Context.UserId, StringComparison.OrdinalIgnoreCase) && 
                     !force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId);
                 }
             }
             RaiseEvent(new TodoFreed());
@@ -107,10 +111,10 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (!_claimedByUserId.Equals(Context.UserId) &&
+                if (!string.Equals(_claimedByUserId, Context.UserId, StringComparison.OrdinalIgnoreCase) &&
                     !force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId);
                 }
             }
             RaiseEvent(new TodoTicked());
@@ -132,10 +136,10 @@ namespace SlashTodo.Core.Domain
             }
             if (_stateMachine.IsInState(TodoState.Claimed))
             {
-                if (!_claimedByUserId.Equals(Context.UserId) &&
+                if (!string.Equals(_claimedByUserId, Context.UserId, StringComparison.OrdinalIgnoreCase) &&
                     !force)
                 {
-                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId.Value);
+                    throw new TodoClaimedBySomeoneElseException(_claimedByUserId);
                 }
             }
             RaiseEvent(new TodoRemoved());
@@ -147,10 +151,10 @@ namespace SlashTodo.Core.Domain
             {
                 throw new InvalidOperationException("Context is null.");
             }
-            ((TodoEvent)@event).AccountId = Context.AccountId;
+            ((TodoEvent)@event).TeamId = Context.TeamId;
+            ((TodoEvent)@event).UserId = Context.UserId;
             ((TodoEvent)@event).SlackConversationId = _slackConversationId;
             ((TodoEvent)@event).ShortCode = _shortCode;
-            ((TodoEvent)@event).UserId = Context.UserId;
             base.RaiseEvent(@event);
         }
 
@@ -195,8 +199,8 @@ namespace SlashTodo.Core.Domain
                 () => _state,
                 state => _state = state
             );
-            _addTrigger = _stateMachine.SetTriggerParameters<Guid, string>(TodoTrigger.Add);
-            _claimTrigger = _stateMachine.SetTriggerParameters<Guid>(TodoTrigger.Claim);
+            _addTrigger = _stateMachine.SetTriggerParameters<string, string>(TodoTrigger.Add);
+            _claimTrigger = _stateMachine.SetTriggerParameters<string>(TodoTrigger.Claim);
 
             _stateMachine.Configure(TodoState.Initial)
                 .Permit(TodoTrigger.Add, TodoState.Free);

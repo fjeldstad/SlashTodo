@@ -11,7 +11,7 @@ namespace SlashTodo.Core.Domain
     {
         private readonly List<IDomainEvent> _uncommittedEvents = new List<IDomainEvent>();
 
-        public Guid Id { get; protected set; }
+        public string Id { get; protected set; }
         public int Version { get; protected set; }
 
         protected abstract void ApplyEventCore(IDomainEvent @event);
@@ -65,7 +65,7 @@ namespace SlashTodo.Core.Domain
 
         public virtual bool Equals(Aggregate other)
         {
-            return other != null && other.Id == Id;
+            return other != null && string.Equals(Id, other.Id, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

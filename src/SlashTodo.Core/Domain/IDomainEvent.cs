@@ -8,7 +8,7 @@ namespace SlashTodo.Core.Domain
 {
     public interface IDomainEvent
     {
-        Guid Id { get; set; }
+        string Id { get; set; }
         DateTime Timestamp { get; set; }
         int OriginalVersion { get; set; }
     }

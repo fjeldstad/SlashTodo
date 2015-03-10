@@ -29,7 +29,7 @@ namespace SlashTodo.Core.Tests
         public async Task CanBuildAggregateFromEvents()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var events = new[]
             {
                 new Mock<IDomainEvent>().Object,
@@ -51,7 +51,7 @@ namespace SlashTodo.Core.Tests
         public async Task AggregateBuiltFromHistoricEventsHasNoUncommittedEvents()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var events = new[]
             {
                 new Mock<IDomainEvent>().Object,
@@ -71,7 +71,7 @@ namespace SlashTodo.Core.Tests
         public async Task RepositoryReturnsNullWhenNoEventsExistForAggregateId()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             _eventStore.Setup(x => x.GetById(id)).Returns(Task.FromResult<IEnumerable<IDomainEvent>>(new IDomainEvent[0]));
 
             // Act
@@ -85,7 +85,7 @@ namespace SlashTodo.Core.Tests
         public async Task SaveCallsEventStoreSaveWithCorrectArguments()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var aggregate = new DummyAggregate(id);
             var expectedVersion = aggregate.Version;
             aggregate.DoSomething();
@@ -99,7 +99,7 @@ namespace SlashTodo.Core.Tests
 
             // Assert
             _eventStore.Verify(x => x.Save(
-                It.Is<Guid>(a => a == id),
+                It.Is<string>(a => a == id),
                 expectedVersion,
                 It.Is<IEnumerable<IDomainEvent>>(events =>
                     events.Count() == uncommittedEvents.Length &&
@@ -110,7 +110,7 @@ namespace SlashTodo.Core.Tests
         public async Task SaveDispatchesEvents()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var aggregate = new DummyAggregate(id);
             aggregate.DoSomething();
             aggregate.DoSomething();
@@ -131,7 +131,7 @@ namespace SlashTodo.Core.Tests
         public async Task SaveClearsUncommittedEvents()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var aggregate = new DummyAggregate(id);
             var expectedVersion = aggregate.Version;
             aggregate.DoSomething();
@@ -158,7 +158,7 @@ namespace SlashTodo.Core.Tests
             await _repository.Save(aggregate);
 
             // Assert
-            _eventStore.Verify(x => x.Save(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<IEnumerable<IDomainEvent>>()), Times.Never);
+            _eventStore.Verify(x => x.Save(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<IEnumerable<IDomainEvent>>()), Times.Never);
         }
 
         public class DummyRepository : Repository<DummyAggregate>
@@ -173,11 +173,11 @@ namespace SlashTodo.Core.Tests
             private readonly List<IDomainEvent> _appliedEvents = new List<IDomainEvent>();
 
             public DummyAggregate()
-                : this(Guid.NewGuid())
+                : this("id")
             {
             }
 
-            public DummyAggregate(Guid id)
+            public DummyAggregate(string id)
             {
                 Id = id;
             }

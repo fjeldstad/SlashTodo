@@ -9,8 +9,8 @@ using NUnit.Framework;
 using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Messaging;
-using SlashTodo.Infrastructure.Storage.AzureTables;
-using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
+using SlashTodo.Infrastructure.AzureTables;
+using SlashTodo.Infrastructure.AzureTables.Lookups;
 using TinyMessenger;
 
 namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Lookups
@@ -57,7 +57,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Lookups
         public async Task InsertsNewRowOnAccountCreated()
         {
             // Arrange
-            var accountCreated = new AccountCreated
+            var accountCreated = new TeamCreated
             {
                 Id = Guid.NewGuid(),
                 SlackTeamId = "slackTeamId"

@@ -16,7 +16,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanRemoveTodo()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var slackConversationId = "slackConversationId";
             var shortCode = "x";
@@ -37,7 +37,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void RemoveTodoIsIdempotentOperation()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.ClearUncommittedEvents();
@@ -55,13 +55,13 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CannotRemoveTodoThatIsClaimedBySomeoneElseWithoutUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var todo = Todo.Add(id, "text", "slackConversationId", "x", otherUserContext);
             todo.Claim();
             todo.ClearUncommittedEvents();
-            var userId = Guid.NewGuid();
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
 
             // Act & assert
@@ -75,8 +75,8 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanRemoveTodoThatIsClaimedBySomeoneElseWhenUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var slackConversationId = "slackConversationId";
             var shortCode = "x";
@@ -85,7 +85,7 @@ namespace SlashTodo.Core.Tests.TodoTests
             todo.ClearUncommittedEvents();
             var originalVersion = todo.Version;
             var before = DateTime.UtcNow;
-            var userId = Guid.NewGuid();
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
 
             // Act
@@ -101,7 +101,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanRemoveTodoThatIsClaimedBySameUserWithoutUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var slackConversationId = "slackConversationId";
             var shortCode = "x";

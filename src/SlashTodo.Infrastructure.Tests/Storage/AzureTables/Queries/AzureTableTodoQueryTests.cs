@@ -12,9 +12,9 @@ using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Messaging;
-using SlashTodo.Infrastructure.Storage.AzureTables;
-using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
-using SlashTodo.Infrastructure.Storage.AzureTables.Queries;
+using SlashTodo.Infrastructure.AzureTables;
+using SlashTodo.Infrastructure.AzureTables.Lookups;
+using SlashTodo.Infrastructure.AzureTables.Queries;
 using TinyMessenger;
 
 namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
@@ -77,13 +77,13 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
                         dto,
                         x => x.SlackConversationId,
                         x => x.Id.ToString())));
-            if (dto.ClaimedBySlackUserId.HasValue())
+            if (dto.ClaimedByUserId.HasValue())
             {
                 GetTable(_tableNames.TodoClaimedBySlackUserId)
                     .Execute(TableOperation.Insert(
                         new AzureTableTodoQuery.TodoDtoTableEntity(
                             dto,
-                            x => x.ClaimedBySlackUserId,
+                            x => x.ClaimedByUserId,
                             x => x.Id.ToString())));
             }
             if (completedBySlackUserId.HasValue())
@@ -125,7 +125,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             {
                 Id = Guid.NewGuid(),
                 Timestamp = DateTime.UtcNow,
-                AccountId = Guid.NewGuid(),
+                TeamId = Guid.NewGuid(),
                 SlackConversationId = "slackConversationId",
                 ShortCode = "shortCode",
                 Text = "text"
@@ -144,7 +144,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
                 Assert.That(entity, Is.Not.Null);
                 Assert.That(entity.Id, Is.EqualTo(todoAdded.Id));
                 Assert.That(entity.CreatedAt, Is.EqualTo(todoAdded.Timestamp));
-                Assert.That(entity.AccountId, Is.EqualTo(todoAdded.AccountId));
+                Assert.That(entity.AccountId, Is.EqualTo(todoAdded.TeamId));
                 Assert.That(entity.SlackConversationId, Is.EqualTo(todoAdded.SlackConversationId));
                 Assert.That(entity.ShortCode, Is.EqualTo(todoAdded.ShortCode));
                 Assert.That(entity.Text, Is.EqualTo(todoAdded.Text));
@@ -173,7 +173,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             // Assert
             var conversationTodoEntity = GetTodoDtoEntity(_tableNames.TodoBySlackConversationId, dto.SlackConversationId, dto.Id.ToString());
             Assert.That(conversationTodoEntity, Is.Null);
-            var claimedTodoEntity = GetTodoDtoEntity(_tableNames.TodoClaimedBySlackUserId, dto.ClaimedBySlackUserId, dto.Id.ToString());
+            var claimedTodoEntity = GetTodoDtoEntity(_tableNames.TodoClaimedBySlackUserId, dto.ClaimedByUserId, dto.Id.ToString());
             Assert.That(claimedTodoEntity, Is.Null);
             var completedTodoEntity = GetTodoDtoEntity(_tableNames.TodoCompletedBySlackUserId, userId, dto.Id.ToString());
             Assert.That(completedTodoEntity.RemovedAt, Is.EqualTo(todoRemoved.Timestamp));
@@ -321,12 +321,12 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             return new TodoDto
             {
                 Id = id ?? Guid.NewGuid(),
-                AccountId = accountId ?? Guid.NewGuid(),
+                TeamId = accountId ?? Guid.NewGuid(),
                 SlackConversationId = slackConversationId,
                 ShortCode = shortCode,
                 Text = text,
                 ClaimedByUserId = claimedByUserId,
-                ClaimedBySlackUserId = claimedBySlackUserId,
+                ClaimedByUserId = claimedBySlackUserId,
                 CreatedAt = createdAt ?? DateTime.UtcNow.AddDays(-3),
                 CompletedAt = completedAt,
                 RemovedAt = removedAt
@@ -339,11 +339,11 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
         {
             Assert.That(actualDto, Is.Not.Null);
             Assert.That(actualDto.Id, Is.EqualTo(expectedDto.Id));
-            Assert.That(actualDto.AccountId, Is.EqualTo(expectedDto.AccountId));
+            Assert.That(actualDto.TeamId, Is.EqualTo(expectedDto.TeamId));
             Assert.That(actualDto.SlackConversationId, Is.EqualTo(expectedDto.SlackConversationId));
             Assert.That(actualDto.ShortCode, Is.EqualTo(expectedDto.ShortCode));
             Assert.That(actualDto.Text, Is.EqualTo(expectedDto.Text));
-            Assert.That(actualDto.ClaimedBySlackUserId, Is.EqualTo(expectedDto.ClaimedBySlackUserId));
+            Assert.That(actualDto.ClaimedByUserId, Is.EqualTo(expectedDto.ClaimedByUserId));
             Assert.That(actualDto.ClaimedByUserId, Is.EqualTo(expectedDto.ClaimedByUserId));
             Assert.That(actualDto.CreatedAt, Is.EqualTo(expectedDto.CreatedAt));
             Assert.That(actualDto.CompletedAt, Is.EqualTo(expectedDto.CompletedAt));

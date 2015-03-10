@@ -109,16 +109,16 @@ namespace SlashTodo.Web.Authentication
                 // Get the account associated with the user's team, create if it
                 // does not already exist.
                 var accountId = await accountKit.Lookup.BySlackTeamId(authTest.TeamId);
-                Core.Domain.Account account = null;
+                Core.Domain.Team account = null;
                 if (accountId.HasValue)
                 {
                     account = await accountKit.Repository.GetById(accountId.Value);
                 }
                 if (account == null)
                 {
-                    account = Core.Domain.Account.Create(Guid.NewGuid(), authTest.TeamId);
+                    account = Core.Domain.Team.Create(Guid.NewGuid(), authTest.TeamId);
                 }
-                account.UpdateSlackTeamInfo(authTest.TeamName, new Uri(authTest.TeamUrl));
+                account.UpdateInfo(authTest.TeamName, new Uri(authTest.TeamUrl));
                 await accountKit.Repository.Save(account);
                               
                 // Get the user, create if it does not already exist.
@@ -135,7 +135,7 @@ namespace SlashTodo.Web.Authentication
 
                 // Store the access token with the user.
                 user.UpdateSlackApiAccessToken(oAuthAccess.AccessToken);
-                user.UpdateSlackUserName(authTest.UserName);
+                user.UpdateName(authTest.UserName);
                 await userKit.Repository.Save(user);
 
                 // Login and redirect to account page

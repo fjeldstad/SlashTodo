@@ -27,7 +27,7 @@ namespace SlashTodo.Web.Tests
     {
         private Mock<ISlashCommandErrorResponseFactory> _errorResponseFactory;
         private Mock<IHostSettings> _hostSettingsMock;
-        private Mock<IAccountQuery> _accountQueryMock;
+        private Mock<IQueryTeamsById> _accountQueryMock;
         private Mock<IUserLookup> _userLookupMock;
         private Mock<IUserQuery> _userQueryMock;
         private Mock<IRepository<Core.Domain.User>> _userRepositoryMock;
@@ -38,7 +38,7 @@ namespace SlashTodo.Web.Tests
         {
             _errorResponseFactory = new Mock<ISlashCommandErrorResponseFactory>();
             _hostSettingsMock = new Mock<IHostSettings>();
-            _accountQueryMock = new Mock<IAccountQuery>();
+            _accountQueryMock = new Mock<IQueryTeamsById>();
             _userLookupMock = new Mock<IUserLookup>();
             _userQueryMock = new Mock<IUserQuery>();
             _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
@@ -55,7 +55,7 @@ namespace SlashTodo.Web.Tests
                 with.Module<TodoModule>();
                 with.ViewFactory<TestingViewFactory>();
                 with.Dependency<ISlashCommandErrorResponseFactory>(_errorResponseFactory.Object);
-                with.Dependency<IAccountQuery>(_accountQueryMock.Object);
+                with.Dependency<IQueryTeamsById>(_accountQueryMock.Object);
                 with.Dependency<UserKit>(_userKit);
                 with.Dependency<IHostSettings>(_hostSettingsMock.Object);
                 with.Dependency<JsonSerializer>(new CustomJsonSerializer());
@@ -70,8 +70,8 @@ namespace SlashTodo.Web.Tests
         public void ReturnsNotFoundWhenAccountIdIsNotAValidGuid()
         {
             // Arrange
-            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult<AccountDto>(null));
-            _accountQueryMock.Setup(x => x.ById(It.IsAny<Guid>())).Returns(Task.FromResult<AccountDto>(null));
+            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult<TeamDto>(null));
+            _accountQueryMock.Setup(x => x.Query(It.IsAny<Guid>())).Returns(Task.FromResult<TeamDto>(null));
             var command = GetSlashCommand(teamId: "slackTeamId");
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
@@ -94,8 +94,8 @@ namespace SlashTodo.Web.Tests
             var errorMessage = "errorMessage";
             var expectedResponse = new TextResponse(statusCode: HttpStatusCode.OK, contents: errorMessage);
             _errorResponseFactory.Setup(x => x.ActiveAccountNotFound()).Returns(expectedResponse);
-            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult<AccountDto>(null));
-            _accountQueryMock.Setup(x => x.ById(It.IsAny<Guid>())).Returns(Task.FromResult<AccountDto>(null));
+            _accountQueryMock.Setup(x => x.BySlackTeamId(It.IsAny<string>())).Returns(Task.FromResult<TeamDto>(null));
+            _accountQueryMock.Setup(x => x.Query(It.IsAny<Guid>())).Returns(Task.FromResult<TeamDto>(null));
             var command = GetSlashCommand(teamId: "slackTeamId");
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
@@ -117,12 +117,12 @@ namespace SlashTodo.Web.Tests
         {
             // Arrange
             var accountId = Guid.NewGuid();
-            var accountDto = new AccountDto { Id = accountId, SlackTeamId = "slackTeamId" };
+            var accountDto = new TeamDto { Id = accountId, SlackTeamId = "slackTeamId" };
             var errorMessage = "errorMessage";
             var expectedResponse = new TextResponse(statusCode: HttpStatusCode.OK, contents: errorMessage);
             _errorResponseFactory.Setup(x => x.InvalidAccountIntegrationSettings()).Returns(expectedResponse);
             _accountQueryMock.Setup(x => x.BySlackTeamId(accountDto.SlackTeamId)).Returns(Task.FromResult(accountDto));
-            _accountQueryMock.Setup(x => x.ById(accountId)).Returns(Task.FromResult(accountDto));
+            _accountQueryMock.Setup(x => x.Query(accountId)).Returns(Task.FromResult(accountDto));
             var command = GetSlashCommand(teamId: "someOtherSlackTeamId");
             Assert.That(command.TeamId, Is.Not.EqualTo(accountDto.SlackTeamId));
             var bootstrapper = GetBootstrapper();
@@ -144,12 +144,12 @@ namespace SlashTodo.Web.Tests
         public void ReturnsErrorWhenAccountIsNotActive()
         {
             // Arrange
-            var accountDto = new AccountDto { IsActive = false };
+            var accountDto = new TeamDto { IsActive = false };
             var errorMessage = "errorMessage";
             var expectedResponse = new TextResponse(statusCode: HttpStatusCode.OK, contents: errorMessage);
             _errorResponseFactory.Setup(x => x.ActiveAccountNotFound()).Returns(expectedResponse);
             _accountQueryMock.Setup(x => x.BySlackTeamId(accountDto.SlackTeamId)).Returns(Task.FromResult(accountDto));
-            _accountQueryMock.Setup(x => x.ById(accountDto.Id)).Returns(Task.FromResult(accountDto));
+            _accountQueryMock.Setup(x => x.Query(accountDto.Id)).Returns(Task.FromResult(accountDto));
             var command = GetSlashCommand(teamId: accountDto.SlackTeamId);
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
@@ -170,12 +170,12 @@ namespace SlashTodo.Web.Tests
         public void ReturnsErrorWhenSlashCommandTokenIsInvalid()
         {
             // Arrange
-            var accountDto = new AccountDto { IsActive = true, SlashCommandToken = "token" };
+            var accountDto = new TeamDto { IsActive = true, SlashCommandToken = "token" };
             var errorMessage = "errorMessage";
             var expectedResponse = new TextResponse(statusCode: HttpStatusCode.OK, contents: errorMessage);
             _errorResponseFactory.Setup(x => x.InvalidSlashCommandToken()).Returns(expectedResponse);
             _accountQueryMock.Setup(x => x.BySlackTeamId(accountDto.SlackTeamId)).Returns(Task.FromResult(accountDto));
-            _accountQueryMock.Setup(x => x.ById(accountDto.Id)).Returns(Task.FromResult(accountDto));
+            _accountQueryMock.Setup(x => x.Query(accountDto.Id)).Returns(Task.FromResult(accountDto));
             var command = GetSlashCommand(teamId: accountDto.SlackTeamId, token: "someOtherToken");
             Assert.That(command.Token, Is.Not.EqualTo(accountDto.SlashCommandToken));
             var bootstrapper = GetBootstrapper();
@@ -199,7 +199,7 @@ namespace SlashTodo.Web.Tests
             // Arrange
             var account = GetAccountDto();
             _accountQueryMock.Setup(x => x.BySlackTeamId(account.SlackTeamId)).Returns(Task.FromResult(account));
-            _accountQueryMock.Setup(x => x.ById(account.Id)).Returns(Task.FromResult(account));
+            _accountQueryMock.Setup(x => x.Query(account.Id)).Returns(Task.FromResult(account));
             _userLookupMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult<Guid?>(null));
             var savedEvents = new List<IDomainEvent>();
             _userRepositoryMock
@@ -220,17 +220,17 @@ namespace SlashTodo.Web.Tests
 
             // Assert
             _userRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.User>(u => 
-                u.AccountId == account.Id)));
+                u.TeamId == account.Id)));
             var userCreated = savedEvents.Single(x => x is UserCreated) as UserCreated;
-            Assert.That(userCreated.AccountId, Is.EqualTo(account.Id));
+            Assert.That(userCreated.TeamId, Is.EqualTo(account.Id));
             Assert.That(userCreated.SlackUserId, Is.EqualTo(command.UserId));
         }
 
 
 
-        private static AccountDto GetAccountDto(Guid? accountId = null, string slackTeamId = "slackTeamId", string slashCommandToken = "token", bool isActive = true)
+        private static TeamDto GetAccountDto(Guid? accountId = null, string slackTeamId = "slackTeamId", string slashCommandToken = "token", bool isActive = true)
         {
-            return new AccountDto
+            return new TeamDto
             {
                 Id = accountId ?? Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow.AddDays(-3),
@@ -241,7 +241,7 @@ namespace SlashTodo.Web.Tests
         }
 
         private static SlackSlashCommand GetSlashCommand(
-            AccountDto account,
+            TeamDto account,
             string userId = "userId",
             string conversationId = "conversationId",
             string text = "text")

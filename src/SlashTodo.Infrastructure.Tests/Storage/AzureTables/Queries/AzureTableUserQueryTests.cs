@@ -12,9 +12,9 @@ using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Lookups;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Messaging;
-using SlashTodo.Infrastructure.Storage.AzureTables;
-using SlashTodo.Infrastructure.Storage.AzureTables.Lookups;
-using SlashTodo.Infrastructure.Storage.AzureTables.Queries;
+using SlashTodo.Infrastructure.AzureTables;
+using SlashTodo.Infrastructure.AzureTables.Lookups;
+using SlashTodo.Infrastructure.AzureTables.Queries;
 using TinyMessenger;
 
 namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
@@ -23,7 +23,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
     public class AzureTableUserQueryTests
     {
         private readonly AzureSettings _azureSettings = new AzureSettings(new AppSettings());
-        private AzureTableUserQuery _userQuery;
+        private QueryUsersById _userQuery;
         private Mock<IUserLookup> _userLookupMock;
         private IMessageBus _bus;
             
@@ -33,7 +33,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             _bus = new TinyMessageBus(new TinyMessengerHub());
             _userLookupMock = new Mock<IUserLookup>();
             // Reference a different table for each test to ensure isolation.
-            _userQuery = new AzureTableUserQuery(
+            _userQuery = new QueryUsersById(
                 CloudStorageAccount.Parse(_azureSettings.StorageConnectionString),
                 string.Format("test{0}", Guid.NewGuid().ToString("N")), _userLookupMock.Object);
             _userQuery.RegisterSubscriptions((ISubscriptionRegistry)_bus);
@@ -74,8 +74,8 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
 
             // Assert
             var table = GetTable();
-            var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userCreated.Id.ToString(), userCreated.Id.ToString());
-            var row = table.Execute(retrieveOp).Result as AzureTableUserQuery.UserDtoTableEntity;
+            var retrieveOp = TableOperation.Retrieve<QueryUsersById.UserDtoTableEntity>(userCreated.Id.ToString(), userCreated.Id.ToString());
+            var row = table.Execute(retrieveOp).Result as QueryUsersById.UserDtoTableEntity;
             Assert.That(row, Is.Not.Null);
             Assert.That(row.SlackUserId, Is.EqualTo(userCreated.SlackUserId));
             Assert.That(row.CreatedAt, Is.EqualTo(userCreated.Timestamp));
@@ -87,22 +87,22 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             // Arrange
             var dto = GetUserDto(slackUserName: "oldSlackUserName");
             var table = GetTable();
-            var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(dto));
+            var insertOp = TableOperation.Insert(new QueryUsersById.UserDtoTableEntity(dto));
             await table.ExecuteAsync(insertOp);
-            var userSlackUserNameUpdated = new UserSlackUserNameUpdated
+            var userSlackUserNameUpdated = new UserNameUpdated
             {
                 Id = dto.Id,
-                SlackUserName = "newSlackUserName"
+                Name = "newSlackUserName"
             };
 
             // Act
             await _bus.Publish(userSlackUserNameUpdated);
 
             // Assert
-            var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userSlackUserNameUpdated.Id.ToString(), userSlackUserNameUpdated.Id.ToString());
-            var row = table.Execute(retrieveOp).Result as AzureTableUserQuery.UserDtoTableEntity;
+            var retrieveOp = TableOperation.Retrieve<QueryUsersById.UserDtoTableEntity>(userSlackUserNameUpdated.Id.ToString(), userSlackUserNameUpdated.Id.ToString());
+            var row = table.Execute(retrieveOp).Result as QueryUsersById.UserDtoTableEntity;
             Assert.That(row, Is.Not.Null);
-            Assert.That(row.SlackUserName, Is.EqualTo(userSlackUserNameUpdated.SlackUserName));
+            Assert.That(row.Name, Is.EqualTo(userSlackUserNameUpdated.Name));
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             // Arrange
             var dto = GetUserDto(slackApiAccessToken: "oldSlackApiAccessToken");
             var table = GetTable();
-            var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(dto));
+            var insertOp = TableOperation.Insert(new QueryUsersById.UserDtoTableEntity(dto));
             await table.ExecuteAsync(insertOp);
             var userSlackApiAccessTokenUpdated = new UserSlackApiAccessTokenUpdated
             {
@@ -123,8 +123,8 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             await _bus.Publish(userSlackApiAccessTokenUpdated);
 
             // Assert
-            var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userSlackApiAccessTokenUpdated.Id.ToString(), userSlackApiAccessTokenUpdated.Id.ToString());
-            var row = table.Execute(retrieveOp).Result as AzureTableUserQuery.UserDtoTableEntity;
+            var retrieveOp = TableOperation.Retrieve<QueryUsersById.UserDtoTableEntity>(userSlackApiAccessTokenUpdated.Id.ToString(), userSlackApiAccessTokenUpdated.Id.ToString());
+            var row = table.Execute(retrieveOp).Result as QueryUsersById.UserDtoTableEntity;
             Assert.That(row, Is.Not.Null);
             Assert.That(row.SlackApiAccessToken, Is.EqualTo(userSlackApiAccessTokenUpdated.SlackApiAccessToken));
         }
@@ -135,7 +135,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             // Arrange
             var dto = GetUserDto(isActive: false);
             var table = GetTable();
-            var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(dto));
+            var insertOp = TableOperation.Insert(new QueryUsersById.UserDtoTableEntity(dto));
             await table.ExecuteAsync(insertOp);
             var userActivated = new UserActivated
             {
@@ -147,8 +147,8 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             await _bus.Publish(userActivated);
 
             // Assert
-            var retrieveOp = TableOperation.Retrieve<AzureTableUserQuery.UserDtoTableEntity>(userActivated.Id.ToString(), userActivated.Id.ToString());
-            var row = table.Execute(retrieveOp).Result as AzureTableUserQuery.UserDtoTableEntity;
+            var retrieveOp = TableOperation.Retrieve<QueryUsersById.UserDtoTableEntity>(userActivated.Id.ToString(), userActivated.Id.ToString());
+            var row = table.Execute(retrieveOp).Result as QueryUsersById.UserDtoTableEntity;
             Assert.That(row, Is.Not.Null);
             Assert.That(row.IsActive, Is.True);
         }
@@ -197,7 +197,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             // Arrange
             var expectedDto = GetUserDto(isActive: true);
             var table = GetTable();
-            var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(expectedDto));
+            var insertOp = TableOperation.Insert(new QueryUsersById.UserDtoTableEntity(expectedDto));
             table.Execute(insertOp);
 
             // Act
@@ -214,7 +214,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             var expectedDto = GetUserDto(isActive: true);
             _userLookupMock.Setup(x => x.BySlackUserId(It.IsAny<string>())).Returns(Task.FromResult<Guid?>(expectedDto.Id));
             var table = GetTable();
-            var insertOp = TableOperation.Insert(new AzureTableUserQuery.UserDtoTableEntity(expectedDto));
+            var insertOp = TableOperation.Insert(new QueryUsersById.UserDtoTableEntity(expectedDto));
             table.Execute(insertOp);
 
             // Act
@@ -233,9 +233,9 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             return new UserDto
             {
                 Id = Guid.NewGuid(),
-                AccountId = Guid.NewGuid(),
+                TeamId = Guid.NewGuid(),
                 SlackUserId = "slackUserId",
-                SlackUserName = slackUserName,
+                Name = slackUserName,
                 SlackApiAccessToken = slackApiAccessToken,
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
                 IsActive = isActive
@@ -249,7 +249,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables.Queries
             Assert.That(actualDto, Is.Not.Null);
             Assert.That(actualDto.Id, Is.EqualTo(expectedDto.Id));
             Assert.That(actualDto.SlackUserId, Is.EqualTo(expectedDto.SlackUserId));
-            Assert.That(actualDto.SlackUserName, Is.EqualTo(expectedDto.SlackUserName));
+            Assert.That(actualDto.Name, Is.EqualTo(expectedDto.Name));
             Assert.That(actualDto.SlackApiAccessToken, Is.EqualTo(expectedDto.SlackApiAccessToken));
             Assert.That(actualDto.CreatedAt, Is.EqualTo(expectedDto.CreatedAt));
             Assert.That(actualDto.IsActive, Is.EqualTo(expectedDto.IsActive));

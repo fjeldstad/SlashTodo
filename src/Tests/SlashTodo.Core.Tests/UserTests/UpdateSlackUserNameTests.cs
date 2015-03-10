@@ -17,12 +17,12 @@ namespace SlashTodo.Core.Tests.UserTests
         public void CanNotUpdateSlackUserNameWithMissingValue()
         {
             // Arrange
-            var user = User.Create(Guid.NewGuid(), Guid.NewGuid(), "slackUserId");
+            var user = User.Create("id", "teamId");
 
             // Act
-            Assert.Throws<ArgumentNullException>(() => user.UpdateSlackUserName(null));
-            Assert.Throws<ArgumentNullException>(() => user.UpdateSlackUserName(string.Empty));
-            Assert.Throws<ArgumentNullException>(() => user.UpdateSlackUserName(" "));
+            Assert.Throws<ArgumentNullException>(() => user.UpdateName(null));
+            Assert.Throws<ArgumentNullException>(() => user.UpdateName(string.Empty));
+            Assert.Throws<ArgumentNullException>(() => user.UpdateName(" "));
         }
 
         [Test]
@@ -30,19 +30,19 @@ namespace SlashTodo.Core.Tests.UserTests
         {
             // Arrange
             var slackUserName = " slackUserName ";
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.ClearUncommittedEvents();
             var originalVersion = user.Version;
             var before = DateTime.UtcNow;
 
             // Act
-            user.UpdateSlackUserName(slackUserName);
+            user.UpdateName(slackUserName);
 
             // Assert
-            var @event = user.GetUncommittedEvents().Single() as UserSlackUserNameUpdated;
+            var @event = user.GetUncommittedEvents().Single() as UserNameUpdated;
             @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion);
-            Assert.That(@event.SlackUserName, Is.EqualTo(slackUserName.Trim()));
+            Assert.That(@event.Name, Is.EqualTo(slackUserName.Trim()));
         }
 
         [Test]
@@ -50,14 +50,14 @@ namespace SlashTodo.Core.Tests.UserTests
         {
             // Arrange
             var slackUserName = "slackUserName";
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.ClearUncommittedEvents();
 
             // Act
-            user.UpdateSlackUserName(slackUserName);
-            user.UpdateSlackUserName(slackUserName);
-            user.UpdateSlackUserName(slackUserName);
+            user.UpdateName(slackUserName);
+            user.UpdateName(slackUserName);
+            user.UpdateName(slackUserName);
 
             // Assert
             Assert.That(user.GetUncommittedEvents().ToArray(), Has.Length.EqualTo(1));
@@ -73,8 +73,8 @@ namespace SlashTodo.Core.Tests.UserTests
                 "slackUserName2",
                 "slackUserName3"
             };
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.ClearUncommittedEvents();
             var originalVersion = user.Version;
             var before = DateTime.UtcNow;
@@ -82,12 +82,12 @@ namespace SlashTodo.Core.Tests.UserTests
             // Act
             foreach (var slackUserName in slackUserNames)
             {
-                user.UpdateSlackUserName(slackUserName);
+                user.UpdateName(slackUserName);
             }
 
             // Assert
-            var events = user.GetUncommittedEvents().Cast<UserSlackUserNameUpdated>().ToArray();
-            Assert.That(events.Select(x => x.SlackUserName).SequenceEqual(slackUserNames));
+            var events = user.GetUncommittedEvents().Cast<UserNameUpdated>().ToArray();
+            Assert.That(events.Select(x => x.Name).SequenceEqual(slackUserNames));
             foreach (var @event in events)
             {
                 @event.AssertThatBasicEventDataIsCorrect(id, before, expectedOriginalVersion: originalVersion++);

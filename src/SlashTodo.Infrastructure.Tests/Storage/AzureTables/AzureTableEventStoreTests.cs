@@ -9,7 +9,7 @@ using Moq;
 using NUnit.Framework;
 using SlashTodo.Core.Domain;
 using SlashTodo.Infrastructure.Configuration;
-using SlashTodo.Infrastructure.Storage.AzureTables;
+using SlashTodo.Infrastructure.AzureTables;
 
 namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
 {
@@ -17,13 +17,13 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
     public class AzureTableEventStoreTests
     {
         private readonly AzureSettings _azureSettings = new AzureSettings(new AppSettings());
-        private AzureTableEventStore _eventStore;
+        private EventStore _eventStore;
 
         [SetUp]
         public void BeforeEachTest()
         {
             // Reference a different table for each test to ensure isolation.
-            _eventStore = new AzureTableEventStore(
+            _eventStore = new EventStore(
                 CloudStorageAccount.Parse(_azureSettings.StorageConnectionString), 
                 string.Format("test{0}", Guid.NewGuid().ToString("N")));
             var table = GetTableForEventStore();
@@ -59,7 +59,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
             // Arrange
             var aggregateId = Guid.NewGuid();
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
-            var dummyEntity = new AzureTableEventStore.DomainEventTableEntity(dummyEvent);
+            var dummyEntity = new EventStore.DomainEventTableEntity(dummyEvent);
             var table = GetTableForEventStore();
             var insertOp = TableOperation.Insert(dummyEntity);
             table.Execute(insertOp);
@@ -80,16 +80,16 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
             // Arrange
             var aggregateId = Guid.NewGuid();
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
-            var dummyEntity = new AzureTableEventStore.DomainEventTableEntity(dummyEvent);
+            var dummyEntity = new EventStore.DomainEventTableEntity(dummyEvent);
 
             // Act
             await _eventStore.Save(aggregateId, 0, new[] { dummyEvent });
 
             // Assert
             var table = GetTableForEventStore();
-            var retrieveOp = TableOperation.Retrieve<AzureTableEventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
+            var retrieveOp = TableOperation.Retrieve<EventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
             var retrieveResult = await table.ExecuteAsync(retrieveOp);
-            var actualEntity = retrieveResult.Result as AzureTableEventStore.DomainEventTableEntity;
+            var actualEntity = retrieveResult.Result as EventStore.DomainEventTableEntity;
             Assert.That(actualEntity.PartitionKey, Is.EqualTo(dummyEntity.PartitionKey));
             Assert.That(actualEntity.RowKey, Is.EqualTo(dummyEntity.RowKey));
         }
@@ -100,7 +100,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
             // Arrange
             var aggregateId = Guid.NewGuid();
             var dummyEvent = new DummyDomainEvent { Id = aggregateId, OriginalVersion = 0, Timestamp = DateTime.UtcNow };
-            var dummyEntity = new AzureTableEventStore.DomainEventTableEntity(dummyEvent);
+            var dummyEntity = new EventStore.DomainEventTableEntity(dummyEvent);
             var table = GetTableForEventStore();
             var insertOp = TableOperation.Insert(dummyEntity);
             table.Execute(insertOp);
@@ -110,7 +110,7 @@ namespace SlashTodo.Infrastructure.Tests.Storage.AzureTables
 
             // Assert
             table = GetTableForEventStore();
-            var retrieveOp = TableOperation.Retrieve<AzureTableEventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
+            var retrieveOp = TableOperation.Retrieve<EventStore.DomainEventTableEntity>(dummyEntity.PartitionKey, dummyEntity.RowKey);
             var retrieveResult = await table.ExecuteAsync(retrieveOp);
             Assert.That(retrieveResult.Result, Is.Null);
         }

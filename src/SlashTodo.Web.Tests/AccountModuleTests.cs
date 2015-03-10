@@ -31,8 +31,8 @@ namespace SlashTodo.Web.Tests
         private Mock<IHostSettings> _hostSettingsMock;
         private Mock<IUserMapper> _userMapperMock;
         private Mock<IAccountLookup> _accountLookupMock;
-        private Mock<IAccountQuery> _accountQueryMock;
-        private Mock<IRepository<Core.Domain.Account>> _accountRepositoryMock;
+        private Mock<IQueryTeamsById> _accountQueryMock;
+        private Mock<IRepository<Core.Domain.Team>> _accountRepositoryMock;
         private AccountKit _accountKit;
         private SlackUserIdentity _userIdentity;
 
@@ -43,8 +43,8 @@ namespace SlashTodo.Web.Tests
             _hostSettingsMock = new Mock<IHostSettings>();
             _userMapperMock = new Mock<IUserMapper>();
             _accountLookupMock = new Mock<IAccountLookup>();
-            _accountQueryMock = new Mock<IAccountQuery>();
-            _accountRepositoryMock = new Mock<IRepository<Core.Domain.Account>>();
+            _accountQueryMock = new Mock<IQueryTeamsById>();
+            _accountRepositoryMock = new Mock<IRepository<Core.Domain.Team>>();
             _accountKit = new AccountKit(
                 _accountLookupMock.Object,
                 _accountQueryMock.Object,
@@ -116,18 +116,18 @@ namespace SlashTodo.Web.Tests
             _appSettingsMock.Setup(x => x.Get("misc:HelpEmailAddress")).Returns(helpEmailAddress);
             var hostBaseUrl = "https://slashtodo.com/";
             _hostSettingsMock.SetupGet(x => x.BaseUrl).Returns(hostBaseUrl);
-            var accountDto = new AccountDto
+            var accountDto = new TeamDto
             {
                 Id = _userIdentity.AccountId,
                 SlackTeamId = _userIdentity.SlackTeamId,
-                SlackTeamName = _userIdentity.SlackTeamName,
-                SlackTeamUrl = _userIdentity.SlackTeamUrl,
+                Name = _userIdentity.SlackTeamName,
+                SlackUrl = _userIdentity.SlackTeamUrl,
                 SlashCommandToken = "slashCommandToken",
                 IncomingWebhookUrl = new Uri("https://api.slack.com/incoming-webhooks/abc"),
                 CreatedAt = DateTime.UtcNow.AddDays(-2),
                 IsActive = true
             };
-            _accountQueryMock.Setup(x => x.ById(_userIdentity.AccountId)).Returns(Task.FromResult(accountDto));
+            _accountQueryMock.Setup(x => x.Query(_userIdentity.AccountId)).Returns(Task.FromResult(accountDto));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -201,7 +201,7 @@ namespace SlashTodo.Web.Tests
         public void UpdateSlashCommandTokenReturnsNotFoundWhenAccountIsNotFound()
         {
             // Arrange
-            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Account>(null));
+            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Team>(null));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -229,7 +229,7 @@ namespace SlashTodo.Web.Tests
         public void UpdateIncomingWebhookUrlReturnsNotFoundWhenAccountIsNotFound()
         {
             // Arrange
-            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Account>(null));
+            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Team>(null));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -257,7 +257,7 @@ namespace SlashTodo.Web.Tests
         public void UpdateIncomingWebhookUrlReturnsBadRequestForNonemptyInvalidUrl()
         {
             // Arrange
-            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Account>(null));
+            _accountRepositoryMock.Setup(x => x.GetById(It.IsAny<Guid>())).Returns(Task.FromResult<Core.Domain.Team>(null));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -286,11 +286,11 @@ namespace SlashTodo.Web.Tests
         {
             // Arrange
             var newSlashCommandToken = "newSlashCommandToken";
-            var account = Core.Domain.Account.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
+            var account = Core.Domain.Team.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
             account.ClearUncommittedEvents();
             _accountRepositoryMock.Setup(x => x.GetById(account.Id)).Returns(Task.FromResult(account));
             var savedEvents = new List<IDomainEvent>();
-            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Account>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Account a) => savedEvents.AddRange(a.GetUncommittedEvents()));
+            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Team>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Team a) => savedEvents.AddRange(a.GetUncommittedEvents()));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -313,8 +313,8 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a => a.Id == account.Id)), Times.Once);
-            var slashCommandTokenUpdated = savedEvents.Single(x => x is AccountSlashCommandTokenUpdated) as AccountSlashCommandTokenUpdated;
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Team>(a => a.Id == account.Id)), Times.Once);
+            var slashCommandTokenUpdated = savedEvents.Single(x => x is TeamSlashCommandTokenUpdated) as TeamSlashCommandTokenUpdated;
             slashCommandTokenUpdated.AssertThatBasicEventDataIsCorrect(account.Id, before);
             Assert.That(slashCommandTokenUpdated.SlashCommandToken, Is.EqualTo(newSlashCommandToken));
         }
@@ -324,11 +324,11 @@ namespace SlashTodo.Web.Tests
         {
             // Arrange
             var newIncomingWebhookUrl = new Uri("https://api.slack.com/new-incoming-webhook");
-            var account = Core.Domain.Account.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
+            var account = Core.Domain.Team.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
             account.ClearUncommittedEvents();
             _accountRepositoryMock.Setup(x => x.GetById(account.Id)).Returns(Task.FromResult(account));
             var savedEvents = new List<IDomainEvent>();
-            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Account>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Account a) => savedEvents.AddRange(a.GetUncommittedEvents()));
+            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Team>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Team a) => savedEvents.AddRange(a.GetUncommittedEvents()));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -351,8 +351,8 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a => a.Id == account.Id)), Times.Once);
-            var incomingWebhookUpdated = savedEvents.Single(x => x is AccountIncomingWebhookUpdated) as AccountIncomingWebhookUpdated;
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Team>(a => a.Id == account.Id)), Times.Once);
+            var incomingWebhookUpdated = savedEvents.Single(x => x is TeamIncomingWebhookUpdated) as TeamIncomingWebhookUpdated;
             incomingWebhookUpdated.AssertThatBasicEventDataIsCorrect(account.Id, before);
             Assert.That(incomingWebhookUpdated.IncomingWebhookUrl, Is.EqualTo(newIncomingWebhookUrl));
         }
@@ -362,12 +362,12 @@ namespace SlashTodo.Web.Tests
         public void UpdatedSlashCommandTokenConvertsEmptyOrWhitespaceTokenToNull(string token)
         {
             // Arrange
-            var account = Core.Domain.Account.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
+            var account = Core.Domain.Team.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
             account.UpdateSlashCommandToken("slashCommandToken");
             account.ClearUncommittedEvents();
             _accountRepositoryMock.Setup(x => x.GetById(account.Id)).Returns(Task.FromResult(account));
             var savedEvents = new List<IDomainEvent>();
-            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Account>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Account a) => savedEvents.AddRange(a.GetUncommittedEvents()));
+            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Team>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Team a) => savedEvents.AddRange(a.GetUncommittedEvents()));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -390,8 +390,8 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a => a.Id == account.Id)), Times.Once);
-            var slashCommandTokenUpdated = savedEvents.Single(x => x is AccountSlashCommandTokenUpdated) as AccountSlashCommandTokenUpdated;
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Team>(a => a.Id == account.Id)), Times.Once);
+            var slashCommandTokenUpdated = savedEvents.Single(x => x is TeamSlashCommandTokenUpdated) as TeamSlashCommandTokenUpdated;
             slashCommandTokenUpdated.AssertThatBasicEventDataIsCorrect(account.Id, before);
             Assert.That(slashCommandTokenUpdated.SlashCommandToken, Is.Null);
         }
@@ -401,12 +401,12 @@ namespace SlashTodo.Web.Tests
         public void UpdatedIncomingWebhookUrlConvertsEmptyOrWhitespaceUrlToNull(string url)
         {
             // Arrange
-            var account = Core.Domain.Account.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
+            var account = Core.Domain.Team.Create(_userIdentity.AccountId, _userIdentity.SlackTeamId);
             account.UpdateIncomingWebhookUrl(new Uri("https://api.slack.com/incoming-webhook"));
             account.ClearUncommittedEvents();
             _accountRepositoryMock.Setup(x => x.GetById(account.Id)).Returns(Task.FromResult(account));
             var savedEvents = new List<IDomainEvent>();
-            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Account>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Account a) => savedEvents.AddRange(a.GetUncommittedEvents()));
+            _accountRepositoryMock.Setup(x => x.Save(It.IsAny<Core.Domain.Team>())).Returns(Task.FromResult<object>(null)).Callback((Core.Domain.Team a) => savedEvents.AddRange(a.GetUncommittedEvents()));
             var bootstrapper = GetBootstrapper(with =>
             {
                 with.RequestStartup((requestContainer, requestPipelines, requestContext) =>
@@ -429,8 +429,8 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Account>(a => a.Id == account.Id)), Times.Once);
-            var incomingWebhookUpdated = savedEvents.Single(x => x is AccountIncomingWebhookUpdated) as AccountIncomingWebhookUpdated;
+            _accountRepositoryMock.Verify(x => x.Save(It.Is<Core.Domain.Team>(a => a.Id == account.Id)), Times.Once);
+            var incomingWebhookUpdated = savedEvents.Single(x => x is TeamIncomingWebhookUpdated) as TeamIncomingWebhookUpdated;
             incomingWebhookUpdated.AssertThatBasicEventDataIsCorrect(account.Id, before);
             Assert.That(incomingWebhookUpdated.IncomingWebhookUrl, Is.Null);
         }

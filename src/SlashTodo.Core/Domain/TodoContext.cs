@@ -8,7 +8,7 @@ namespace SlashTodo.Core
 {
     public class TodoContext
     {
-        public Guid AccountId { get; set; }
-        public Guid UserId { get; set; }
+        public string TeamId { get; set; }
+        public string UserId { get; set; }
     }
 }

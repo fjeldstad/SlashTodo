@@ -15,7 +15,7 @@ namespace SlashTodo.Web.Api
         public TodoModule(
             ISlashCommandErrorResponseFactory errorResponseFactory,
             IHostSettings hostSettings,
-            IAccountQuery accountQuery,
+            IQueryTeamsById queryTeamsById,
             UserKit userKit)
             : base("/api")
         {
@@ -28,7 +28,7 @@ namespace SlashTodo.Web.Api
                 {
                     return HttpStatusCode.NotFound;
                 }
-                var account = await accountQuery.ById(accountId);
+                var account = await queryTeamsById.Query(accountId);
                 if (account == null)
                 {
                     return errorResponseFactory.ActiveAccountNotFound();
@@ -50,7 +50,7 @@ namespace SlashTodo.Web.Api
                 if (!userId.HasValue)
                 {
                     var user = Core.Domain.User.Create(Guid.NewGuid(), account.Id, command.UserId);
-                    user.UpdateSlackUserName(command.UserName);
+                    user.UpdateName(command.UserName);
                     await userKit.Repository.Save(user); // TODO Await later to reduce response time? Or don't await at all?
                 }
                 throw new NotImplementedException();

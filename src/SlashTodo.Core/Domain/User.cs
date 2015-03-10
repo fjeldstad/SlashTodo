@@ -11,15 +11,13 @@ namespace SlashTodo.Core.Domain
     {
         private UserState _state = UserState.Initial;
         private StateMachine<UserState, UserTrigger> _stateMachine;
-        private StateMachine<UserState, UserTrigger>.TriggerWithParameters<Guid, Guid, string> _createTrigger;
-        private Guid _accountId;
-        private string _slackUserId;
-        private string _slackUserName;
+        private StateMachine<UserState, UserTrigger>.TriggerWithParameters<string, string> _createTrigger;
+        private string _teamId;
+        private string _name;
         private string _slackApiAccessToken;
 
-        public Guid AccountId { get { return _accountId; } }
-        public string SlackUserId { get { return _slackUserId; } }
-        public string SlackUserName { get { return _slackUserName; } }
+        public string TeamId { get { return _teamId; } }
+        public string Name { get { return _name; } }
         public string SlackApiAccessToken { get { return _slackApiAccessToken; } }
 
         public User()
@@ -27,11 +25,15 @@ namespace SlashTodo.Core.Domain
             ConfigureStateMachine();
         }
 
-        public static User Create(Guid id, Guid accountId, string slackUserId)
+        public static User Create(string id, string teamId)
         {
-            if (string.IsNullOrWhiteSpace(slackUserId))
+            if (string.IsNullOrWhiteSpace(id))
             {
-                throw new ArgumentNullException("slackUserId");
+                throw new ArgumentNullException("id");
+            }
+            if (string.IsNullOrWhiteSpace(teamId))
+            {
+                throw new ArgumentNullException("teamId");
             }
             var user = new User();
             if (!user._stateMachine.CanFire(UserTrigger.Create))
@@ -41,24 +43,26 @@ namespace SlashTodo.Core.Domain
             user.Id = id;
             user.RaiseEvent(new UserCreated
             {
-                AccountId = accountId,
-                SlackUserId = slackUserId
+                TeamId = teamId
             });
-            user.RaiseEvent(new UserActivated());
+            if (user._stateMachine.CanFire(UserTrigger.Activate))
+            {
+                user.RaiseEvent(new UserActivated());
+            }
             return user;
         }
 
-        public void UpdateSlackUserName(string slackUserName)
+        public void UpdateName(string name)
         {
-            if (string.IsNullOrWhiteSpace(slackUserName))
+            if (string.IsNullOrWhiteSpace(name))
             {
-                throw new ArgumentNullException("slackUserName");
+                throw new ArgumentNullException("name");
             }
-            slackUserName = slackUserName.Trim();
-            if (string.IsNullOrEmpty(_slackUserName) ||
-                !slackUserName.Equals(_slackUserName, StringComparison.Ordinal))
+            name = name.Trim();
+            if (string.IsNullOrEmpty(_name) ||
+                !name.Equals(_name, StringComparison.Ordinal))
             {
-                RaiseEvent(new UserSlackUserNameUpdated { SlackUserName = slackUserName });
+                RaiseEvent(new UserNameUpdated { Name = name });
             }
         }
 
@@ -84,7 +88,7 @@ namespace SlashTodo.Core.Domain
 
         private void Apply(UserCreated @event)
         {
-            _stateMachine.Fire(_createTrigger, @event.Id, @event.AccountId, @event.SlackUserId);
+            _stateMachine.Fire(_createTrigger, @event.Id, @event.TeamId);
         }
 
         private void Apply(UserActivated @event)
@@ -92,9 +96,9 @@ namespace SlashTodo.Core.Domain
             _stateMachine.Fire(UserTrigger.Activate);
         }
 
-        private void Apply(UserSlackUserNameUpdated @event)
+        private void Apply(UserNameUpdated @event)
         {
-            _slackUserName = @event.SlackUserName;
+            _name = @event.Name;
         }
 
         private void Apply(UserSlackApiAccessTokenUpdated @event)
@@ -108,16 +112,15 @@ namespace SlashTodo.Core.Domain
                 () => _state,
                 state => _state = state
                 );
-            _createTrigger = _stateMachine.SetTriggerParameters<Guid, Guid, string>(UserTrigger.Create);
+            _createTrigger = _stateMachine.SetTriggerParameters<string, string>(UserTrigger.Create);
 
             _stateMachine.Configure(UserState.Initial)
                 .Permit(UserTrigger.Create, UserState.Created);
             _stateMachine.Configure(UserState.Created)
-                .OnEntryFrom(_createTrigger, (id, accountId, slackUserId) =>
+                .OnEntryFrom(_createTrigger, (id, teamId) =>
                 {
                     Id = id;
-                    _accountId = accountId;
-                    _slackUserId = slackUserId;
+                    _teamId = teamId;
                 })
                 .Permit(UserTrigger.Activate, UserState.Active);
         }

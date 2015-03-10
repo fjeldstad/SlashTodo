@@ -11,13 +11,13 @@ namespace SlashTodo.Web
 {
     public class UserMapper : IUserMapper
     {
-        private readonly IUserQuery _userQuery;
-        private readonly IAccountQuery _accountQuery;
+        private readonly QueryUsers.IById _userQuery;
+        private readonly QueryTeams.IById _queryTeamsById;
 
-        public UserMapper(IUserQuery userQuery, IAccountQuery accountQuery)
+        public UserMapper(QueryUsers.IById userQuery, QueryTeams.IById queryTeamsById)
         {
             _userQuery = userQuery;
-            _accountQuery = accountQuery;
+            _queryTeamsById = queryTeamsById;
         }
 
         public Nancy.Security.IUserIdentity GetUserFromIdentifier(Guid identifier, Nancy.NancyContext context)
@@ -28,7 +28,7 @@ namespace SlashTodo.Web
             {
                 return null;
             }
-            var account = _accountQuery.ById(user.AccountId).Result;
+            var account = _queryTeamsById.Query(user.TeamId).Result;
             if (account == null)
             {
                 return null; // Ideally this should never happen.
@@ -36,13 +36,13 @@ namespace SlashTodo.Web
             var userIdentity = new SlackUserIdentity
             {
                 Id = user.Id,
-                AccountId = user.AccountId,
+                AccountId = user.TeamId,
                 SlackUserId = user.SlackUserId,
-                SlackUserName = user.SlackUserName,
+                SlackUserName = user.Name,
                 SlackApiAccessToken = user.SlackApiAccessToken,
                 SlackTeamId = account.SlackTeamId,
-                SlackTeamName = account.SlackTeamName,
-                SlackTeamUrl = account.SlackTeamUrl
+                SlackTeamName = account.Name,
+                SlackTeamUrl = account.SlackUrl
             };
             return userIdentity;
         }

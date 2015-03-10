@@ -15,7 +15,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanUntickTodo()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var slackConversationId = "slackConversationId";
             var shortCode = "x";
@@ -37,7 +37,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void UntickTodoIsIdempotentOperation()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.Tick();
@@ -56,7 +56,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void UntickingRemovedTodoDoesNothing()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.Remove();

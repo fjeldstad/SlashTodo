@@ -6,7 +6,7 @@ namespace SlashTodo.Core
 {
     public interface IRepository<T> where T : Aggregate, new()
     {
-        Task<T> GetById(Guid id);
+        Task<T> GetById(string id);
         Task Save(T aggregate);
     }
 }

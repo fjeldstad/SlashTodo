@@ -16,7 +16,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanFreeTodo()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var slackConversationId = "slackConversationId";
             var shortCode = "x";
             var context = TodoTestHelpers.GetContext();
@@ -38,7 +38,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void FreeTodoIsIdempotentOperation()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var slackConversationId = "slackConversationId";
             var shortCode = "x";
             var context = TodoTestHelpers.GetContext();
@@ -59,9 +59,9 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CannotFreeTodoThatIsClaimedBySomeoneElseWithoutUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var todo = Todo.Add(id, "text", "slackConversationId", "x", otherUserContext);
@@ -79,9 +79,9 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanFreeTodoThatIsClaimedBySomeoneElseWhenUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
             var slackConversationId = "slackConversationId";
             var shortCode = "x";

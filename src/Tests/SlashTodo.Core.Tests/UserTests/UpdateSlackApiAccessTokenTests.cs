@@ -17,7 +17,7 @@ namespace SlashTodo.Core.Tests.UserTests
         public void CanNotUpdateSlackApiAccessTokenWithEmptyValue()
         {
             // Arrange
-            var user = User.Create(Guid.NewGuid(), Guid.NewGuid(), "slackUserId");
+            var user = User.Create("id", "teamId");
             
             // Act
             Assert.Throws<ArgumentOutOfRangeException>(() => user.UpdateSlackApiAccessToken(string.Empty));
@@ -28,7 +28,7 @@ namespace SlashTodo.Core.Tests.UserTests
         public void CanSetSlackApiAccessTokenToNull()
         {
             // Arrange
-            var user = User.Create(Guid.NewGuid(), Guid.NewGuid(), "slackUserId");
+            var user = User.Create("id", "teamId");
 
             // Act
             Assert.DoesNotThrow(() => user.UpdateSlackApiAccessToken(null));
@@ -39,8 +39,8 @@ namespace SlashTodo.Core.Tests.UserTests
         {
             // Arrange
             var slackApiAccessToken = "slackApiAccessToken";
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.ClearUncommittedEvents();
             var originalVersion = user.Version;
             var before = DateTime.UtcNow;
@@ -59,8 +59,8 @@ namespace SlashTodo.Core.Tests.UserTests
         {
             // Arrange
             var slackApiAccessToken = "slackApiAccessToken";
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.ClearUncommittedEvents();
 
             // Act
@@ -82,8 +82,8 @@ namespace SlashTodo.Core.Tests.UserTests
                 "slackApiAccessToken2",
                 "slackApiAccessToken3"
             };
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.ClearUncommittedEvents();
             var originalVersion = user.Version;
             var before = DateTime.UtcNow;
@@ -107,8 +107,8 @@ namespace SlashTodo.Core.Tests.UserTests
         public void SettingSlackApiAccessTokenToNullRaisesCorrectEvent()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.UpdateSlackApiAccessToken("originalSlackApiToken");
             user.ClearUncommittedEvents();
             var originalVersion = user.Version;
@@ -128,8 +128,8 @@ namespace SlashTodo.Core.Tests.UserTests
         {
             // Arrange
             var slackApiAccessToken = "originalSlackApiToken";
-            var id = Guid.NewGuid();
-            var user = User.Create(id, Guid.NewGuid(), "slackUserId");
+            var id = "id";
+            var user = User.Create(id, "teamId");
             user.UpdateSlackApiAccessToken(slackApiAccessToken);
             user.ClearUncommittedEvents();
 

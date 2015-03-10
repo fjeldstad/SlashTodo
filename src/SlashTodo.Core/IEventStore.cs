@@ -9,8 +9,8 @@ namespace SlashTodo.Core
 {
     public interface IEventStore
     {
-        Task<IEnumerable<IDomainEvent>> GetById(Guid aggregateId);
-        Task Save(Guid aggregateId, int expectedVersion, IEnumerable<IDomainEvent> events);
-        Task Delete(Guid aggregateId);
+        Task<IEnumerable<IDomainEvent>> GetById(string aggregateId);
+        Task Save(string aggregateId, int expectedVersion, IEnumerable<IDomainEvent> events);
+        Task Delete(string aggregateId);
     }
 }

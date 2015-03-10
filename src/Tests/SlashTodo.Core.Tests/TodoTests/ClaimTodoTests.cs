@@ -16,7 +16,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanClaimTodo()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var slackConversationId = "slackConversationId";
             var shortCode = "x";
@@ -37,7 +37,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void ClaimTodoIsIdempotentOperation()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.ClearUncommittedEvents();
@@ -55,13 +55,13 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CannotClaimTodoThatIsClaimedBySomeoneElseWithoutUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var todo = Todo.Add(id, "text", "slackConversationId", "x", otherUserContext);
             todo.Claim();
             todo.ClearUncommittedEvents();
-            var userId = Guid.NewGuid();
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
 
             // Act & assert
@@ -75,9 +75,9 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void CanClaimTodoThatIsClaimedBySomeoneElseWhenUsingForce()
         {
             // Arrange
-            var id = Guid.NewGuid();
-            var otherUserId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
+            var id = "id";
+            var otherUserId = "otherUserId";
+            var userId = "userId";
             Assert.That(userId, Is.Not.EqualTo(otherUserId));
             var otherUserContext = TodoTestHelpers.GetContext(userId: otherUserId);
             var slackConversationId = "slackConversationId";
@@ -102,7 +102,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void ClaimingRemovedTodoDoesNothing()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.Remove();
@@ -119,7 +119,7 @@ namespace SlashTodo.Core.Tests.TodoTests
         public void ClaimingTickedTodoDoesNothing()
         {
             // Arrange
-            var id = Guid.NewGuid();
+            var id = "id";
             var context = TodoTestHelpers.GetContext();
             var todo = Todo.Add(id, "text", "slackConversationId", "x", context);
             todo.Tick();

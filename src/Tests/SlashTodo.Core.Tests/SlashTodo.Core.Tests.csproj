@@ -67,11 +67,11 @@
     <Compile Include="..\..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="AccountTests\AccountActivationTests.cs" />
-    <Compile Include="AccountTests\UpdateSlackTeamInfoTests.cs" />
-    <Compile Include="AccountTests\UpdateSlashCommandTokenTests.cs" />
-    <Compile Include="AccountTests\UpdateIncomingWebhookUrlTests.cs" />
-    <Compile Include="AccountTests\CreateAccountTests.cs" />
+    <Compile Include="TeamTests\TeamActivationTests.cs" />
+    <Compile Include="TeamTests\UpdateInfoTests.cs" />
+    <Compile Include="TeamTests\UpdateSlashCommandTokenTests.cs" />
+    <Compile Include="TeamTests\UpdateIncomingWebhookUrlTests.cs" />
+    <Compile Include="TeamTests\CreateTeamTests.cs" />
     <Compile Include="TodoTests\AddTodoTests.cs" />
     <Compile Include="TodoTests\ClaimTodoTests.cs" />
     <Compile Include="TodoTests\RemoveTodoTests.cs" />
