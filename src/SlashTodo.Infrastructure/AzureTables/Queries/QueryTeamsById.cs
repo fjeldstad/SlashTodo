@@ -11,16 +11,10 @@ using SlashTodo.Infrastructure.Messaging;
 namespace SlashTodo.Infrastructure.AzureTables.Queries
 {
     public class QueryTeamsById :
-        QueryTeams.IById,
-        ISubscriber
+        QueryBase,
+        QueryTeams.IById
     {
         public const string DefaultTableName = "queryTeamsById";
-
-        private readonly CloudStorageAccount _storageAccount;
-        private readonly string _tableName;
-        private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
-
-        public string TableName { get { return _tableName; } }
 
         public QueryTeamsById(CloudStorageAccount storageAccount)
             : this(storageAccount, DefaultTableName)
@@ -28,40 +22,31 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
         }
 
         public QueryTeamsById(CloudStorageAccount storageAccount, string tableName)
+            : base(storageAccount, tableName)
         {
-            if (storageAccount == null)
-            {
-                throw new ArgumentNullException("storageAccount");
-            }
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new ArgumentNullException("tableName");
-            }
-            _storageAccount = storageAccount;
-            _tableName = tableName;
         }
 
         public async Task<TeamDto> ById(string id)
         {
-            var table = await _storageAccount.GetTableAsync(_tableName).ConfigureAwait(false);
+            var table = await StorageAccount.GetTableAsync(TableName).ConfigureAwait(false);
             var entity = await table.RetrieveAsync<TeamDtoTableEntity>(id, id).ConfigureAwait(false);
             return entity != null ? entity.GetDto() : null;
         }
 
-        public void RegisterSubscriptions(ISubscriptionRegistry registry)
+        protected override IEnumerable<ISubscriptionToken> RegisterSubscriptionsCore(ISubscriptionRegistry registry)
         {
-            _subscriptionTokens.Add(registry.RegisterSubscription<TeamCreated>(@event =>
+            yield return registry.RegisterSubscription<TeamCreated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 table.Insert(new TeamDtoTableEntity(new TeamDto
                 {
                     Id = @event.Id,
                     CreatedAt = @event.Timestamp
                 }));
-            }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<TeamInfoUpdated>(@event =>
+            });
+            yield return registry.RegisterSubscription<TeamInfoUpdated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 var entity = table.Retrieve<TeamDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
@@ -70,10 +55,10 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 entity.Name = @event.Name;
                 entity.SlackUrl = @event.SlackUrl != null ? @event.SlackUrl.AbsoluteUri : null;
                 table.Update(entity);
-            }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<TeamSlashCommandTokenUpdated>(@event =>
+            });
+            yield return registry.RegisterSubscription<TeamSlashCommandTokenUpdated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 var entity = table.Retrieve<TeamDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
@@ -81,10 +66,10 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 }
                 entity.SlashCommandToken = @event.SlashCommandToken;
                 table.Update(entity);
-            }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<TeamIncomingWebhookUpdated>(@event =>
+            });
+            yield return registry.RegisterSubscription<TeamIncomingWebhookUpdated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 var entity = table.Retrieve<TeamDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
@@ -92,10 +77,10 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 }
                 entity.IncomingWebhookUrl = @event.IncomingWebhookUrl != null ? @event.IncomingWebhookUrl.AbsoluteUri : null;
                 table.Update(entity);
-            }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<TeamActivated>(@event =>
+            });
+            yield return registry.RegisterSubscription<TeamActivated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 var entity = table.Retrieve<TeamDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
@@ -103,10 +88,10 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 }
                 entity.ActivatedAt = @event.Timestamp;
                 table.Update(entity);
-            }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<TeamDeactivated>(@event =>
+            });
+            yield return registry.RegisterSubscription<TeamDeactivated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 var entity = table.Retrieve<TeamDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
@@ -114,15 +99,7 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 }
                 entity.ActivatedAt = null;
                 table.Update(entity);
-            }));
-        }
-
-        public void Dispose()
-        {
-            foreach (var token in _subscriptionTokens)
-            {
-                token.Dispose();
-            }
+            });
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.WindowsAzure.Storage;
+using SlashTodo.Core.Domain;
 using SlashTodo.Core.Dtos;
 using SlashTodo.Core.Queries;
 using SlashTodo.Infrastructure.AzureTables.Queries.Entities;
@@ -10,16 +12,10 @@ using SlashTodo.Infrastructure.Messaging;
 namespace SlashTodo.Infrastructure.AzureTables.Queries
 {
     public class QueryTodosBySlackConversationId :
-        QueryTodos.IBySlackConversationId,
-        ISubscriber
+        QueryBase,
+        QueryTodos.IBySlackConversationId
     {
         public const string DefaultTableName = "queryTodosBySlackConversationId";
-
-        private readonly CloudStorageAccount _storageAccount;
-        private readonly string _tableName;
-        private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
-
-        public string TableName { get { return _tableName; } }
 
         public QueryTodosBySlackConversationId(CloudStorageAccount storageAccount)
             : this(storageAccount, DefaultTableName)
@@ -27,37 +23,82 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
         }
 
         public QueryTodosBySlackConversationId(CloudStorageAccount storageAccount, string tableName)
+            : base(storageAccount, tableName)
         {
-            if (storageAccount == null)
-            {
-                throw new ArgumentNullException("storageAccount");
-            }
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new ArgumentNullException("tableName");
-            }
-            _storageAccount = storageAccount;
-            _tableName = tableName;
         }
 
-        public Task<TodoDto[]> BySlackConversationId(string slackConversationId)
+        public async Task<TodoDto[]> BySlackConversationId(string slackConversationId)
         {
-            // TODO
-            throw new NotImplementedException();
-        }
-
-        public void RegisterSubscriptions(ISubscriptionRegistry registry)
-        {
-            // TODO
-            throw new NotImplementedException();
-        }
-
-        public void Dispose()
-        {
-            foreach (var token in _subscriptionTokens)
+            if (string.IsNullOrWhiteSpace(slackConversationId))
             {
-                token.Dispose();
+                throw new ArgumentNullException("slackConversationId");
             }
+            var table = await StorageAccount.GetTableAsync(TableName).ConfigureAwait(false);
+            var entities = await table.RetrievePartitionAsync<TodoDtoTableEntity>(slackConversationId).ConfigureAwait(false);
+            return entities.Select(x => x.GetTodoDto()).ToArray();
+        }
+
+        protected override IEnumerable<ISubscriptionToken> RegisterSubscriptionsCore(ISubscriptionRegistry registry)
+        {
+            yield return registry.RegisterSubscription<TodoAdded>(@event =>
+            {
+                var table = StorageAccount.GetTable(TableName);
+                table.Insert(new TodoDtoTableEntity(new TodoDto
+                {
+                    Id = @event.Id,
+                    SlackConversationId = @event.SlackConversationId,
+                    ShortCode = @event.ShortCode,
+                    TeamId = @event.TeamId,
+                    Text = @event.Text,
+                    CreatedAt = @event.Timestamp
+                }, x => x.SlackConversationId, x => x.ShortCode));
+            });
+            yield return registry.RegisterSubscription<TodoRemoved>(@event =>
+            {
+                var table = StorageAccount.GetTable(TableName);
+                table.Delete(@event.SlackConversationId, @event.ShortCode);
+            });
+            yield return registry.RegisterSubscription<TodoTicked>(@event =>
+            {
+                var table = StorageAccount.GetTable(TableName);
+                var entity = table.Retrieve<TodoDtoTableEntity>(@event.SlackConversationId, @event.ShortCode);
+                if (entity != null)
+                {
+                    entity.CompletedAt = @event.Timestamp;
+                    entity.ClaimedByUserId = null;
+                    table.Update(entity);
+                }
+            });
+            yield return registry.RegisterSubscription<TodoUnticked>(@event =>
+            {
+                var table = StorageAccount.GetTable(TableName);
+                var entity = table.Retrieve<TodoDtoTableEntity>(@event.SlackConversationId, @event.ShortCode);
+                if (entity != null)
+                {
+                    entity.CompletedAt = null;
+                    table.Update(entity);
+                }
+            });
+            yield return registry.RegisterSubscription<TodoClaimed>(@event =>
+            {
+                var table = StorageAccount.GetTable(TableName);
+                var entity = table.Retrieve<TodoDtoTableEntity>(@event.SlackConversationId, @event.ShortCode);
+                if (entity != null)
+                {
+                    entity.ClaimedByUserId = @event.UserId;
+                    table.Update(entity);
+                }
+            });
+            yield return registry.RegisterSubscription<TodoFreed>(@event =>
+            {
+                var table = StorageAccount.GetTable(TableName);
+                var entity = table.Retrieve<TodoDtoTableEntity>(@event.SlackConversationId, @event.ShortCode);
+                if (entity != null)
+                {
+                    entity.ClaimedByUserId = null;
+                    table.Update(entity);
+                }
+            });
         }
     }
 }

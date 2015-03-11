@@ -11,16 +11,10 @@ using SlashTodo.Infrastructure.Messaging;
 namespace SlashTodo.Infrastructure.AzureTables.Queries
 {
     public class QueryUsersById : 
-        QueryUsers.IById,
-        ISubscriber
+        QueryBase,
+        QueryUsers.IById
     {
         public const string DefaultTableName = "queryUsersById";
-
-        private readonly CloudStorageAccount _storageAccount;
-        private readonly string _tableName;
-        private readonly List<ISubscriptionToken> _subscriptionTokens = new List<ISubscriptionToken>();
-
-        public string TableName { get { return _tableName; } }
 
         public QueryUsersById(CloudStorageAccount storageAccount)
             : this(storageAccount, DefaultTableName)
@@ -28,41 +22,32 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
         }
 
         public QueryUsersById(CloudStorageAccount storageAccount, string tableName)
+            : base(storageAccount, tableName)
         {
-            if (storageAccount == null)
-            {
-                throw new ArgumentNullException("storageAccount");
-            }
-            if (string.IsNullOrWhiteSpace(tableName))
-            {
-                throw new ArgumentNullException("tableName");
-            }
-            _storageAccount = storageAccount;
-            _tableName = tableName;
         }
 
         public async Task<UserDto> ById(string id)
         {
-            var table = await _storageAccount.GetTableAsync(_tableName).ConfigureAwait(false);
+            var table = await StorageAccount.GetTableAsync(TableName).ConfigureAwait(false);
             var entity = await table.RetrieveAsync<UserDtoTableEntity>(id, id).ConfigureAwait(false);
             return entity != null ? entity.GetDto() : null;
         }
 
-        public void RegisterSubscriptions(ISubscriptionRegistry registry)
+        protected override IEnumerable<ISubscriptionToken> RegisterSubscriptionsCore(ISubscriptionRegistry registry)
         {
-            _subscriptionTokens.Add(registry.RegisterSubscription<UserCreated>(@event =>
+            yield return registry.RegisterSubscription<UserCreated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 table.Insert(new UserDtoTableEntity(new UserDto
                 {
                     Id = @event.Id,
                     TeamId = @event.TeamId,
                     CreatedAt = @event.Timestamp
                 }));
-            }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<UserNameUpdated>(@event =>
+            });
+            yield return registry.RegisterSubscription<UserNameUpdated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 var entity = table.Retrieve<UserDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
@@ -70,10 +55,10 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 }
                 entity.Name = @event.Name;
                 table.Update(entity);
-            }));
-            _subscriptionTokens.Add(registry.RegisterSubscription<UserSlackApiAccessTokenUpdated>(@event =>
+            });
+            yield return registry.RegisterSubscription<UserSlackApiAccessTokenUpdated>(@event =>
             {
-                var table = _storageAccount.GetTable(_tableName);
+                var table = StorageAccount.GetTable(TableName);
                 var entity = table.Retrieve<UserDtoTableEntity>(@event.Id, @event.Id);
                 if (entity == null)
                 {
@@ -81,15 +66,7 @@ namespace SlashTodo.Infrastructure.AzureTables.Queries
                 }
                 entity.SlackApiAccessToken = @event.SlackApiAccessToken;
                 table.Update(entity);
-            }));
-        }
-
-        public void Dispose()
-        {
-            foreach (var token in _subscriptionTokens)
-            {
-                token.Dispose();
-            }
+            });
         }
     }
 }

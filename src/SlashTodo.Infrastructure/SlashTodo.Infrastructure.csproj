@@ -86,6 +86,9 @@
     <Compile Include="AzureTables\Helpers.cs" />
     <Compile Include="AzureTables\Queries\Entities\TodoDtoTableEntity.cs" />
     <Compile Include="AzureTables\Queries\Entities\UserDtoTableEntity.cs" />
+    <Compile Include="AzureTables\Queries\QueryBase.cs" />
+    <Compile Include="AzureTables\Queries\QueryTodosCompletedByUserId.cs" />
+    <Compile Include="AzureTables\Queries\QueryTodosClaimedByUserId.cs" />
     <Compile Include="AzureTables\Queries\QueryTodosBySlackConversationId.cs" />
     <Compile Include="Messaging\IMessageBus.cs" />
     <Compile Include="Messaging\ISubscriber.cs" />

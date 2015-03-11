@@ -80,6 +80,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AzureTables\Queries\QueryTodosBySlackConversationIdTests.cs" />
     <Compile Include="DomainEventSubscriberTests.cs" />
     <Compile Include="AzureTables\EventStoreTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

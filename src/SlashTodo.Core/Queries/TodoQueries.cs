@@ -14,14 +14,14 @@ namespace SlashTodo.Core.Queries
             Task<TodoDto[]> BySlackConversationId(string slackConversationId);
         }
 
-        public interface IClaimedBySlackUserId
-        {
-            Task<TodoDto[]> ClaimedBySlackUserId(string slackUserId);
-        }
+        //public interface IClaimedByUserId
+        //{
+        //    Task<TodoDto[]> ClaimedBySlackUserId(string userId);
+        //}
 
-        public interface ICompletedBySlackUserId
-        {
-            Task<TodoDto[]> CompletedBySlackUserId(string slackUserId, DateTime? since = null, bool includeRemoved = true);
-        }
+        //public interface ICompletedByUserId
+        //{
+        //    Task<TodoDto[]> CompletedByUserId(string userId, DateTime? since = null, bool includeRemoved = true);
+        //}
     }
 }
