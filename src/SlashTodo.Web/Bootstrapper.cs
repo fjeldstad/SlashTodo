@@ -9,12 +9,14 @@ using Nancy.Session;
 using Nancy.TinyIoc;
 using Newtonsoft.Json;
 using Refit;
+using SharpRaven;
 using SlashTodo.Core;
 using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Infrastructure.Messaging;
 using SlashTodo.Infrastructure.Slack;
 using SlashTodo.Infrastructure.AzureTables.Repositories;
+using SlashTodo.Web.Logging;
 using SlashTodo.Web.Security;
 
 namespace SlashTodo.Web
@@ -55,6 +57,17 @@ namespace SlashTodo.Web
             var slackSettings = container.Resolve<ISlackSettings>();
             container.Register<ISlackApi>(RestService.For<ISlackApi>(slackSettings.ApiBaseUrl));
 
+            // Logging with Sentry.
+            var sentryDsn = _appSettings.Get("sentry:Dsn");
+            if (sentryDsn.HasValue())
+            {
+                container.Register<ILogger>(new SentryLogger(new RavenClient(sentryDsn)));
+            }
+            else
+            {
+                container.Register<ILogger, NullLogger>();
+            }
+
             // Register a single CloudStorageAccount instance per application. Also turn off
             // the Nagle algorithm to improve performance.
             // http://blogs.msdn.com/b/windowsazurestorage/archive/2010/06/25/nagle-s-algorithm-is-not-friendly-towards-small-requests.aspx
@@ -66,7 +79,7 @@ namespace SlashTodo.Web
             // Custom JSON serialization settings
             container.Register<JsonSerializer, CustomJsonSerializer>();
         }
-
+        
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
         {
             base.ApplicationStartup(container, pipelines);

@@ -93,6 +93,9 @@
     <Reference Include="Refit">
       <HintPath>..\packages\refit.2.2.1\lib\Net45\Refit.dll</HintPath>
     </Reference>
+    <Reference Include="SharpRaven">
+      <HintPath>..\packages\SharpRaven.1.4.4\lib\net45\SharpRaven.dll</HintPath>
+    </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Extensions">
@@ -199,6 +202,9 @@
     <Compile Include="Api\SlashCommandErrorResponseFactory.cs" />
     <Compile Include="Api\TodoModule.cs" />
     <Compile Include="Authentication\AuthenticationModule.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\NullLogger.cs" />
+    <Compile Include="Logging\SentryLogger.cs" />
     <Compile Include="ResponseExtensions.cs" />
     <Compile Include="Security\INancyUserIdentityService.cs" />
     <Compile Include="Security\NancyUserIdentity.cs" />
@@ -207,6 +213,7 @@
     <Compile Include="Security\SessionBasedOAuthState.cs" />
     <Compile Include="Security\DefaultNancyUserIdentityService.cs" />
     <Compile Include="Security\NancyUserIdentityIdProvider.cs" />
+    <Compile Include="Logging\LoggingErrorHandler.cs" />
     <Compile Include="ViewModels\EmptyViewModel.cs" />
     <Compile Include="HomeModule.cs" />
     <Compile Include="ViewModels\IViewModelFactory.cs" />
