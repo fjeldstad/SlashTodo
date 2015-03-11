@@ -78,7 +78,15 @@ namespace SlashTodo.Web.Tests
             var result = browser.Post("/api/" + "whatever", with =>
             {
                 with.HttpsRequest();
-                with.JsonBody(command);
+                with.FormValue("token", command.Token);
+                with.FormValue("team_id", command.TeamId);
+                with.FormValue("team_domain", command.TeamDomain);
+                with.FormValue("channel_id", command.ConversationId);
+                with.FormValue("channel_name", command.ConversationName);
+                with.FormValue("user_id", command.UserId);
+                with.FormValue("user_name", command.UserName);
+                with.FormValue("command", command.Command);
+                with.FormValue("text", command.Text);
             });
 
             // Assert
@@ -104,7 +112,15 @@ namespace SlashTodo.Web.Tests
             var result = browser.Post("/api/" + teamDto.Id, with =>
             {
                 with.HttpsRequest();
-                with.JsonBody(command);
+                with.FormValue("token", command.Token);
+                with.FormValue("team_id", command.TeamId);
+                with.FormValue("team_domain", command.TeamDomain);
+                with.FormValue("channel_id", command.ConversationId);
+                with.FormValue("channel_name", command.ConversationName);
+                with.FormValue("user_id", command.UserId);
+                with.FormValue("user_name", command.UserName);
+                with.FormValue("command", command.Command);
+                with.FormValue("text", command.Text);
             });
 
             // Assert
@@ -130,7 +146,15 @@ namespace SlashTodo.Web.Tests
             var result = browser.Post("/api/" + teamDto.Id, with =>
             {
                 with.HttpsRequest();
-                with.JsonBody(command);
+                with.FormValue("token", command.Token);
+                with.FormValue("team_id", command.TeamId);
+                with.FormValue("team_domain", command.TeamDomain);
+                with.FormValue("channel_id", command.ConversationId);
+                with.FormValue("channel_name", command.ConversationName);
+                with.FormValue("user_id", command.UserId);
+                with.FormValue("user_name", command.UserName);
+                with.FormValue("command", command.Command);
+                with.FormValue("text", command.Text);
             });
 
             // Assert
@@ -160,7 +184,15 @@ namespace SlashTodo.Web.Tests
             var result = browser.Post("/api/" + teamDto.Id, with =>
             {
                 with.HttpsRequest();
-                with.JsonBody(command);
+                with.FormValue("token", command.Token);
+                with.FormValue("team_id", command.TeamId);
+                with.FormValue("team_domain", command.TeamDomain);
+                with.FormValue("channel_id", command.ConversationId);
+                with.FormValue("channel_name", command.ConversationName);
+                with.FormValue("user_id", command.UserId);
+                with.FormValue("user_name", command.UserName);
+                with.FormValue("command", command.Command);
+                with.FormValue("text", command.Text);
             });
 
             // Assert
@@ -194,7 +226,15 @@ namespace SlashTodo.Web.Tests
             var result = browser.Post("/api/" + teamDto.Id, with =>
             {
                 with.HttpsRequest();
-                with.JsonBody(command);
+                with.FormValue("token", command.Token);
+                with.FormValue("team_id", command.TeamId);
+                with.FormValue("team_domain", command.TeamDomain);
+                with.FormValue("channel_id", command.ConversationId);
+                with.FormValue("channel_name", command.ConversationName);
+                with.FormValue("user_id", command.UserId);
+                with.FormValue("user_name", command.UserName);
+                with.FormValue("command", command.Command);
+                with.FormValue("text", command.Text);
             });
 
             // Assert

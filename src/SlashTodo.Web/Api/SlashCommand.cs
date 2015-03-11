@@ -8,31 +8,48 @@ namespace SlashTodo.Web.Api
 {
     public class SlashCommand
     {
-        [JsonProperty(PropertyName = "token")]
         public string Token { get; set; }
-
-        [JsonProperty(PropertyName = "team_id")]
         public string TeamId { get; set; }
-
-        [JsonProperty(PropertyName = "team_domain")]
         public string TeamDomain { get; set; }
-
-        [JsonProperty(PropertyName = "channel_id")]
         public string ConversationId { get; set; }
-
-        [JsonProperty(PropertyName = "channel_name")]
         public string ConversationName { get; set; }
-
-        [JsonProperty(PropertyName = "user_id")]
         public string UserId { get; set; }
-
-        [JsonProperty(PropertyName = "user_name")]
         public string UserName { get; set; }
-
-        [JsonProperty(PropertyName = "command")]
         public string Command { get; set; }
-
-        [JsonProperty(PropertyName = "text")]
         public string Text { get; set; }
+
+        public class Raw
+        {
+            public string token { get; set; }
+            public string team_id { get; set; }
+            public string team_domain { get; set; }
+            public string channel_id { get; set; }
+            public string channel_name { get; set; }
+            public string user_id { get; set; }
+            public string user_name { get; set; }
+            public string command { get; set; }
+            public string text { get; set; }
+        }
+    }
+
+    public static class RawSlashCommandExtensions
+    {
+        public static SlashCommand ToSlashCommand(this SlashCommand.Raw raw)
+        {
+            return raw == null ?
+                null :
+                new SlashCommand
+                {
+                    Token = raw.token,
+                    TeamId = raw.team_id,
+                    TeamDomain = raw.team_domain,
+                    ConversationId = raw.channel_id,
+                    ConversationName = raw.channel_name,
+                    UserId = raw.user_id,
+                    UserName = raw.user_name,
+                    Command = raw.command,
+                    Text = raw.text
+                };
+        }
     }
 }

@@ -38,7 +38,7 @@ namespace SlashTodo.Web.Api
                 {
                     return errorResponseFactory.ActiveAccountNotFound();
                 }
-                var command = this.Bind<SlashCommand>();
+                var command = this.Bind<SlashCommand.Raw>().ToSlashCommand();
                 if (!team.IsActive)
                 {
                     return errorResponseFactory.ActiveAccountNotFound();
