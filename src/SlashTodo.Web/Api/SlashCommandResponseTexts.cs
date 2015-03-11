@@ -12,7 +12,7 @@ namespace SlashTodo.Web.Api
 
         public string UnknownCommand(SlashCommand command)
         {
-            throw new NotImplementedException();
+            return string.Format("Unknown command. Use `{0} help` for instructions.", command.Command);
         }
 
         public string UsageInstructions(SlashCommand command)
