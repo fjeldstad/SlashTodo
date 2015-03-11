@@ -25,6 +25,7 @@ namespace SlashTodo.Web.Api
         {
             _slackIncomingWebhookApi.Send(teamIncomingWebhookUrl, new SlackIncomingWebhookMessage
             {
+                UserName = "/todo",
                 ConversationId = command.ConversationId,
                 Text = string.Format("*Echo:* {0} {1}", command.Command, command.Text)
             });
