@@ -52,9 +52,9 @@ namespace SlashTodo.Web.Api
                 {
                     var user = Core.Domain.User.Create(command.UserId, team.Id);
                     user.UpdateName(command.UserName);
-                    await userRepository.Save(user); // TODO Await later to reduce response time? Or don't await at all?
+                    await userRepository.Save(user);
                 }
-                var responseText = await slashCommandHandler.Handle(command);
+                var responseText = await slashCommandHandler.Handle(command, team.IncomingWebhookUrl);
                 if (responseText.HasValue())
                 {
                     return new TextResponse(statusCode: HttpStatusCode.OK, contents: responseText);

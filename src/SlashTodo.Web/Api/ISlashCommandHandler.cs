@@ -8,6 +8,6 @@ namespace SlashTodo.Web.Api
 {
     public interface ISlashCommandHandler
     {
-        Task<string> Handle(SlashCommand command);
+        Task<string> Handle(SlashCommand command, Uri teamIncomingWebhookUrl);
     }
 }

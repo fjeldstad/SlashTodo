@@ -24,7 +24,7 @@ namespace SlashTodo.Infrastructure.Slack
         public string IconEmoji { get; set; }
 
         [JsonProperty(PropertyName = "channel")]
-        public string ConversationIdOrName { get; set; }
+        public string ConversationId { get; set; }
 
         [JsonProperty(PropertyName = "text")]
         public string Text { get; set; }

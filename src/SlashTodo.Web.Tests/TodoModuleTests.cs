@@ -174,7 +174,7 @@ namespace SlashTodo.Web.Tests
                 .Returns(Task.FromResult<object>(null))
                 .Callback((Core.Domain.User u) => savedEvents.AddRange(u.GetUncommittedEvents()));
             var command = GetSlashCommand(teamDto);
-            _slashCommandHandlerMock.Setup(x => x.Handle(It.IsAny<SlashCommand>()))
+            _slashCommandHandlerMock.Setup(x => x.Handle(It.IsAny<SlashCommand>(), It.IsAny<Uri>()))
                 .Returns(Task.FromResult<string>(null));
             var bootstrapper = GetBootstrapper();
             var browser = new Browser(bootstrapper);
@@ -214,7 +214,7 @@ namespace SlashTodo.Web.Tests
                 .Returns(Task.FromResult<object>(null));
             SlashCommand passedCommand = null;
             string resultText = "result";
-            _slashCommandHandlerMock.Setup(x => x.Handle(It.IsAny<SlashCommand>()))
+            _slashCommandHandlerMock.Setup(x => x.Handle(It.IsAny<SlashCommand>(), It.IsAny<Uri>()))
                 .Returns(Task.FromResult(resultText))
                 .Callback((SlashCommand c) => passedCommand = c);
                 
@@ -238,7 +238,9 @@ namespace SlashTodo.Web.Tests
             });
 
             // Assert
-            _slashCommandHandlerMock.Verify(x => x.Handle(It.IsAny<SlashCommand>()), Times.Once);
+            _slashCommandHandlerMock.Verify(x => x.Handle(
+                It.IsAny<SlashCommand>(), 
+                It.Is<Uri>(u => u.Equals(teamDto.IncomingWebhookUrl))), Times.Once);
             passedCommand.AssertIsEqualTo(command);
             Assert.That(result.Body.AsString(), Is.EqualTo(resultText));
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));

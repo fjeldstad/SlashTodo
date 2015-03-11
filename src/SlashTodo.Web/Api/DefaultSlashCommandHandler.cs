@@ -21,9 +21,14 @@ namespace SlashTodo.Web.Api
             _slackIncomingWebhookApi = slackIncomingWebhookApi;
         }
 
-        public Task<string> Handle(SlashCommand command)
+        public Task<string> Handle(SlashCommand command, Uri teamIncomingWebhookUrl)
         {
-            return Task.FromResult("*TODO*");
+            _slackIncomingWebhookApi.Send(teamIncomingWebhookUrl, new SlackIncomingWebhookMessage
+            {
+                ConversationId = command.ConversationId,
+                Text = string.Format("*Echo:* {0} {1}", command.Command, command.Text)
+            });
+            return Task.FromResult<string>(null);
         }
     }
 }

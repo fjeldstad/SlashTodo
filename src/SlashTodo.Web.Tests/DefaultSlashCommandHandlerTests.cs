@@ -10,6 +10,10 @@ namespace SlashTodo.Web.Tests
     [TestFixture]
     public class DefaultSlashCommandHandlerTests
     {
-
+        [Test]
+        public void ExceptionThrownWhenSendingToIncomingWebhookIsLoggedAndResultsInErrorMessageBeingReturned()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
