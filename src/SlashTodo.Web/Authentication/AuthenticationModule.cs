@@ -18,7 +18,7 @@ namespace SlashTodo.Web.Authentication
             IViewModelFactory viewModelFactory, 
             ISlackSettings slackSettings, 
             IOAuthState oAuthState,
-            ISlackApi slackApi,
+            ISlackWebApi slackApi,
             IHostSettings hostSettings,
             IRepository<Core.Domain.Team> teamRepository,
             IRepository<Core.Domain.User> userRepository,

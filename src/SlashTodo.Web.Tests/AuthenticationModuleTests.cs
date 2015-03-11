@@ -27,7 +27,7 @@ namespace SlashTodo.Web.Tests
         private Mock<IHostSettings> _hostSettingsMock;
         private Mock<ISlackSettings> _slackSettingsMock;
         private Mock<IOAuthState> _oAuthStateMock;
-        private Mock<ISlackApi> _slackApiMock;
+        private Mock<ISlackWebApi> _slackApiMock;
         private Mock<IUserMapper> _userMapperMock;
         private Mock<IRepository<Core.Domain.Team>> _teamRepositoryMock;
         private Mock<IRepository<Core.Domain.User>> _userRepositoryMock;
@@ -39,7 +39,7 @@ namespace SlashTodo.Web.Tests
             _hostSettingsMock = new Mock<IHostSettings>();
             _slackSettingsMock = new Mock<ISlackSettings>();
             _oAuthStateMock = new Mock<IOAuthState>();
-            _slackApiMock = new Mock<ISlackApi>();
+            _slackApiMock = new Mock<ISlackWebApi>();
             _userMapperMock = new Mock<IUserMapper>();
             _teamRepositoryMock = new Mock<IRepository<Core.Domain.Team>>();
             _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
@@ -56,7 +56,7 @@ namespace SlashTodo.Web.Tests
                 with.Dependency<IViewModelFactory>(new ViewModelFactory());
                 with.Dependency<ISlackSettings>(_slackSettingsMock.Object);
                 with.Dependency<IOAuthState>(_oAuthStateMock.Object);
-                with.Dependency<ISlackApi>(_slackApiMock.Object);
+                with.Dependency<ISlackWebApi>(_slackApiMock.Object);
                 with.Dependency<IRepository<Core.Domain.Team>>(_teamRepositoryMock.Object);
                 with.Dependency<IRepository<Core.Domain.User>>(_userRepositoryMock.Object);
                 with.Dependency<IHostSettings>(_hostSettingsMock.Object);

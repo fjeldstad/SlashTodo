@@ -55,7 +55,7 @@ namespace SlashTodo.Web
             container.Register<IRepository<Core.Domain.User>, UserRepository>();
             container.Register<IRepository<Core.Domain.Todo>, TodoRepository>();
             var slackSettings = container.Resolve<ISlackSettings>();
-            container.Register<ISlackApi>(RestService.For<ISlackApi>(slackSettings.ApiBaseUrl));
+            container.Register<ISlackWebApi>(RestService.For<ISlackWebApi>(slackSettings.ApiBaseUrl));
 
             // Logging with Sentry.
             var sentryDsn = _appSettings.Get("sentry:Dsn");

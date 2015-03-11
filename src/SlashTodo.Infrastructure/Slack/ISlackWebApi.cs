@@ -8,7 +8,7 @@ using Refit;
 
 namespace SlashTodo.Infrastructure.Slack
 {
-    public interface ISlackApi
+    public interface ISlackWebApi
     {
         [Post("/oauth.access")]
         Task<OAuthAccessResponse> OAuthAccess([Body(BodySerializationMethod.UrlEncoded)] OAuthAccessRequest request);

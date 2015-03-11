@@ -103,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultNancyUserIdentityServiceTests.cs" />
+    <Compile Include="DefaultSlashCommandHandlerTests.cs" />
     <Compile Include="HomeModuleTests.cs" />
     <Compile Include="AccountModuleTests.cs" />
     <Compile Include="AuthenticationModuleTests.cs" />
