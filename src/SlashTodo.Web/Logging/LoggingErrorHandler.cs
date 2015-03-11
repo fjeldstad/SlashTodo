@@ -30,7 +30,7 @@ namespace SlashTodo.Web.Logging
 
         public bool HandlesStatusCode(HttpStatusCode statusCode, NancyContext context)
         {
-            return statusCode != HttpStatusCode.NotFound;
+            return statusCode == HttpStatusCode.InternalServerError;
         }
     }
 }

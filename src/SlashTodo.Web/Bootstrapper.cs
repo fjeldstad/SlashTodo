@@ -82,6 +82,9 @@ namespace SlashTodo.Web
         
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
         {
+            var logger = container.Resolve<ILogger>();
+            logger.LogMessage("Application starting.");
+
             base.ApplicationStartup(container, pipelines);
 
             // Look for views under the current module folder (if any) primarily.
@@ -108,12 +111,7 @@ namespace SlashTodo.Web
         protected override void RequestStartup(TinyIoCContainer container, IPipelines pipelines, NancyContext context)
         {
             base.RequestStartup(container, pipelines, context);
-            if (context.Request.Url.Path.StartsWith("/api"))
-            {
-                // TODO 
-                //StatelessAuthentication.Enable(pipelines, new StatelessAuthenticationConfiguration());
-            }
-            else
+            if (!context.Request.Url.Path.StartsWith("/api"))
             {
                 CookieBasedSessions.Enable(pipelines, CryptographyConfiguration);
                 FormsAuthentication.Enable(pipelines, new FormsAuthenticationConfiguration
