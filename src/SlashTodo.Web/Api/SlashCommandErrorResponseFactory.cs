@@ -10,10 +10,12 @@ namespace SlashTodo.Web.Api
     public class SlashCommandErrorResponseFactory : ISlashCommandErrorResponseFactory
     {
         private readonly IHostSettings _hostSettings;
+        private readonly IAppSettings _appSettings;
 
-        public SlashCommandErrorResponseFactory(IHostSettings hostSettings)
+        public SlashCommandErrorResponseFactory(IHostSettings hostSettings, IAppSettings appSettings)
         {
             _hostSettings = hostSettings;
+            _appSettings = appSettings;
         }
 
         public Response ActiveAccountNotFound()
@@ -33,6 +35,13 @@ namespace SlashTodo.Web.Api
         public Response InvalidSlashCommandToken()
         {
             return InvalidAccountIntegrationSettings();
+        }
+
+        public Response ErrorProcessingCommand()
+        {
+            return new Nancy.Responses.TextResponse(
+                HttpStatusCode.OK,
+                string.Format("Oops! Something went wrong. This could be a temporary hickup but if the problem persists, please send and e-mail to {0}.", _appSettings.Get("misc:HelpEmailAddress")));
         }
     }
 }

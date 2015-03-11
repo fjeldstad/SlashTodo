@@ -12,5 +12,6 @@ namespace SlashTodo.Web.Api
         Response ActiveAccountNotFound();
         Response InvalidAccountIntegrationSettings();
         Response InvalidSlashCommandToken();
+        Response ErrorProcessingCommand();
     }
 }

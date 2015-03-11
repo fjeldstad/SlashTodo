@@ -18,6 +18,7 @@ using SlashTodo.Infrastructure;
 using SlashTodo.Infrastructure.Configuration;
 using SlashTodo.Tests.Common;
 using SlashTodo.Web.Api;
+using SlashTodo.Web.Logging;
 
 namespace SlashTodo.Web.Tests
 {
@@ -30,6 +31,7 @@ namespace SlashTodo.Web.Tests
         private Mock<QueryUsers.IById> _queryUsersByIdMock;
         private Mock<IRepository<Core.Domain.User>> _userRepositoryMock;
         private Mock<ISlashCommandHandler> _slashCommandHandlerMock;
+        private Mock<ILogger> _loggerMock;
 
         [SetUp]
         public void BeforeEachTest()
@@ -40,6 +42,7 @@ namespace SlashTodo.Web.Tests
             _queryUsersByIdMock = new Mock<QueryUsers.IById>();
             _userRepositoryMock = new Mock<IRepository<Core.Domain.User>>();
             _slashCommandHandlerMock = new Mock<ISlashCommandHandler>();
+            _loggerMock = new Mock<ILogger>();
         }
 
         private TestBootstrapper GetBootstrapper(Action<ConfigurableBootstrapper.ConfigurableBootstrapperConfigurator> withConfig = null)
@@ -54,6 +57,7 @@ namespace SlashTodo.Web.Tests
                 with.Dependency<IHostSettings>(_hostSettingsMock.Object);
                 with.Dependency<IRepository<Core.Domain.User>>(_userRepositoryMock.Object);
                 with.Dependency<ISlashCommandHandler>(_slashCommandHandlerMock.Object);
+                with.Dependency<ILogger>(_loggerMock.Object);
                 with.Dependency<JsonSerializer>(new CustomJsonSerializer());
                 if (withConfig != null)
                 {
@@ -216,7 +220,7 @@ namespace SlashTodo.Web.Tests
             string resultText = "result";
             _slashCommandHandlerMock.Setup(x => x.Handle(It.IsAny<SlashCommand>(), It.IsAny<Uri>()))
                 .Returns(Task.FromResult(resultText))
-                .Callback((SlashCommand c) => passedCommand = c);
+                .Callback((SlashCommand c, Uri u) => passedCommand = c);
                 
             var command = GetSlashCommand(teamDto);
             var bootstrapper = GetBootstrapper();
@@ -243,6 +247,45 @@ namespace SlashTodo.Web.Tests
                 It.Is<Uri>(u => u.Equals(teamDto.IncomingWebhookUrl))), Times.Once);
             passedCommand.AssertIsEqualTo(command);
             Assert.That(result.Body.AsString(), Is.EqualTo(resultText));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        }
+
+        [Test]
+        public void ReturnsFriendlyErrorMessageIfSlashCommandHandlerThrows()
+        {
+            // Arrange
+            var teamDto = DtoFactory.Team();
+            _queryTeamsByIdMock.Setup(x => x.ById(teamDto.Id)).Returns(Task.FromResult(teamDto));
+            _userRepositoryMock
+                .Setup(x => x.Save(It.IsAny<Core.Domain.User>()))
+                .Returns(Task.FromResult<object>(null));
+            SlashCommand passedCommand = null;
+            string errorMessage = "errorMessage";
+            _errorResponseFactory.Setup(x => x.ErrorProcessingCommand()).Returns(errorMessage);
+            _slashCommandHandlerMock.Setup(x => x.Handle(It.IsAny<SlashCommand>(), It.IsAny<Uri>()))
+                .ThrowsAsync(new Exception());
+
+            var command = GetSlashCommand(teamDto);
+            var bootstrapper = GetBootstrapper();
+            var browser = new Browser(bootstrapper);
+
+            // Act
+            var result = browser.Post("/api/" + teamDto.Id, with =>
+            {
+                with.HttpsRequest();
+                with.FormValue("token", command.Token);
+                with.FormValue("team_id", command.TeamId);
+                with.FormValue("team_domain", command.TeamDomain);
+                with.FormValue("channel_id", command.ConversationId);
+                with.FormValue("channel_name", command.ConversationName);
+                with.FormValue("user_id", command.UserId);
+                with.FormValue("user_name", command.UserName);
+                with.FormValue("command", command.Command);
+                with.FormValue("text", command.Text);
+            });
+
+            // Assert
+            Assert.That(result.Body.AsString(), Is.EqualTo(errorMessage));
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         }
 
