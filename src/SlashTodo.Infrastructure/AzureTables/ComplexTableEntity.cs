@@ -12,7 +12,7 @@ namespace SlashTodo.Infrastructure.AzureTables
     {
         private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
         {
-            TypeNameHandling = TypeNameHandling.Auto
+            TypeNameHandling = TypeNameHandling.Objects
         };
         public string SerializedData { get; set; }
 
