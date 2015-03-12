@@ -119,6 +119,7 @@
     <Compile Include="AzureTables\Repositories\TodoRepository.cs" />
     <Compile Include="AzureTables\Repositories\UserRepository.cs" />
     <Compile Include="AzureTables\Repositories\TeamRepository.cs" />
+    <Compile Include="Slack\SlackMessage.cs" />
     <Compile Include="StringExtensions.cs" />
     <Compile Include="TinyMessenger.cs" />
   </ItemGroup>

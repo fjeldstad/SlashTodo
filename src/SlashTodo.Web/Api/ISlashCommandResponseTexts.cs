@@ -8,6 +8,7 @@ namespace SlashTodo.Web.Api
 {
     public interface ISlashCommandResponseTexts
     {
+        string ErrorSendingToIncomingWebhook();
         string UnknownCommand(SlashCommand command);
         string UsageInstructions(SlashCommand command);
     }
