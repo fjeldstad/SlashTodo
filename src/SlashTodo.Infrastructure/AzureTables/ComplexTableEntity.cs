@@ -10,7 +10,10 @@ namespace SlashTodo.Infrastructure.AzureTables
 {
     public abstract class ComplexTableEntity<T> : TableEntity
     {
-        public string DataTypeAssemblyQualifiedName { get; set; }
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+        {
+            TypeNameHandling = TypeNameHandling.Auto
+        };
         public string SerializedData { get; set; }
 
         protected ComplexTableEntity() { }
@@ -19,13 +22,12 @@ namespace SlashTodo.Infrastructure.AzureTables
         {
             PartitionKey = partitionKey(data);
             RowKey = rowKey(data);
-            SerializedData = JsonConvert.SerializeObject(data);
-            DataTypeAssemblyQualifiedName = data.GetType().AssemblyQualifiedName;
+            SerializedData = JsonConvert.SerializeObject(data, SerializerSettings);
         }
 
         public T GetData()
         {
-            return (T)JsonConvert.DeserializeObject(SerializedData, Type.GetType(DataTypeAssemblyQualifiedName));
+            return (T)JsonConvert.DeserializeObject(SerializedData, SerializerSettings);
         }
     }
 }
